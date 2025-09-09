@@ -189,15 +189,99 @@ const concernCategories: Category[] = [
   {
     title: "Suspicious Activity",
     subtitle: "For behavior that is not clearly a crime but feels wrong or may be a precursor to a crime.",
+    subcategories: [
+      {
+        title: "Prowling / Casing",
+        subtitle: "Someone is lurking around property or observing a location suspiciously.",
+      },
+      {
+        title: "Suspicious Vehicle",
+        subtitle: "A vehicle is parked for an unusually long time, is in a strange location, or is being used in a suspicious manner.",
+      },
+      {
+        title: "Suspicious Package or Item",
+        subtitle: "An unattended bag, package, or object in a public place that seems out of place.",
+      },
+      {
+        title: "Unknown Visitor / Possible Impersonation",
+        subtitle: "An unrecognized person is on your property, or someone is pretending to be an official or utility worker.",
+      },
+    ],
   },
   {
     title: "Traffic & Road Safety",
     subtitle: "For issues related to driving and public roads that do not involve a crime against a person.",
+    subcategories: [
+        {
+            title: "Dangerous / Reckless Driving",
+            subtitle: "Someone is operating a vehicle in a way that endangers others.",
+        },
+        {
+            title: "Driving Under the Influence (DUI)",
+            subtitle: "Reporting a driver you believe to be intoxicated.",
+        },
+        {
+            title: "Traffic Collision (Non-Injury)",
+            subtitle: "A minor collision where no one was injured, for documentation purposes. (Include a clear directive to call emergency services if injuries are present).",
+        },
+        {
+            title: "Road Hazard",
+            subtitle: "A physical object or condition that makes a road unsafe.",
+        },
+        {
+            title: "Illegal Parking",
+            subtitle: "A vehicle is parked in a way that creates a hazard or violates the law.",
+        },
+        {
+            title: "Abandoned Vehicle",
+            subtitle: "A vehicle that has been left unattended for an extended period.",
+        },
+    ]
   },
   {
     title: "Public Safety & Community Concerns",
     subtitle:
       "For general hazards or non-criminal issues affecting the community. These are often referred to as quality of life or neighborhood disorder issues.",
+    subcategories: [
+        {
+            title: "Public Hazard",
+            subtitle: "A non-traffic danger to the public.",
+        },
+        {
+            title: "Noise Complaint",
+            subtitle: "Excessive and ongoing noise violating local ordinances.",
+        },
+        {
+            title: "Missing Person",
+            subtitle: "To report that a person's whereabouts are unknown.",
+        },
+        {
+            title: "Animal-Related Concern",
+            subtitle: "Concerns related to animals.",
+            subcategories: [
+                {
+                    title: "Lost or Found Pet",
+                    subtitle: "A community alert for missing animals.",
+                },
+                {
+                    title: "Animal Neglect or Cruelty",
+                    subtitle: "Concern for an animal's welfare or intentional harm.",
+                },
+                {
+                    title: "Dangerous / Aggressive Animal",
+                    subtitle: "An animal behaving in a threatening manner.",
+                },
+            ]
+        },
+        {
+            title: "Code Violation",
+            subtitle: "A breach of local ordinances that is not an immediate public hazard.",
+        },
+        {
+            title: "Welfare Check",
+            subtitle: "A request for authorities to check on the well-being of an individual who may be in distress due to mental health issues, lack of communication, or other concerns.",
+        },
+    ]
   },
 ]
 
