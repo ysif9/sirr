@@ -4,11 +4,16 @@ import { Squircle } from "@squircle-js/react"
 interface CategoryCardProps {
   title: string
   subtitle: string
+  onClick?: () => void
 }
 
-export const CategoryCard: React.FC<CategoryCardProps> = ({ title, subtitle }) => {
+export const CategoryCard: React.FC<CategoryCardProps> = ({ title, subtitle, onClick }) => {
   return (
-    <button className="group h-full w-full text-left transition-all duration-300 ease-out transform hover:-translate-y-1 hover:scale-[1.02] focus:outline-none focus-visible:ring-2 focus-visible:ring-white">
+    <button
+      onClick={onClick}
+      className="group h-full w-full text-left transition-all duration-300 ease-out transform hover:-translate-y-1 hover:scale-[1.02] focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
+      disabled={!onClick}
+    >
       <Squircle
         cornerRadius={16}
         cornerSmoothing={1}
