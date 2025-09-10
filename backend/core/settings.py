@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/5.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
-
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -20,12 +20,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-^7m5)czx$9htt%fprf*l16c#cte_ikt#gi1o!+@mx56m_c4j%p'
+SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", default="django-insecure-change-me-in-production-1234567891011121314151617181920")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
+ALLOWED_HOSTS = ["localhost", "127.0.0.1", "0.0.0.0"]
 
 
 # Application definition
@@ -45,7 +45,8 @@ THIRD_PARTY_APPS = [
 
 # Local apps
 LOCAL_APPS = [
-    "common",
+    "apps.common",
+    "apps.users",
 ]
 
 INSTALLED_APPS = THIRD_PARTY_APPS + DJANGO_DEFAULT_APPS + LOCAL_APPS
@@ -79,14 +80,19 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'core.wsgi.application'
 
-
-# Database
+# Development database configuration
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+DATABASES = {  # noqa: F811
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": os.environ.get("POSTGRES_DB_NAME", "sirr_dev"),
+        "USER": os.environ.get("POSTGRES_DB_USER", "postgres"),
+        "PASSWORD": os.environ.get("POSTGRES_DB_PASSWORD", "postgres"),
+        "HOST": os.environ.get("POSTGRES_DB_HOST", "db"),
+        "PORT": os.environ.get("POSTGRES_DB_PORT", "5432"),
+        "OPTIONS": {
+            "connect_timeout": 10,
+        },
     }
 }
 
@@ -135,3 +141,35 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Media Files
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+EMAIL_BACKEND = os.environ.get('EMAIL_BACKEND', default='django.core.mail.backends.console.EmailBackend')
+
+# Cache configuration for development
+CACHES = {  # noqa: F811
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": os.environ.get("REDIS_URL", "redis://redis:6379/0"),
+        "TIMEOUT": 300,
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        },
+    }
+}
+
+# Session configuration for development
+SESSION_ENGINE = "django.contrib.sessions.backends.cache"  # noqa: F811
+SESSION_CACHE_ALIAS = "default"
+SESSION_COOKIE_AGE = 1209600  # Default value (seconds)
+
+# Celery configuration for development
+CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL", "redis://redis:6379/0")
+CELERY_RESULT_BACKEND = os.environ.get("CELERY_RESULT_BACKEND", "redis://redis:6379/0")
+
+# OpenAI API Configuration
+OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", default="")
+
+# Google Gemini API Configuration
+GOOGLE_API_KEY = os.environ.get("GOOGLE_API_KEY", default="")
+
+# Override base user model
+AUTH_USER_MODEL = "users.User"

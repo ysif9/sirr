@@ -26,3 +26,12 @@ frontend/reporter/.env.local
 frontend/reporter/.next/
 frontend/reporter/output/
 frontend/reporter/build/
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
