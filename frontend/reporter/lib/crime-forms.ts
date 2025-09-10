@@ -787,6 +787,52 @@ const crimeData = {
                             ]
                         }
                     ]
+                },
+                distribution_illegal_content: {
+                    title: "Report Distribution of Illegal Online Content",
+                    steps: [
+                        {
+                            step: 1,
+                            title: "Incident Details",
+                            fields: [
+                                { id: "disclaimer", label: "Warning", type: "static_text", text: "You are reporting potentially illegal and harmful content. Do NOT attempt to download or distribute this material yourself." },
+                                { id: "content_location", label: "Where was the illegal content found?", type: "textarea", placeholder: "Provide the website URL, social media platform and username, etc.", validation: { required: true } },
+                                { id: "content_type", label: "What type of illegal content is it?", type: "select", options: ["Child Sexual Abuse Material (CSAM)", "Terrorist Content", "Promotion of Extreme Violence", "Other"], validation: { required: true } },
+                                { id: "content_description", label: "Describe the content and the context.", type: "textarea", validation: { required: true } }
+                            ]
+                        },
+                        {
+                            step: 2,
+                            title: "Suspect & Evidence",
+                            fields: [
+                                { id: "suspect_info", label: "Information about the user who posted the content.", type: "textarea", placeholder: "Username, profile link, any known details." },
+                                { id: "evidence_upload", label: "Upload Evidence (if safe)", type: "file_upload", helperText: "Please provide screenshots if possible. Do NOT download or save illegal material to your device." }
+                            ]
+                        }
+                    ]
+                },
+                online_impersonation: {
+                    title: "Report Online Impersonation",
+                    steps: [
+                        {
+                            step: 1,
+                            title: "Impersonation Details",
+                            fields: [
+                                { id: "who_is_impersonated", label: "Who is being impersonated?", type: "radio_group", options: ["Me", "Someone else I know", "A public figure/organization"], validation: { required: true } },
+                                { id: "victim_name", label: "Full Name of the person/organization being impersonated.", type: "text", validation: { required: true } },
+                                { id: "platform", label: "Where is the impersonation happening?", type: "text", placeholder: "e.g., Facebook, Instagram, Gmail account.", validation: { required: true } },
+                                { id: "fake_profile_link", label: "Link to the fake profile or username/email.", type: "text", validation: { required: true } }
+                            ]
+                        },
+                        {
+                            step: 2,
+                            title: "Impact & Evidence",
+                            fields: [
+                                { id: "impersonation_purpose", label: "How is this fake account being used?", type: "textarea", placeholder: "e.g., sending messages to my friends, posting false information, trying to solicit money.", validation: { required: true } },
+                                { id: "evidence_upload", label: "Upload Evidence", type: "file_upload", helperText: "Please upload screenshots of the fake profile and any messages sent from it." }
+                            ]
+                        }
+                    ]
                 }
             }
         },
