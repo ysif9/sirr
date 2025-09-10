@@ -6,6 +6,7 @@ import { FormDefinition, Field } from "@/lib/crime-forms"
 import ReportStepper from "@/components/Stepper"
 import RenderField from "./RenderField"
 import { Button } from "../ui/button"
+import { Squircle } from "@squircle-js/react"
 
 interface CrimeReportFormProps {
   formDefinition: FormDefinition
@@ -41,7 +42,11 @@ const CrimeReportForm: React.FC<CrimeReportFormProps> = ({ formDefinition }) => 
   const activeStep = formDefinition.steps[currentStep - 1]
 
   return (
-    <div className="max-w-3xl mx-auto p-8 bg-card border border-border rounded-2xl shadow-2xl">
+    <Squircle
+      className="max-w-3xl mx-auto p-8 bg-card border border-border shadow-2xl"
+      cornerRadius={30}
+      cornerSmoothing={1}
+    >
       <div className="mb-10">
         <ReportStepper steps={formDefinition.steps} currentStep={currentStep} />
       </div>
@@ -63,7 +68,7 @@ const CrimeReportForm: React.FC<CrimeReportFormProps> = ({ formDefinition }) => 
           {currentStep === formDefinition.steps.length ? "Submit Report" : "Next Step"}
         </Button>
       </div>
-    </div>
+    </Squircle>
   )
 }
 
