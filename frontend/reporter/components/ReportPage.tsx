@@ -2,329 +2,128 @@
 
 import type React from "react"
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { useLanguage } from "../contexts/LanguageContext"
 import { CategoryCard } from "./CategoryCard"
 import { ArrowLeftIcon } from "./icons/ArrowLeftIcon"
 import { Squircle } from "@squircle-js/react"
+import { getReportTypes, getCategoriesForReportType, getFormsForCategory, FormDefinition } from "@/lib/crime-forms"
 
-interface Category {
-  title: string
-  subtitle: string
-  subcategories?: Category[]
-  examples?: string[]
-}
+const reportTypes = getReportTypes()
 
-interface ReportPageProps {
-  onNavigate: (page: string) => void
-}
-
-const crimeCategories: Category[] = [
-  {
-    title: "Violence & Threats Against a Person",
-    subtitle: "For acts involving physical harm, the threat of harm, or offenses against a person's liberty.",
-    subcategories: [
-      {
-        title: "Assault / Attack",
-        subtitle: "Someone was physically attacked or injured.",
-      },
-      {
-        title: "Robbery / Mugging",
-        subtitle: "Property was taken from a person by force or threat.",
-      },
-      {
-        title: "Threats, Harassment, or Stalking",
-        subtitle: "Being threatened with harm or persistently harassed.",
-      },
-      {
-        title: "Extortion or Blackmail",
-        subtitle: "Demanding money, services, or property through coercion or threats to reveal compromising information.",
-      },
-      {
-        title: "Sexual Offense",
-        subtitle: "Any unwanted act of a sexual nature.",
-        examples: ["Rape, sexual assault, unwanted groping."],
-      },
-      {
-        title: "Kidnapping or Abduction",
-        subtitle: "Someone was taken or is being held against their will.",
-      },
-      {
-        title: "Domestic & Family Violence",
-        subtitle: "An act of violence or abuse between family members, household members, or intimate partners.",
-        examples: ["Physical assault by a spouse, threats from a family member."],
-        subcategories: [
-          {
-            title: "Child Abuse or Neglect",
-            subtitle: "Specific reporting for harm or neglect of a minor, including witnessing violence in the home.",
-          },
-          {
-            title: "Elder Abuse",
-            subtitle: "Harm, neglect, or financial exploitation of an elderly person.",
-          },
-        ],
-      },
-      {
-        title: "Human Trafficking",
-        subtitle: "Forcing, tricking, or coercing a person into labor, services, or commercial sex.",
-      },
-      {
-        title: "Hate Crime or Bias-Motivated Incident",
-        subtitle: "A crime motivated by prejudice against a protected characteristic.",
-      },
-    ],
-  },
-  {
-    title: "Theft, Burglary & Property Damage",
-    subtitle: "For acts involving stolen property or damage to property where no direct force against a person was used.",
-    subcategories: [
-      {
-        title: "Burglary / Break-in",
-        subtitle: "Someone unlawfully entered a building to commit a crime.",
-      },
-      {
-        title: "Theft of Personal Property",
-        subtitle: "Property was stolen without force or a break-in.",
-        examples: ["Package theft, shoplifting, pickpocketing, theft of a bicycle."],
-      },
-      {
-        title: "Mail Theft",
-        subtitle: "Theft of letters, packages, or other items from a mailbox or porch.",
-      },
-      {
-        title: "Vandalism / Property Damage",
-        subtitle: "Willful damage or destruction of property.",
-      },
-      {
-        title: "Arson",
-        subtitle: "Deliberately setting a fire.",
-      },
-      {
-        title: "Criminal Trespassing",
-        subtitle: "Unlawfully entering or remaining on someone else's property without permission.",
-      },
-    ],
-  },
-  {
-    title: "Vehicle-Related Crime",
-    subtitle: "For crimes specifically involving motor vehicles.",
-    subcategories: [
-        {
-            title: "Motor Vehicle Theft",
-            subtitle: "A car, motorcycle, or other vehicle was stolen.",
-        },
-        {
-            title: "Theft from a Vehicle",
-            subtitle: "Items were stolen from inside or taken off a vehicle.",
-        },
-        {
-            title: "Hit & Run Collision",
-            subtitle: "A driver involved in a collision left the scene without providing information.",
-        },
-        {
-            title: "Vehicle Vandalism",
-            subtitle: "Willful damage to a vehicle.",
-        },
-    ]
-  },
-  {
-    title: "Fraud, Scams & Financial Crime",
-    subtitle: "For acts involving deception for financial gain or to compromise personal information.",
-    subcategories: [
-        {
-            title: "Fraud / Scam",
-            subtitle: "Deceived for money or personal information.",
-            examples: ["Online scams, phishing emails, credit card fraud, insurance fraud."],
-        },
-        {
-            title: "Identity Theft",
-            subtitle: "Someone used your personal information without permission.",
-        },
-        {
-            title: "Counterfeiting or Forgery",
-            subtitle: "Use of fake money, documents, or goods.",
-        },
-    ]
-  },
-  {
-    title: "Cybercrime",
-    subtitle: "For criminal activity that involves a computer, computer network, or a networked device.",
-    subcategories: [
-        {
-            title: "Hacking",
-            subtitle: "Unauthorized access to a computer, network, or online account.",
-        },
-        {
-            title: "Online Harassment, Threats, or Cyberstalking",
-            subtitle: "The use of the internet to threaten, harass, or make unwanted advances.",
-        },
-        {
-            title: "Phishing / Spoofing",
-            subtitle: "Deceptive emails, texts (smishing), or websites to steal personal information.",
-        },
-        {
-            title: "Ransomware Attack",
-            subtitle: "Malicious software blocking access to a computer until a sum of money is paid.",
-        },
-        {
-            title: "Distribution of Illegal Online Content",
-            subtitle: "Reporting websites or users sharing illegal material, such as child exploitation or terrorist content.",
-        },
-        {
-            title: "Online Impersonation",
-            subtitle: "Someone creating a fake online profile or account to deceive others.",
-        },
-    ]
-  },
-  {
-    title: "Drugs, Weapons & Public Order",
-    subtitle: "For offenses related to controlled substances, illegal weapons, and public decency.",
-  },
-  {
-    title: "Environmental Crimes",
-    subtitle: "For offenses that harm the natural environment.",
-  },
-]
-
-const concernCategories: Category[] = [
-  {
-    title: "Suspicious Activity",
-    subtitle: "For behavior that is not clearly a crime but feels wrong or may be a precursor to a crime.",
-    subcategories: [
-      {
-        title: "Prowling / Casing",
-        subtitle: "Someone is lurking around property or observing a location suspiciously.",
-      },
-      {
-        title: "Suspicious Vehicle",
-        subtitle: "A vehicle is parked for an unusually long time, is in a strange location, or is being used in a suspicious manner.",
-      },
-      {
-        title: "Suspicious Package or Item",
-        subtitle: "An unattended bag, package, or object in a public place that seems out of place.",
-      },
-      {
-        title: "Unknown Visitor / Possible Impersonation",
-        subtitle: "An unrecognized person is on your property, or someone is pretending to be an official or utility worker.",
-      },
-    ],
-  },
-  {
-    title: "Traffic & Road Safety",
-    subtitle: "For issues related to driving and public roads that do not involve a crime against a person.",
-    subcategories: [
-        {
-            title: "Dangerous / Reckless Driving",
-            subtitle: "Someone is operating a vehicle in a way that endangers others.",
-        },
-        {
-            title: "Driving Under the Influence (DUI)",
-            subtitle: "Reporting a driver you believe to be intoxicated.",
-        },
-        {
-            title: "Traffic Collision (Non-Injury)",
-            subtitle: "A minor collision where no one was injured, for documentation purposes. (Include a clear directive to call emergency services if injuries are present).",
-        },
-        {
-            title: "Road Hazard",
-            subtitle: "A physical object or condition that makes a road unsafe.",
-        },
-        {
-            title: "Illegal Parking",
-            subtitle: "A vehicle is parked in a way that creates a hazard or violates the law.",
-        },
-        {
-            title: "Abandoned Vehicle",
-            subtitle: "A vehicle that has been left unattended for an extended period.",
-        },
-    ]
-  },
-  {
-    title: "Public Safety & Community Concerns",
-    subtitle:
-      "For general hazards or non-criminal issues affecting the community. These are often referred to as quality of life or neighborhood disorder issues.",
-    subcategories: [
-        {
-            title: "Public Hazard",
-            subtitle: "A non-traffic danger to the public.",
-        },
-        {
-            title: "Noise Complaint",
-            subtitle: "Excessive and ongoing noise violating local ordinances.",
-        },
-        {
-            title: "Missing Person",
-            subtitle: "To report that a person's whereabouts are unknown.",
-        },
-        {
-            title: "Animal-Related Concern",
-            subtitle: "Concerns related to animals.",
-            subcategories: [
-                {
-                    title: "Lost or Found Pet",
-                    subtitle: "A community alert for missing animals.",
-                },
-                {
-                    title: "Animal Neglect or Cruelty",
-                    subtitle: "Concern for an animal's welfare or intentional harm.",
-                },
-                {
-                    title: "Dangerous / Aggressive Animal",
-                    subtitle: "An animal behaving in a threatening manner.",
-                },
-            ]
-        },
-        {
-            title: "Code Violation",
-            subtitle: "A breach of local ordinances that is not an immediate public hazard.",
-        },
-        {
-            title: "Welfare Check",
-            subtitle: "A request for authorities to check on the well-being of an individual who may be in distress due to mental health issues, lack of communication, or other concerns.",
-        },
-    ]
-  },
-]
-
-const ReportPage: React.FC<ReportPageProps> = ({ onNavigate }) => {
+const ReportPage: React.FC<{ onNavigate: (page: string) => void }> = ({ onNavigate }) => {
   const { t } = useLanguage()
-  const [view, setView] = useState("main")
-  const [displayedCategories, setDisplayedCategories] = useState<Category[]>([])
-  const [categoryStack, setCategoryStack] = useState<Category[][]>([])
+  const router = useRouter()
 
-  const handleCategoryClick = (category: Category) => {
-    if (category.subcategories && category.subcategories.length > 0) {
-      setCategoryStack([...categoryStack, displayedCategories])
-      setDisplayedCategories(category.subcategories)
-    } else {
-      // This is a leaf category. For now, we'll just log it.
-      // TODO: Implement navigation to the report details page.
-      console.log("Selected leaf category:", category.title)
-    }
-  }
+  const [view, setView] = useState<"main" | "categories" | "forms">("main")
+  const [selectedReportType, setSelectedReportType] = useState<string | null>(null)
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
 
   const handleBack = () => {
-    if (categoryStack.length > 0) {
-      const previousCategories = categoryStack[categoryStack.length - 1]
-      setCategoryStack(categoryStack.slice(0, -1))
-      setDisplayedCategories(previousCategories)
-    } else if (view === "crime" || view === "concern") {
+    if (view === "forms") {
+      setView("categories")
+      setSelectedCategory(null)
+    } else if (view === "categories") {
       setView("main")
-      setDisplayedCategories([])
+      setSelectedReportType(null)
     } else {
       onNavigate("landing")
     }
   }
 
-  const selectReportType = (type: "crime" | "concern") => {
-    setView(type)
-    setDisplayedCategories(type === "crime" ? crimeCategories : concernCategories)
+  const selectReportType = (typeKey: string) => {
+    setSelectedReportType(typeKey)
+    setView("categories")
+  }
+
+  const selectCategory = (categoryKey: string) => {
+    setSelectedCategory(categoryKey)
+    setView("forms")
+  }
+
+  const selectForm = (formKey: string) => {
+    if (selectedReportType && selectedCategory) {
+      router.push(`/report/${selectedReportType}/${selectedCategory}/${formKey}`)
+    }
+  }
+
+  const renderContent = () => {
+    if (view === "forms" && selectedReportType && selectedCategory) {
+      const forms = getFormsForCategory(selectedReportType, selectedCategory)
+      if (!forms) return <p>No forms found for this category.</p>
+      return (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {Object.entries(forms).map(([key, form]) => {
+            const formDef = form as FormDefinition
+            return (
+              <CategoryCard
+                key={key}
+                title={formDef.title}
+                subtitle={`Report an incident of ${formDef.title.toLowerCase()}.`}
+                onClick={() => selectForm(key)}
+                size="small"
+              />
+            )
+          })}
+        </div>
+      )
+    }
+
+    if (view === "categories" && selectedReportType) {
+      const categories = getCategoriesForReportType(selectedReportType)
+      if (!categories) return <p>No categories found.</p>
+      return (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {Object.entries(categories).map(([key, category]) => (
+            <CategoryCard
+              key={key}
+              title={category.title}
+              subtitle={category.subtitle}
+              onClick={() => selectCategory(key)}
+            />
+          ))}
+        </div>
+      )
+    }
+
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+        {Object.entries(reportTypes).map(([key, type]) => (
+          <CategoryCard key={key} title={type.title} subtitle={type.subtitle} onClick={() => selectReportType(key)} />
+        ))}
+      </div>
+    )
+  }
+
+  const getPageTitle = () => {
+    if (view === "forms" && selectedReportType && selectedCategory) {
+      const categories = getCategoriesForReportType(selectedReportType)
+      if (categories) {
+        const category = categories[selectedCategory as keyof typeof categories] as { title?: string }
+        return category?.title || "Select Form"
+      }
+    }
+    if (view === "categories" && selectedReportType) {
+      const reportType = reportTypes[selectedReportType as keyof typeof reportTypes]
+      return reportType?.title || "Select Category"
+    }
+    return t("reportPageTitle")
+  }
+
+  const getPageSubtitle = () => {
+    if (view === "forms") {
+      return "Please select the specific type of incident you wish to report."
+    }
+    if (view === "categories") {
+      return "Choose the category that best describes your report."
+    }
+    return t("reportPageSubtitle")
   }
 
   return (
     <div className="min-h-screen flex flex-col animate-fadeIn">
       <header className="pt-24 pb-4 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto flex items-center">
-          {/* FIX: The 'as' prop is deprecated. Replaced Squircle with a button wrapping a Squircle for semantic correctness and to resolve type errors. */}
           <button onClick={handleBack} className="group mr-2 focus:outline-none" aria-label={t("backButton")}>
             <Squircle
               cornerRadius={10}
@@ -341,37 +140,10 @@ const ReportPage: React.FC<ReportPageProps> = ({ onNavigate }) => {
       <main className="flex-grow">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="text-center mb-12">
-            <h1 className="text-4xl md:text-5xl font-extrabold text-white tracking-tighter">{t("reportPageTitle")}</h1>
-            <p className="mt-4 text-lg md:text-xl text-gray-300 max-w-3xl mx-auto">{t("reportPageSubtitle")}</p>
+            <h1 className="text-4xl md:text-5xl font-extrabold text-white tracking-tighter">{getPageTitle()}</h1>
+            <p className="mt-4 text-lg md:text-xl text-gray-300 max-w-3xl mx-auto">{getPageSubtitle()}</p>
           </div>
-
-          {view === "main" && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-              <CategoryCard
-                title="Report a Crime"
-                subtitle="For incidents where you believe a law has been broken."
-                onClick={() => selectReportType("crime")}
-              />
-              <CategoryCard
-                title="Report a Concern or Non-Criminal Incident"
-                subtitle="For public safety issues, suspicious activity, or community alerts."
-                onClick={() => selectReportType("concern")}
-              />
-            </div>
-          )}
-
-          {(view === "crime" || view === "concern") && displayedCategories.length > 0 && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
-              {displayedCategories.map(category => (
-                <CategoryCard
-                  key={category.title}
-                  title={category.title}
-                  subtitle={category.subtitle}
-                  onClick={() => handleCategoryClick(category)}
-                />
-              ))}
-            </div>
-          )}
+          <div className="max-w-6xl mx-auto">{renderContent()}</div>
         </div>
       </main>
 

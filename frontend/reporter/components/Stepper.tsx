@@ -1,51 +1,36 @@
 "use client"
 
-import { useState } from "react"
+import React from "react"
+import { Stepper, Step, StepIndicator, StepTitle, StepperSeparator } from "@/components/ui/stepper"
 
-import { Button } from "@/components/ui/button"
-import {
-  Stepper,
-  StepperIndicator,
-  StepperItem,
-  StepperSeparator,
-  StepperTrigger,
-} from "@/components/ui/stepper"
+interface ReportStepperProps {
+  steps: { title: string }[]
+  currentStep: number
+}
 
-const steps = [1, 2, 3, 4]
-
-export default function Component() {
-  const [currentStep, setCurrentStep] = useState(2)
-
+const ReportStepper: React.FC<ReportStepperProps> = ({ steps, currentStep }) => {
   return (
-    <div className="mx-auto max-w-xl space-y-8 text-center">
-      <Stepper value={currentStep} onValueChange={setCurrentStep}>
-        {steps.map((step) => (
-          <StepperItem key={step} step={step} className="not-last:flex-1">
-            <StepperTrigger asChild>
-              <StepperIndicator />
-            </StepperTrigger>
-            {step < steps.length && <StepperSeparator />}
-          </StepperItem>
-        ))}
-      </Stepper>
-      <div className="flex justify-center space-x-4">
-        <Button
-          variant="outline"
-          className="w-32"
-          onClick={() => setCurrentStep((prev) => prev - 1)}
-          disabled={currentStep === 1}
-        >
-          Prev step
-        </Button>
-        <Button
-          variant="outline"
-          className="w-32"
-          onClick={() => setCurrentStep((prev) => prev + 1)}
-          disabled={currentStep > steps.length}
-        >
-          Next step
-        </Button>
-      </div>
-    </div>
+    <Stepper>
+      {steps.map((step, index) => {
+        const stepNumber = index + 1
+        const state = currentStep === stepNumber ? "active" : currentStep > stepNumber ? "completed" : "inactive"
+
+        return (
+          <React.Fragment key={step.title}>
+            <Step state={state} className={index === 0 ? "flex-initial" : "flex-1"}>
+              <div className="flex flex-col items-center gap-2">
+                <StepIndicator state={state}>{stepNumber}</StepIndicator>
+                <StepTitle state={state}>{step.title}</StepTitle>
+              </div>
+            </Step>
+            {index < steps.length - 1 && (
+              <StepperSeparator state={currentStep > stepNumber ? "active" : "inactive"} className="mx-4" />
+            )}
+          </React.Fragment>
+        )
+      })}
+    </Stepper>
   )
 }
+
+export default ReportStepper
