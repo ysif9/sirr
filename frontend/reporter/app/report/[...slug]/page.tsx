@@ -1,4 +1,4 @@
-// PASTE THIS CODE INTO: app/report/[...slug]/page.tsx
+// FILE: app/report/[...slug]/page.tsx
 
 "use client"
 
@@ -17,19 +17,15 @@ export default function ReportFormPage() {
   const [formDef, setFormDef] = useState<FormDefinition | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
-  // The 'slug' param will be an array of the URL parts, e.g.,
-  // ['report_a_crime', 'violence_threats_against_person', 'assault_attack']
   const slug = (params.slug as string[]) || []
   const [reportType, category, subcrime] = slug
 
   useEffect(() => {
-    // We now correctly check for all three required parts from the URL
     if (reportType && category && subcrime) {
       const definition = getFormDefinition(reportType, category, subcrime)
       setFormDef(definition || null)
       setIsLoading(false)
     } else {
-      // If the URL is incomplete, we stop loading and will show the "not found" message
       setIsLoading(false)
     }
   }, [reportType, category, subcrime])
@@ -43,11 +39,11 @@ export default function ReportFormPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col animate-fadeIn">
+    // FIX: Added the gradient background classes to this div to match the app's theme
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex flex-col animate-fadeIn">
       <header className="pt-24 pb-4 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto flex items-center">
           <button
-            // FIX: Use router.back() to correctly return to the previous page (the selection screen)
             onClick={() => router.back()}
             className="group mr-2 focus:outline-none"
             aria-label={t("backButton")}

@@ -1,7 +1,13 @@
 "use client"
 
 import React from "react"
-import { Stepper, Step, StepIndicator, StepTitle, StepperSeparator } from "@/components/ui/stepper"
+import {
+  Stepper,
+  StepperIndicator,
+  StepperItem,
+  StepperSeparator,
+  StepperTrigger,
+} from "@/components/ui/stepper"
 
 interface ReportStepperProps {
   steps: { title: string }[]
@@ -10,23 +16,16 @@ interface ReportStepperProps {
 
 const ReportStepper: React.FC<ReportStepperProps> = ({ steps, currentStep }) => {
   return (
-    <Stepper>
+    <Stepper value={currentStep} className="w-full">
       {steps.map((step, index) => {
         const stepNumber = index + 1
-        const state = currentStep === stepNumber ? "active" : currentStep > stepNumber ? "completed" : "inactive"
-
         return (
-          <React.Fragment key={step.title}>
-            <Step state={state} className={index === 0 ? "flex-initial" : "flex-1"}>
-              <div className="flex flex-col items-center gap-2">
-                <StepIndicator state={state}>{stepNumber}</StepIndicator>
-                <StepTitle state={state}>{step.title}</StepTitle>
-              </div>
-            </Step>
-            {index < steps.length - 1 && (
-              <StepperSeparator state={currentStep > stepNumber ? "active" : "inactive"} className="mx-4" />
-            )}
-          </React.Fragment>
+          <StepperItem key={step.title} step={stepNumber} className="not-last:flex-1">
+            <StepperTrigger asChild>
+              <StepperIndicator />
+            </StepperTrigger>
+            {index < steps.length - 1 && <StepperSeparator />}
+          </StepperItem>
         )
       })}
     </Stepper>
