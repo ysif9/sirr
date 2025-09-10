@@ -34,7 +34,7 @@ ENV PYTHONUNBUFFERED=1 \
 RUN apt-get update && apt-get install -y netcat-openbsd && rm -rf /var/lib/apt/lists/*
 
 # Install uv in the runtime stage
-COPY --from=ghcr.io/astral-sh/uv:0.5.11 /uv /uvx /bin/
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
 # Copy virtual environment from builder stage
 COPY --from=builder ${VIRTUAL_ENV} ${VIRTUAL_ENV}

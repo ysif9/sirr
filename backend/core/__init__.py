@@ -4,7 +4,7 @@
 # is not installed in certain environments (e.g., CI or local tooling).
 try:
     from .celery import app as celery_app
-except Exception:  # pragma: no cover - safe fallback
+except (ImportError, ModuleNotFoundError):
     celery_app = None
 
 __all__ = ("celery_app",)
