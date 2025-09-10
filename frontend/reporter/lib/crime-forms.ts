@@ -137,6 +137,153 @@ const crimeData = {
                 }
               ]
             },
+            extortion_blackmail: {
+                title: "Report Extortion or Blackmail",
+                steps: [
+                    {
+                        step: 1,
+                        title: "Incident Details",
+                        fields: [
+                            { id: "incident_start_date", label: "When did this begin?", type: "date", validation: { required: true } },
+                            { id: "what_is_demanded", label: "What is being demanded?", type: "textarea", placeholder: "e.g., money, property, services.", validation: { required: true } },
+                            { id: "what_is_threatened", label: "What is being used as leverage?", type: "textarea", placeholder: "e.g., threat to release private photos, reveal a secret, cause harm.", validation: { required: true } },
+                            { id: "demand_description", label: "Describe the full situation.", type: "textarea", placeholder: "Explain the demands and threats in detail.", validation: { required: true } }
+                        ]
+                    },
+                    {
+                        step: 2,
+                        title: "Suspect Information",
+                        fields: [
+                            { id: "suspect_known", label: "Do you know the suspect?", type: "radio_group", options: ["Yes", "No"] },
+                            { id: "suspect_info", label: "Suspect Information", type: "textarea", placeholder: "Provide their name, username, phone number, email, or any other identifying information." }
+                        ]
+                    },
+                    {
+                        step: 3,
+                        title: "Evidence",
+                        fields: [
+                            { id: "evidence_upload", label: "Upload Evidence", type: "file_upload", helperText: "Upload screenshots of messages, emails, or any other proof of the demands." }
+                        ]
+                    }
+                ]
+            },
+            sexual_offense: {
+                title: "Report a Sexual Offense",
+                steps: [
+                    {
+                        step: 1,
+                        title: "Important Resources",
+                        fields: [
+                             { id: "disclaimer", label: "Disclaimer", type: "static_text", text: "If you are in immediate danger, please call 911. Reporting can be a difficult process. We encourage you to seek support from a local sexual assault resource center." }
+                        ]
+                    },
+                    {
+                        step: 2,
+                        title: "Incident Details",
+                        fields: [
+                            { id: "location", label: "Where did this happen?", type: "location", validation: { required: true } },
+                            { id: "incident_datetime", label: "When did this happen?", type: "datetime", validation: { required: true } },
+                            { id: "incident_description", label: "Please describe what happened.", type: "textarea", helperText: "Share as much or as little detail as you are comfortable with at this time.", validation: { required: true } }
+                        ]
+                    },
+                    {
+                        step: 3,
+                        title: "Suspect Information",
+                        fields: [
+                             { id: "suspect_description", label: "Can you provide a description of the person(s) involved?", type: "textarea", placeholder: "Include any details you remember, like gender, age, height, clothing, or other features." }
+                        ]
+                    }
+                ]
+            },
+            kidnapping_abduction: {
+                title: "Report a Kidnapping or Abduction",
+                steps: [
+                    {
+                        step: 1,
+                        title: "Urgent Action",
+                        fields: [
+                            { id: "disclaimer", label: "Disclaimer", type: "static_text", text: "If this is happening now or the victim is in immediate danger, CALL 911 immediately. This form is for reporting an incident that has already occurred or where the immediate danger has passed." }
+                        ]
+                    },
+                    {
+                        step: 2,
+                        title: "Victim's Details",
+                        fields: [
+                            { id: "victim_name", label: "Full Name of the Victim", type: "text", validation: { required: true } },
+                            { id: "victim_age", label: "Victim's Age", type: "number", validation: { required: true } },
+                            { id: "victim_description", label: "Physical Description of Victim", type: "textarea", placeholder: "Height, weight, hair color, clothing last seen wearing, and any distinguishing features.", validation: { required: true } },
+                             { id: "victim_photo", label: "Upload a recent photo of the victim", type: "file_upload" }
+                        ]
+                    },
+                    {
+                        step: 3,
+                        title: "Incident Information",
+                        fields: [
+                            { id: "last_seen_datetime", label: "Date and Time Last Seen", type: "datetime", validation: { required: true } },
+                            { id: "last_seen_location", label: "Location Last Seen", type: "location", validation: { required: true } },
+                            { id: "incident_description", label: "Describe the circumstances of the disappearance.", type: "textarea", placeholder: "What led you to believe they were taken against their will?", validation: { required: true } },
+                            { id: "suspect_description", label: "Suspect Description", type: "textarea", placeholder: "Describe any person(s) or vehicle(s) involved." }
+                        ]
+                    }
+                ]
+            },
+            domestic_family_violence: {
+                title: "Report Domestic & Family Violence",
+                steps: [
+                    {
+                        step: 1,
+                        title: "Safety Warning",
+                        fields: [
+                            { id: "disclaimer", label: "Disclaimer", type: "static_text", text: "If you or someone else is in immediate danger, please call 911. Consider your safety when filling out this form. It may be helpful to use a safe computer and to clear your browser history afterward." }
+                        ]
+                    },
+                    {
+                        step: 2,
+                        title: "Incident Details",
+                        fields: [
+                            { id: "relationship", label: "What is the relationship between the victim and the abuser?", type: "text", placeholder: "e.g., spouse, parent, child, partner.", validation: { required: true } },
+                            { id: "violence_type", label: "What type of abuse occurred? (Select all that apply)", type: "checkbox", options: ["Physical Violence", "Verbal Threats", "Property Damage", "Financial Control", "Other"] },
+                            { id: "incident_datetime", label: "Date & Time of Most Recent Incident", type: "datetime", validation: { required: true } },
+                            { id: "incident_location", label: "Location of Incident", type: "location", validation: { required: true } },
+                            { id: "incident_description", label: "Describe the most recent incident.", type: "textarea", validation: { required: true } }
+                        ]
+                    },
+                    {
+                        step: 3,
+                        title: "Parties Involved",
+                        fields: [
+                            { id: "victim_name", label: "Victim's Name", type: "text" },
+                            { id: "abuser_name", label: "Abuser's Name", type: "text" },
+                            { id: "children_present", label: "Were children present or involved?", type: "radio_group", options: ["Yes", "No"] },
+                            { id: "elderly_present", label: "Was an elderly person involved?", type: "radio_group", options: ["Yes", "No"] }
+                        ]
+                    }
+                ]
+            },
+            human_trafficking: {
+                title: "Report Suspected Human Trafficking",
+                 steps: [
+                    {
+                        step: 1,
+                        title: "Observation Details",
+                        fields: [
+                            { id: "location", label: "Where did you observe this activity?", type: "location", validation: { required: true } },
+                            { id: "observation_datetime", label: "When did you observe this?", type: "datetime" },
+                            { id: "trafficking_type", label: "What type of trafficking do you suspect?", type: "select", options: ["Labor Trafficking", "Sex Trafficking", "Unsure"] },
+                            { id: "reason_for_suspicion", label: "Why do you suspect human trafficking? (Indicators)", type: "textarea", placeholder: "e.g., person seemed controlled, wasn't free to leave, showed signs of abuse, lived in poor conditions, story was inconsistent.", validation: { required: true } }
+                        ]
+                    },
+                    {
+                        step: 2,
+                        title: "People & Vehicles Involved",
+                        fields: [
+                             { id: "victim_description", label: "Description of the potential victim(s).", type: "textarea" },
+                             { id: "suspect_description", label: "Description of the potential trafficker(s).", type: "textarea" },
+                             { id: "vehicle_description", label: "Description of any involved vehicles.", type: "textarea", placeholder: "Make, model, license plate." }
+                        ]
+                    }
+                ]
+            },
             hate_crime: {
               title: "Report a Hate Crime or Bias Incident",
               steps: [
@@ -252,6 +399,28 @@ const crimeData = {
                 }
               ]
             },
+            mail_theft: {
+              title: "Report Mail Theft",
+              steps: [
+                  {
+                    step: 1,
+                    title: "Incident Details",
+                    fields: [
+                      { id: "location", label: "Address where the theft occurred.", type: "location", validation: { required: true } },
+                      { id: "theft_datetime", label: "When did you notice the mail was stolen?", type: "datetime", validation: { required: true } },
+                      { id: "mailbox_type", label: "Type of mailbox", type: "select", options: ["Residential Mailbox", "Apartment Mail Panel", "Porch/Doorstep", "Other"] }
+                    ]
+                  },
+                  {
+                      step: 2,
+                      title: "Stolen Items & Evidence",
+                      fields: [
+                           { id: "stolen_mail_description", label: "What mail/packages do you know are missing?", type: "textarea", placeholder: "e.g., bank statements, packages with tracking numbers, birthday cards.", validation: { required: true } },
+                           { id: "evidence_upload", label: "Upload Evidence", type: "file_upload", helperText: "e.g., video footage from a security camera." }
+                      ]
+                  }
+              ]
+            },
             vandalism_property_damage: {
               title: "Report Vandalism / Property Damage",
               steps: [
@@ -273,6 +442,53 @@ const crimeData = {
                     { id: "evidence_upload", label: "Upload Photos of the Damage", type: "file_upload", validation: { required: true }, helperText: "Please provide clear photos of the damage." }
                   ]
                 }
+              ]
+            },
+            arson: {
+              title: "Report Arson (Deliberate Fire)",
+              steps: [
+                  {
+                      step: 1,
+                      title: "Incident Details",
+                      fields: [
+                          { id: "disclaimer", label: "Disclaimer", type: "static_text", text: "If there is an active fire, CALL 911 immediately. Only use this form for fires that are no longer active." },
+                          { id: "location", label: "Location of the fire", type: "location", validation: { required: true } },
+                          { id: "fire_datetime", label: "When did the fire start?", type: "datetime", validation: { required: true } },
+                          { id: "damage_description", label: "Describe the damage caused by the fire.", type: "textarea" },
+                          { id: "reason_for_suspicion", label: "Why do you suspect this was arson?", type: "textarea", placeholder: "e.g., saw someone start the fire, smell of accelerants, no accidental cause.", validation: { required: true } }
+                      ]
+                  },
+                  {
+                      step: 2,
+                      title: "Suspect & Witnesses",
+                      fields: [
+                          { id: "suspect_info", label: "Suspect Information", type: "textarea", placeholder: "Provide any descriptions of people or vehicles you saw." },
+                          { id: "witness_present", label: "Were there any witnesses?", type: "radio_group", options: ["Yes", "No"] }
+                      ]
+                  }
+              ]
+            },
+            criminal_trespassing: {
+              title: "Report Criminal Trespassing",
+              steps: [
+                  {
+                      step: 1,
+                      title: "Incident Details",
+                       fields: [
+                          { id: "location", label: "Location of the trespassing", type: "location", validation: { required: true } },
+                          { id: "trespass_datetime", label: "When did this occur?", type: "datetime", validation: { required: true } },
+                          { id: "incident_description", label: "Describe the incident.", type: "textarea", placeholder: "e.g., person was found in a locked yard, entered a building with 'No Trespassing' signs.", validation: { required: true } }
+                      ]
+                  },
+                  {
+                      step: 2,
+                      title: "Suspect Information",
+                      fields: [
+                          { id: "suspect_description", label: "Describe the person(s) who trespassed.", type: "textarea", validation: { required: true } },
+                          { id: "action_taken", label: "Was the person asked to leave?", type: "radio_group", options: ["Yes", "No"] },
+                          { id: "damage_caused", label: "Did they cause any damage?", type: "radio_group", options: ["Yes", "No"] }
+                      ]
+                  }
               ]
             }
           }
@@ -366,11 +582,34 @@ const crimeData = {
                   step: 3,
                   title: "Evidence & Witnesses",
                   fields: [
-                    { id: "injuries", label: "Were there any injuries?", type: "radio_group", options: ["Yes", "No"] },
+                    { id: "injuries", label: "Were there any injuries?", type: "radio_group", options: ["Yes", "No"], helperText: "If there were injuries, please call 911." },
                     { id: "witness_present", label: "Were there any witnesses?", type: "radio_group", options: ["Yes", "No", "Unsure"] },
                     { id: "evidence_upload", label: "Upload photos of the scene or damage.", type: "file_upload" }
                   ]
                 }
+              ]
+            },
+            vehicle_vandalism: {
+              title: "Report Vehicle Vandalism",
+              steps: [
+                  {
+                      step: 1,
+                      title: "Incident Details",
+                      fields: [
+                          { id: "location", label: "Where was the vehicle parked?", type: "location", validation: { required: true } },
+                          { id: "incident_datetime", label: "When did this happen?", type: "datetime", validation: { required: true } },
+                          { id: "damage_description", label: "Describe the damage to the vehicle.", type: "textarea", placeholder: "e.g., tires slashed, windows broken, key scratches.", validation: { required: true } }
+                      ]
+                  },
+                  {
+                      step: 2,
+                      title: "Vehicle & Suspect",
+                      fields: [
+                          { id: "vehicle_description", label: "Your Vehicle (Make, Model, Plate)", type: "text", validation: { required: true } },
+                          { id: "suspect_info", label: "Suspect information, if any", type: "textarea" },
+                          { id: "evidence_upload", label: "Upload photos of the damage", type: "file_upload", validation: { required: true } }
+                      ]
+                  }
               ]
             }
           }
@@ -431,8 +670,125 @@ const crimeData = {
                   ]
                 }
               ]
+            },
+            counterfeiting_forgery: {
+                title: "Report Counterfeiting or Forgery",
+                steps: [
+                    {
+                        step: 1,
+                        title: "Incident Details",
+                        fields: [
+                            { id: "location", label: "Where did this happen?", type: "location", validation: { required: true } },
+                            { id: "incident_datetime", label: "When did this happen?", type: "datetime", validation: { required: true } },
+                            { id: "item_type", label: "What type of item was fake or forged?", type: "select", options: ["Money (currency)", "Document (ID, check, etc.)", "Branded Goods", "Other"], validation: { required: true } }
+                        ]
+                    },
+                    {
+                        step: 2,
+                        title: "Description",
+                        fields: [
+                            { id: "incident_description", label: "Please describe the incident.", type: "textarea", placeholder: "e.g., received fake bills as change, discovered a signature was forged on a check.", validation: { required: true } },
+                            { id: "suspect_info", label: "Information about who provided the item.", type: "textarea", placeholder: "Description of the person or business." },
+                            { id: "evidence_upload", label: "Upload photos of the item, if possible.", type: "file_upload", helperText: "Do not put yourself at risk. Handle counterfeit money as little as possible." }
+                        ]
+                    }
+                ]
             }
           }
+        },
+        cybercrime: {
+            title: "Cybercrime",
+            subtitle: "Criminal activity involving a computer or network.",
+            forms: {
+                hacking: {
+                    title: "Report Hacking",
+                    steps: [
+                        {
+                            step: 1,
+                            title: "Incident Details",
+                            fields: [
+                                { id: "hacked_item", label: "What was hacked?", type: "select", options: ["Email account", "Social Media Account", "Computer/Laptop", "Phone", "Website", "Other"], validation: { required: true } },
+                                { id: "incident_datetime", label: "When did you discover the hack?", type: "datetime", validation: { required: true } },
+                                { id: "incident_description", label: "Describe what happened.", type: "textarea", placeholder: "How did you know you were hacked? What is the impact?", validation: { required: true } }
+                            ]
+                        },
+                        {
+                            step: 2,
+                            title: "Evidence",
+                            fields: [
+                                { id: "suspect_info", label: "Do you have any suspect information?", type: "textarea", placeholder: "e.g., suspicious email address, username." },
+                                { id: "evidence_upload", label: "Upload evidence", type: "file_upload", helperText: "Screenshots of unauthorized activity, ransom notes, etc." }
+                            ]
+                        }
+                    ]
+                },
+                online_harassment_cyberstalking: {
+                    title: "Report Online Harassment or Cyberstalking",
+                    steps: [
+                        {
+                            step: 1,
+                            title: "Incident Details",
+                            fields: [
+                                { id: "platform", label: "Where is the harassment occurring?", type: "text", placeholder: "e.g., Facebook, Instagram, Twitter, email.", validation: { required: true } },
+                                { id: "start_date", label: "When did this start?", type: "date" },
+                                { id: "harassment_description", label: "Describe the behavior.", type: "textarea", placeholder: "Include the nature of the harassment, threats, or stalking.", validation: { required: true } }
+                            ]
+                        },
+                        {
+                            step: 2,
+                            title: "Suspect & Evidence",
+                            fields: [
+                                { id: "suspect_username", label: "Suspect's username(s) or profile link(s)", type: "text", validation: { required: true } },
+                                { id: "evidence_upload", label: "Upload evidence", type: "file_upload", helperText: "Please upload screenshots of the messages, posts, or profiles." }
+                            ]
+                        }
+                    ]
+                },
+                phishing_spoofing: {
+                    title: "Report Phishing / Spoofing",
+                    steps: [
+                        {
+                            step: 1,
+                            title: "Incident Details",
+                            fields: [
+                                { id: "communication_type", label: "How were you contacted?", type: "select", options: ["Email", "Text Message (Smishing)", "Phone Call (Vishing)", "Website"], validation: { required: true } },
+                                { id: "sender_info", label: "Sender Information", type: "text", placeholder: "Email address, phone number, or website URL", validation: { required: true } },
+                                { id: "company_impersonated", label: "What company/organization was being impersonated?", type: "text", placeholder: "e.g., Your Bank, Apple, IRS" }
+                            ]
+                        },
+                         {
+                            step: 2,
+                            title: "Description",
+                            fields: [
+                                 { id: "request_description", label: "What did the message ask you to do?", type: "textarea", placeholder: "e.g., click a link, provide a password, send money.", validation: { required: true } },
+                                 { id: "information_lost", label: "Did you provide any sensitive information?", type: "radio_group", options: ["Yes", "No"] }
+                            ]
+                        }
+                    ]
+                },
+                ransomware_attack: {
+                    title: "Report a Ransomware Attack",
+                    steps: [
+                        {
+                            step: 1,
+                            title: "Attack Details",
+                            fields: [
+                                 { id: "device_affected", label: "What device was affected?", type: "text", placeholder: "e.g., Personal Laptop, Company Server", validation: { required: true } },
+                                 { id: "attack_datetime", label: "When was the attack discovered?", type: "datetime", validation: { required: true } },
+                                 { id: "ransom_demand", label: "What was demanded?", type: "textarea", placeholder: "Describe the ransom note, amount, and payment method (e.g., Bitcoin)." },
+                                 { id: "paid_ransom", label: "Did you pay the ransom?", type: "radio_group", options: ["Yes", "No"] }
+                            ]
+                        },
+                         {
+                            step: 2,
+                            title: "Evidence",
+                            fields: [
+                                { id: "evidence_upload", label: "Upload evidence", type: "file_upload", helperText: "Screenshot of the ransom note." }
+                            ]
+                        }
+                    ]
+                }
+            }
         },
         drugs_weapons_public_order: {
           title: "Drugs, Weapons & Public Order",
@@ -461,6 +817,51 @@ const crimeData = {
                 }
               ]
             },
+            unlawful_weapon_possession: {
+                title: "Report Unlawful Weapon Possession",
+                steps: [
+                    {
+                        step: 1,
+                        title: "Incident Details",
+                        fields: [
+                            { id: "disclaimer", label: "Disclaimer", type: "static_text", text: "If someone is threatening with a weapon, call 911 now." },
+                            { id: "location", label: "Where did you see the weapon?", type: "location", validation: { required: true } },
+                            { id: "incident_datetime", label: "When did you see this?", type: "datetime", validation: { required: true } },
+                            { id: "weapon_type", label: "What kind of weapon was it?", type: "text", placeholder: "e.g., handgun, rifle, knife, illegal firearm.", validation: { required: true } }
+                        ]
+                    },
+                    {
+                        step: 2,
+                        title: "Person with Weapon",
+                        fields: [
+                            { id: "suspect_description", label: "Describe the person with the weapon.", type: "textarea", validation: { required: true } },
+                            { id: "weapon_context", label: "Describe the context.", type: "textarea", placeholder: "How was the person handling the weapon? Was it concealed? Were threats made?" }
+                        ]
+                    }
+                ]
+            },
+            indecent_exposure: {
+                title: "Report Indecent Exposure",
+                steps: [
+                     {
+                        step: 1,
+                        title: "Incident Details",
+                        fields: [
+                            { id: "location", label: "Where did this happen?", type: "location", validation: { required: true } },
+                            { id: "incident_datetime", label: "When did this happen?", type: "datetime", validation: { required: true } },
+                            { id: "incident_description", label: "Describe what happened.", type: "textarea", validation: { required: true } }
+                        ]
+                    },
+                     {
+                        step: 2,
+                        title: "Suspect Information",
+                        fields: [
+                            { id: "suspect_description", label: "Describe the suspect.", type: "textarea", placeholder: "Gender, age, clothing, etc.", validation: { required: true } },
+                            { id: "suspect_vehicle", label: "Was there a vehicle involved?", type: "textarea" }
+                        ]
+                    }
+                ]
+            },
             public_disturbance: {
               title: "Report a Public Disturbance",
               steps: [
@@ -484,8 +885,80 @@ const crimeData = {
                   ]
                 }
               ]
+            },
+            prostitution_solicitation: {
+                title: "Report Prostitution / Solicitation",
+                steps: [
+                     {
+                        step: 1,
+                        title: "Activity Details",
+                        fields: [
+                            { id: "location", label: "Where is this occurring?", type: "location", validation: { required: true } },
+                            { id: "activity_timing", label: "When does this typically occur?", type: "text", placeholder: "e.g., late evenings, weekends." },
+                            { id: "activity_description", label: "Describe the activity you have observed.", type: "textarea", placeholder: "e.g., seeing people soliciting cars, observing suspected transactions.", validation: { required: true } }
+                        ]
+                    },
+                    {
+                        step: 2,
+                        title: "People & Vehicles",
+                        fields: [
+                            { id: "person_description", label: "Description of people involved.", type: "textarea" },
+                            { id: "vehicle_description", label: "Description of vehicles involved.", type: "textarea" }
+                        ]
+                    }
+                ]
             }
           }
+        },
+        environmental_crimes: {
+            title: "Environmental Crimes",
+            subtitle: "Offenses that harm the natural environment.",
+            forms: {
+                illegal_dumping: {
+                    title: "Report Illegal Dumping / Pollution",
+                    steps: [
+                        {
+                            step: 1,
+                            title: "Incident Details",
+                            fields: [
+                                { id: "location", label: "Where is the dumping site?", type: "location", validation: { required: true } },
+                                { id: "material_type", label: "What materials were dumped?", type: "textarea", placeholder: "e.g., construction debris, household trash, chemical drums, tires.", validation: { required: true } },
+                                { id: "is_hazardous", label: "Does the material appear to be hazardous?", type: "radio_group", options: ["Yes", "No", "Unsure"], helperText: "If it poses an immediate health risk, call 911 or your local fire department." }
+                            ]
+                        },
+                        {
+                            step: 2,
+                            title: "Evidence",
+                            fields: [
+                                { id: "suspect_info", label: "Do you have any suspect or vehicle info?", type: "textarea", placeholder: "License plate, company name on a truck, etc." },
+                                { id: "evidence_upload", label: "Upload Photos", type: "file_upload", validation: { required: true } }
+                            ]
+                        }
+                    ]
+                },
+                wildlife_crime: {
+                    title: "Report a Wildlife Crime",
+                    steps: [
+                        {
+                            step: 1,
+                            title: "Incident Details",
+                            fields: [
+                                { id: "location", label: "Where did this happen?", type: "location", validation: { required: true } },
+                                { id: "crime_type", label: "What type of wildlife crime?", type: "select", options: ["Poaching / Illegal Hunting", "Illegal Trapping", "Harming an Endangered Species", "Illegal Trade/Sale", "Other"], validation: { required: true } },
+                                { id: "incident_description", label: "Describe what you saw or found.", type: "textarea", validation: { required: true } }
+                            ]
+                        },
+                         {
+                            step: 2,
+                            title: "Suspect & Evidence",
+                            fields: [
+                                { id: "suspect_description", label: "Describe any suspects or vehicles.", type: "textarea" },
+                                { id: "evidence_upload", label: "Upload photos, if safe to do so.", type: "file_upload" }
+                            ]
+                        }
+                    ]
+                }
+            }
         }
       }
     },
@@ -497,6 +970,28 @@ const crimeData = {
           title: "Suspicious Activity",
           subtitle: "Behavior that may be a precursor to a crime.",
           forms: {
+            prowling_casing: {
+              title: "Report Prowling / Casing",
+              steps: [
+                  {
+                    step: 1,
+                    title: "Location and Behavior",
+                    fields: [
+                        { id: "location", label: "Where is this happening?", type: "location", validation: { required: true } },
+                        { id: "activity_datetime", label: "When is this happening?", type: "datetime", validation: { required: true } },
+                        { id: "reason_for_suspicion", label: "Describe the suspicious behavior.", type: "textarea", placeholder: "e.g., someone looking into car windows, testing doors, observing a house for a long time.", validation: { required: true } }
+                    ]
+                  },
+                   {
+                      step: 2,
+                      title: "Description",
+                      fields: [
+                           { id: "suspect_description", label: "Describe the person(s).", type: "textarea", validation: { required: true } },
+                           { id: "vehicle_description", label: "Describe any associated vehicle.", type: "textarea" }
+                      ]
+                  }
+              ]
+            },
             suspicious_vehicle: {
               title: "Report a Suspicious Vehicle",
               steps: [
@@ -519,6 +1014,50 @@ const crimeData = {
                   ]
                 }
               ]
+            },
+            suspicious_package: {
+                title: "Report a Suspicious Package or Item",
+                steps: [
+                    {
+                      step: 1,
+                      title: "Critical Safety Warning",
+                      fields: [
+                          { id: "disclaimer", label: "Disclaimer", type: "static_text", text: "If you believe this item is an immediate threat (e.g., ticking, has wires, or you suspect it's a bomb), DO NOT USE THIS FORM. Move to a safe location and CALL 911 immediately." }
+                      ]
+                    },
+                    {
+                      step: 2,
+                      title: "Item and Location",
+                      fields: [
+                          { id: "location", label: "Where is the item located?", type: "location", validation: { required: true } },
+                          { id: "item_description", label: "Describe the package or item.", type: "textarea", validation: { required: true } },
+                          { id: "reason_for_suspicion", label: "Why does it seem suspicious?", type: "textarea", placeholder: "e.g., unattended in a high-traffic area, seems out of place.", validation: { required: true } }
+                      ]
+                    }
+                ]
+            },
+            unknown_visitor_impersonation: {
+                title: "Report an Unknown Visitor / Possible Impersonation",
+                steps: [
+                    {
+                      step: 1,
+                      title: "Incident Details",
+                      fields: [
+                          { id: "location", label: "Where did this happen?", type: "location", validation: { required: true } },
+                          { id: "incident_datetime", label: "When did this happen?", type: "datetime", validation: { required: true } },
+                          { id: "impersonation_type", label: "Who did they claim to be?", type: "text", placeholder: "e.g., utility worker, city official, police officer, salesperson.", validation: { required: true } }
+                      ]
+                    },
+                     {
+                        step: 2,
+                        title: "Description",
+                        fields: [
+                            { id: "reason_for_suspicion", label: "Why was their visit suspicious?", type: "textarea", placeholder: "e.g., they had no ID, the company had no record of the visit, their request was unusual.", validation: { required: true } },
+                            { id: "person_description", label: "Describe the person(s).", type: "textarea" },
+                            { id: "vehicle_description", label: "Describe their vehicle, if any.", type: "textarea" }
+                        ]
+                     }
+                ]
             }
           }
         },
@@ -551,6 +1090,83 @@ const crimeData = {
                 }
               ]
             },
+            driving_under_influence: {
+              title: "Report a Driver Under the Influence (DUI)",
+              steps: [
+                  {
+                    step: 1,
+                    title: "Urgent Warning",
+                    fields: [
+                      { id: "disclaimer", label: "Disclaimer", type: "static_text", text: "If this is happening now and the driver is a danger to others, please CALL 911 immediately. This form should be used for less urgent reporting." }
+                    ]
+                  },
+                  {
+                    step: 2,
+                    title: "Vehicle and Incident",
+                    fields: [
+                      { id: "location", label: "Where did you observe the driver?", type: "text", validation: { required: true } },
+                      { id: "incident_datetime", label: "When did this happen?", type: "datetime", validation: { required: true } },
+                      { id: "direction_of_travel", label: "What direction were they heading?", type: "text" },
+                      { id: "reason_for_suspicion", label: "What driving behavior did you observe?", type: "textarea", placeholder: "e.g., unable to stay in lane, erratic speed, smelled alcohol.", validation: { required: true } },
+                      { id: "vehicle_description", label: "Describe the vehicle.", type: "textarea", validation: { required: true }, placeholder: "Make, model, color, license plate." }
+                    ]
+                  }
+              ]
+            },
+            traffic_collision_non_injury: {
+                title: "Report a Non-Injury Traffic Collision",
+                steps: [
+                    {
+                      step: 1,
+                      title: "Incident Details",
+                      fields: [
+                          { id: "disclaimer", label: "Disclaimer", type: "static_text", text: "If there are any injuries or significant road blockage, please call 911." },
+                          { id: "location", label: "Location of the collision", type: "location", validation: { required: true } },
+                          { id: "collision_datetime", label: "When did it happen?", type: "datetime", validation: { required: true } },
+                          { id: "incident_description", label: "Describe how the collision occurred.", type: "textarea" }
+                      ]
+                    },
+                    {
+                      step: 2,
+                      title: "Parties Involved",
+                      fields: [
+                          { id: "your_vehicle", label: "Your Vehicle (Make, Model, Plate)", type: "text" },
+                          { id: "other_vehicle", label: "Other Vehicle (Make, Model, Plate)", type: "text" },
+                          { id: "evidence_upload", label: "Upload photos of the scene and damage.", type: "file_upload" }
+                      ]
+                    }
+                ]
+            },
+            road_hazard: {
+              title: "Report a Road Hazard",
+              steps: [
+                  {
+                    step: 1,
+                    title: "Hazard Details",
+                    fields: [
+                      { id: "location", label: "Where is the hazard located?", type: "location", validation: { required: true } },
+                      { id: "hazard_type", label: "What kind of hazard is it?", type: "textarea", placeholder: "e.g., large debris in road, malfunctioning traffic light, large pothole, dead animal.", validation: { required: true } },
+                      { id: "hazard_description", label: "Provide more details.", type: "textarea" },
+                      { id: "evidence_upload", label: "Upload a photo of the hazard.", type: "file_upload" }
+                    ]
+                  }
+              ]
+            },
+            illegal_parking: {
+                title: "Report Illegal Parking",
+                steps: [
+                  {
+                      step: 1,
+                      title: "Vehicle and Location",
+                      fields: [
+                        { id: "location", label: "Location of the vehicle", type: "location", validation: { required: true } },
+                        { id: "vehicle_description", label: "Vehicle Description (color, make, model)", type: "text", validation: { required: true } },
+                        { id: "license_plate", label: "License Plate Number", type: "text", validation: { required: true } },
+                        { id: "violation_type", label: "What is the parking violation?", type: "textarea", placeholder: "e.g., blocking a fire hydrant, parked in a crosswalk, blocking a driveway.", validation: { required: true } }
+                      ]
+                  }
+                ]
+            },
             abandoned_vehicle: {
               title: "Report an Abandoned Vehicle",
               steps: [
@@ -581,6 +1197,34 @@ const crimeData = {
           title: "Public Safety & Community Concerns",
           subtitle: "General hazards or non-criminal neighborhood issues.",
           forms: {
+            public_hazard: {
+              title: "Report a Public Hazard",
+              steps: [
+                  {
+                      step: 1,
+                      title: "Hazard Details",
+                      fields: [
+                        { id: "location", label: "Where is the hazard?", type: "location", validation: { required: true } },
+                        { id: "hazard_description", label: "Describe the hazard.", type: "textarea", placeholder: "e.g., downed power line, open manhole cover, unsafe building condition.", validation: { required: true } },
+                        { id: "evidence_upload", label: "Upload a photo.", type: "file_upload" }
+                      ]
+                  }
+              ]
+            },
+            noise_complaint: {
+              title: "Report a Noise Complaint",
+              steps: [
+                  {
+                    step: 1,
+                    title: "Complaint Details",
+                    fields: [
+                      { id: "location", label: "Location of the noise source", type: "location", validation: { required: true } },
+                      { id: "noise_type", label: "What type of noise is it?", type: "text", placeholder: "e.g., loud music, construction, party, barking dog.", validation: { required: true } },
+                      { id: "duration", label: "How long has it been happening?", type: "text", placeholder: "e.g., for the last 2 hours." }
+                    ]
+                  }
+              ]
+            },
             missing_person: {
               title: "Report a Missing Person",
               steps: [
@@ -635,6 +1279,20 @@ const crimeData = {
                   ]
                 }
               ]
+            },
+            code_violation: {
+                title: "Report a Code Violation",
+                steps: [
+                    {
+                      step: 1,
+                      title: "Violation Details",
+                      fields: [
+                        { id: "location", label: "Address of the violation", type: "location", validation: { required: true } },
+                        { id: "violation_type", label: "What is the code violation?", type: "textarea", placeholder: "e.g., overgrown lawn, trash and debris in yard, illegal sign, unpermitted construction.", validation: { required: true } },
+                        { id: "evidence_upload", label: "Upload photo(s)", type: "file_upload" }
+                      ]
+                    }
+                ]
             },
             welfare_check: {
               title: "Request a Welfare Check",
