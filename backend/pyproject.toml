@@ -108,4 +108,4 @@ line-ending = "auto"
 case-sensitive = true
 
 [tool.django-stubs]
-django_settings_module = "core.settings"
+django_settings_module = "src.core.settings"

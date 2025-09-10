@@ -24,10 +24,10 @@ services:
   sirr_api:
     container_name: sirr_api
     build:
-      context: ./
-      dockerfile: backend/Dockerfile
+      context: ./backend
+      dockerfile: Dockerfile
     volumes:
-      - ./:/app
+      - ./backend:/usr/src/app
     environment:
       - DJANGO_SETTINGS_MODULE=core.settings
       - POSTGRES_DB_NAME=${POSTGRES_DB_NAME:-sirr_dev}
@@ -66,8 +66,8 @@ services:
   celery_worker:
     container_name: sirr_celery
     build:
-      context: ./
-      dockerfile: backend/Dockerfile
+      context: ./backend
+      dockerfile: Dockerfile
     command: >
       sh -c "
         set -e
@@ -94,7 +94,7 @@ services:
       - POSTGRES_DB_HOST=${POSTGRES_DB_HOST:-db}
       - POSTGRES_DB_PORT=${POSTGRES_DB_PORT:-5432}
     volumes:
-      - ./:/app
+      - ./backend:/usr/src/app
     depends_on:
       - db
       - redis
