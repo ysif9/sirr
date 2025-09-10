@@ -5,8 +5,12 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "celery>=5.5.3",
     "django>=5.2.6",
+    "django-redis>=6.0.0",
     "djangorestframework>=3.16.1",
+    "psycopg[binary]>=3.2.10",
+    "redis[hiredis]>=6.4.0",
 ]
 [dependency-groups]
 dev = [
