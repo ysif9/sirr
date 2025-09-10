@@ -86,7 +86,7 @@ const RenderField: React.FC<RenderFieldProps> = ({ control, field, watch }) => {
         return <Input {...rhfProps} type="file" />
       case "static_text":
         return (
-          <p className="text-gray-300 bg-slate-700/50 p-4 rounded-md border border-white/10 leading-relaxed">
+          <p className="text-foreground bg-muted p-4 rounded-md border border-border leading-relaxed">
             {field.text}
           </p>
         )
@@ -102,10 +102,10 @@ const RenderField: React.FC<RenderFieldProps> = ({ control, field, watch }) => {
     })
 
     return (
-      <div className="space-y-4 p-4 border border-white/10 rounded-lg">
-        <Label className="text-base font-semibold">{field.label}</Label>
+      <div className="space-y-4 p-4 border border-border rounded-lg">
+        <Label className="text-base font-semibold text-card-foreground">{field.label}</Label>
         {repeaterFields.map((item, index) => (
-          <div key={item.id} className="space-y-2 p-3 border border-white/10 rounded-md relative">
+          <div key={item.id} className="space-y-2 p-3 border border-border rounded-md relative">
             {field.fields?.map((subField: Field) => (
               <RenderField
                 key={subField.id}
@@ -130,7 +130,7 @@ const RenderField: React.FC<RenderFieldProps> = ({ control, field, watch }) => {
   if (field.type === "static_text") {
     return (
       <div className="mb-6">
-        <Label className="block mb-2 text-base font-semibold text-white">{field.label}</Label>
+        <Label className="block mb-2 text-base font-semibold text-card-foreground">{field.label}</Label>
         {renderInput(null)}
       </div>
     )
@@ -144,12 +144,12 @@ const RenderField: React.FC<RenderFieldProps> = ({ control, field, watch }) => {
       defaultValue={field.defaultValue}
       render={({ field: rhfField, fieldState }) => (
         <div className="mb-6">
-          <Label htmlFor={field.id} className="block mb-2 text-base font-semibold text-white">
+          <Label htmlFor={field.id} className="block mb-2 text-base font-semibold text-card-foreground">
             {field.label}
             {field.validation?.required && <span className="text-red-500 ml-1">*</span>}
           </Label>
           {renderInput(rhfField)}
-          {field.helperText && <p className="mt-2 text-sm text-gray-400">{field.helperText}</p>}
+          {field.helperText && <p className="mt-2 text-sm text-muted-foreground">{field.helperText}</p>}
           {fieldState.error && <p className="mt-1 text-sm text-red-500">{field.label} is required.</p>}
         </div>
       )}
