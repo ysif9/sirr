@@ -1,7 +1,10 @@
+// FILE: app/page.tsx
+
 "use client"
 
 import { useState, useEffect } from "react"
-import { LanguageProvider } from "../contexts/LanguageContext"
+// 1. Remove the import for LanguageProvider
+// import { LanguageProvider } from "../contexts/LanguageContext"
 import SplashScreen from "../components/SplashScreen"
 import LandingPage from "../components/LandingPage"
 import ReportPage from "../components/ReportPage"
@@ -42,9 +45,8 @@ export default function App() {
     }
   }
 
+  // 2. Remove the <LanguageProvider> wrapper
   return (
-    <LanguageProvider>
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">{renderPage()}</div>
-    </LanguageProvider>
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">{renderPage()}</div>
   )
 }

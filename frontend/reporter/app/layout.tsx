@@ -1,9 +1,13 @@
+// FILE: app/layout.tsx
+
 import type React from "react"
 import type { Metadata } from "next"
 import { Inter, JetBrains_Mono } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import { Suspense } from "react"
 import "./globals.css"
+// 1. Import the LanguageProvider here
+import { LanguageProvider } from "@/contexts/LanguageContext"
 
 const inter = Inter({
   subsets: ["latin"],
@@ -29,8 +33,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`font-sans ${inter.variable} ${jetbrainsMono.variable}`}>
-        <Suspense fallback={null}>{children}</Suspense>
-        <Analytics />
+        {/* 2. Wrap your entire application content with the provider */}
+        <LanguageProvider>
+          <Suspense fallback={null}>{children}</Suspense>
+          <Analytics />
+        </LanguageProvider>
       </body>
     </html>
   )
