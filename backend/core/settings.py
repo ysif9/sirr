@@ -46,6 +46,7 @@ THIRD_PARTY_APPS = [
 # Local apps
 LOCAL_APPS = [
     "apps.common",
+    "apps.users",
 ]
 
 INSTALLED_APPS = THIRD_PARTY_APPS + DJANGO_DEFAULT_APPS + LOCAL_APPS
@@ -169,3 +170,6 @@ OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", default="")
 
 # Google Gemini API Configuration
 GOOGLE_API_KEY = os.environ.get("GOOGLE_API_KEY", default="")
+
+# Override base user model
+AUTH_USER_MODEL = "users.User"

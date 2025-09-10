@@ -5,19 +5,20 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
-    "celery>=5.5.3",
-    "django>=5.2.6",
-    "django-redis>=6.0.0",
-    "djangorestframework>=3.16.1",
-    "psycopg[binary]>=3.2.10",
-    "redis[hiredis]>=6.4.0",
+  "celery>=5.5.3",
+  "django>=5.2.6",
+  "django-redis>=6.0.0",
+  "djangorestframework>=3.16.1",
+  "psycopg[binary]>=3.2.10",
+  "redis[hiredis]>=6.4.0",
 ]
 [dependency-groups]
 dev = [
-    "django-stubs>=5.2.2",
-    "djangorestframework-stubs>=3.16.2",
-    "mypy>=1.17.1",
-    "ruff>=0.12.12",
+  "django-stubs>=5.2.2",
+  "djangorestframework-stubs>=3.16.2",
+  "mypy>=1.17.1",
+  "poethepoet>=0.37.0",
+  "ruff>=0.12.12",
 ]
 
 [tool.mypy]
@@ -32,8 +33,8 @@ pretty = true
 warn_no_return = true
 follow_imports_for_stubs = true
 plugins = [
-    "mypy_django_plugin.main",
-    "mypy_drf_plugin.main",
+  "mypy_django_plugin.main",
+  "mypy_drf_plugin.main",
 ]
 
 [[tool.mypy.overrides]]
@@ -43,33 +44,33 @@ ignore_errors = true
 [tool.ruff]
 # Exclude a variety of commonly ignored directories.
 exclude = [
-    "migrations",
-    ".bzr",
-    ".direnv",
-    ".eggs",
-    ".git",
-    ".git-rewrite",
-    ".hg",
-    ".ipynb_checkpoints",
-    ".mypy_cache",
-    ".nox",
-    ".pants.d",
-    ".pyenv",
-    ".pytest_cache",
-    ".pytype",
-    ".ruff_cache",
-    ".svn",
-    ".tox",
-    ".venv",
-    ".vscode",
-    "__pypackages__",
-    "_build",
-    "buck-out",
-    "build",
-    "dist",
-    "node_modules",
-    "site-packages",
-    "venv",
+  "migrations",
+  ".bzr",
+  ".direnv",
+  ".eggs",
+  ".git",
+  ".git-rewrite",
+  ".hg",
+  ".ipynb_checkpoints",
+  ".mypy_cache",
+  ".nox",
+  ".pants.d",
+  ".pyenv",
+  ".pytest_cache",
+  ".pytype",
+  ".ruff_cache",
+  ".svn",
+  ".tox",
+  ".venv",
+  ".vscode",
+  "__pypackages__",
+  "_build",
+  "buck-out",
+  "build",
+  "dist",
+  "node_modules",
+  "site-packages",
+  "venv",
 ]
 
 # Same as Black.
@@ -109,3 +110,26 @@ case-sensitive = true
 
 [tool.django-stubs]
 django_settings_module = "core.settings"
+
+[tool.poe.tasks]
+build = { cmd = "docker compose -f ../docker-compose.yml build ", help = "Build/rebuild the docker container." }
+dev = { cmd = "docker compose -f ../docker-compose.yml up", help = "Run the development server." }
+makemigrations = { cmd = "docker compose -f ../docker-compose.yml run --rm sirr_api python manage.py makemigrations --settings=core.settings", help = "Generate new database migrations." }
+migrate = { cmd = "docker compose -f ../docker-compose.yml run --rm sirr_api python manage.py migrate --settings=core.settings", help = "Apply database migrations." }
+shell = { cmd = "docker compose -f ../docker-compose.yml exec sirr_api python manage.py shell --settings=core.settings", help = "Open Django interactive shell." }
+down = { cmd = "docker compose -f ../docker-compose.yml down --remove-orphans", help = "Stop and remove containers, networks, images, and volumes." }
+# Only run this if you want to drop the database and start from scratch.
+clean = { cmd = "docker compose -f ../docker-compose.yml down --remove-orphans -v", help = "Docker down and dropping volumes/database" }
+
+[tool.poe.tasks.startapp]
+help = "Create a new Django app under apps/<app> using Docker"
+shell = """
+    docker compose -f ../docker-compose.yml run --rm --no-TTY sirr_api sh -c "
+  mkdir -p apps/${app} &&
+  python manage.py startapp ${app} apps/${app} --settings=core.settings &&
+  chown -R --reference=apps apps/${app}
+"
+"""
+args = [
+  { name = "app", help = "The Django app name to create", positional = true }
+]
