@@ -164,6 +164,18 @@ wheels = [
 ]
 
 [[package]]
+name = "django-diagram"
+version = "0.0.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "django" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/96/10/f7abd052606f111785bc94dd055dc0d95b03a4daad3d2c18dea50efa9262/django-diagram-0.0.1.tar.gz", hash = "sha256:7fa243ddaf3e71c0438274424214b7fd38d68acbf3f17f015460d40a0a4a05ab", size = 5953, upload-time = "2023-02-18T22:45:42.618Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/0c/35/438e2cd7e768609e04d067ce94a2584170f81e621c32c61f5906ac4bfab1/django_diagram-0.0.1-py3-none-any.whl", hash = "sha256:84fef6edc2ace54c7304c445d6f48ba9b44fd19f328410caa17b19f92013c659", size = 6906, upload-time = "2023-02-18T22:45:39.237Z" },
+]
+
+[[package]]
 name = "django-redis"
 version = "6.0.0"
 source = { registry = "https://pypi.org/simple" }
@@ -507,6 +519,7 @@ dependencies = [
 
 [package.dev-dependencies]
 dev = [
+    { name = "django-diagram" },
     { name = "django-stubs" },
     { name = "djangorestframework-stubs" },
     { name = "mypy" },
@@ -526,6 +539,7 @@ requires-dist = [
 
 [package.metadata.requires-dev]
 dev = [
+    { name = "django-diagram", specifier = ">=0.0.1" },
     { name = "django-stubs", specifier = ">=5.2.2" },
     { name = "djangorestframework-stubs", specifier = ">=3.16.2" },
     { name = "mypy", specifier = ">=1.17.1" },
