@@ -43,7 +43,7 @@ const CrimeReportForm: React.FC<CrimeReportFormProps> = ({ formDefinition }) => 
 
   return (
     <Squircle
-      className="max-w-3xl mx-auto p-8 bg-card border border-border shadow-2xl"
+      className="max-w-3xl mx-auto p-8 bg-card border border-border shadow-2xl transition-all duration-300" // Added transitions are now safe
       cornerRadius={30}
       cornerSmoothing={1}
     >
@@ -65,7 +65,7 @@ const CrimeReportForm: React.FC<CrimeReportFormProps> = ({ formDefinition }) => 
           Previous Step
         </Button>
         <Button size="lg" onClick={handleNext}>
-          {currentStep === formDefinition.steps.length ? "Submit Report" : "Next Step"}
+          {currentStep === formDefinition.steps.length ? "Submit Report" : "Submit Report"}
         </Button>
       </div>
     </Squircle>
