@@ -1,3 +1,6 @@
+"use client" // This component uses client-side hooks like useRouter/usePathname
+
+import { usePathname } from "next/navigation"
 import InfoMenu from "@/components/info-menu"
 import Logo from "@/components/logo"
 import NotificationMenu from "@/components/notification-menu"
@@ -14,16 +17,17 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
+import { cn } from "@/lib/utils" // Import cn for conditional class merging
 
 // Navigation links array to be used in both desktop and mobile menus
 const navigationLinks = [
-  { href: "#", label: "Home" },
-  { href: "#", label: "Features" },
-  { href: "#", label: "Pricing" },
-  { href: "#", label: "About" },
+  { href: "/home", label: "Home" },
+  { href: "/cases", label: "Cases" },
 ]
 
 export default function Component() {
+  const pathname = usePathname(); // Get the current path
+
   return (
     <header className="border-b px-4 md:px-6">
       <div className="flex h-16 items-center justify-between gap-4">
@@ -69,7 +73,14 @@ export default function Component() {
                 <NavigationMenuList className="flex-col items-start gap-0 md:gap-2">
                   {navigationLinks.map((link, index) => (
                     <NavigationMenuItem key={index} className="w-full">
-                      <NavigationMenuLink href={link.href} className="py-1.5">
+                      <NavigationMenuLink
+                        href={link.href}
+                        className={cn(
+                          "py-1.5 rounded-md", // Added rounded-md for consistency
+                          "text-muted-foreground hover:text-primary hover:bg-accent", // Base text and hover styles
+                          pathname === link.href && "bg-accent text-primary" // Active state
+                        )}
+                      >
                         {link.label}
                       </NavigationMenuLink>
                     </NavigationMenuItem>
@@ -80,7 +91,7 @@ export default function Component() {
           </Popover>
           {/* Main nav */}
           <div className="flex items-center gap-6">
-            <a href="#" className="text-primary hover:text-primary/90">
+            <a href="/home" className="text-primary hover:text-primary/90">
               <Logo />
             </a>
             {/* Navigation menu */}
@@ -90,7 +101,12 @@ export default function Component() {
                   <NavigationMenuItem key={index}>
                     <NavigationMenuLink
                       href={link.href}
-                      className="text-muted-foreground hover:text-primary py-1.5 font-medium"
+                      // Apply base styles and then conditional active styles
+                      className={cn(
+                        "py-1.5 font-medium rounded-md", // Added rounded-md for consistency
+                        "text-muted-foreground hover:text-primary hover:bg-accent", // Base text and hover styles
+                        pathname === link.href && "bg-accent text-primary" // Active state
+                      )}
                     >
                       {link.label}
                     </NavigationMenuLink>
