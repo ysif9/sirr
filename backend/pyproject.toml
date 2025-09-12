@@ -15,7 +15,6 @@ dependencies = [
 ]
 [dependency-groups]
 dev = [
-  "celery-types>=0.23.0",
   "django-diagram>=0.0.1",
   "django-stubs>=5.2.2",
   "djangorestframework-stubs>=3.16.2",
