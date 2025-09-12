@@ -121,7 +121,7 @@ const ReportPage: React.FC<{ onNavigate: (page: string) => void }> = ({ onNaviga
   }
 
   return (
-    <div className="min-h-screen flex flex-col animate-fadeIn">
+    <div className="report-theme min-h-screen flex flex-col animate-fadeIn">
       <header className="pt-24 pb-4 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto flex items-center">
           <button onClick={handleBack} className="group mr-2 focus:outline-none" aria-label={t("backButton")}>

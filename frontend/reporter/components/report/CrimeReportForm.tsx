@@ -6,6 +6,7 @@ import { FormDefinition, Field } from "@/lib/crime-forms"
 import ReportStepper from "@/components/Stepper"
 import RenderField from "./RenderField"
 import { Button } from "../ui/button"
+import { Squircle } from "@squircle-js/react"
 
 interface CrimeReportFormProps {
   formDefinition: FormDefinition
@@ -41,13 +42,17 @@ const CrimeReportForm: React.FC<CrimeReportFormProps> = ({ formDefinition }) => 
   const activeStep = formDefinition.steps[currentStep - 1]
 
   return (
-    <div className="max-w-3xl mx-auto p-8 bg-slate-800/50 border border-white/10 rounded-2xl shadow-2xl">
+    <Squircle
+      className="max-w-3xl mx-auto p-8 bg-card border border-border shadow-2xl transition-all duration-300" // Added transitions are now safe
+      cornerRadius={30}
+      cornerSmoothing={1}
+    >
       <div className="mb-10">
         <ReportStepper steps={formDefinition.steps} currentStep={currentStep} />
       </div>
 
       <form onSubmit={(e) => e.preventDefault()}>
-        <h2 className="text-2xl font-bold text-white mb-6 border-b border-white/10 pb-4">{activeStep.title}</h2>
+        <h2 className="text-2xl font-bold text-card-foreground mb-6 border-b border-border pb-4">{activeStep.title}</h2>
         <div className="space-y-4">
           {activeStep.fields.map((field: Field) => (
             <RenderField key={field.id} control={control} field={field} watch={watch} />
@@ -55,15 +60,15 @@ const CrimeReportForm: React.FC<CrimeReportFormProps> = ({ formDefinition }) => 
         </div>
       </form>
 
-      <div className="mt-10 flex justify-between items-center pt-6 border-t border-white/10">
+      <div className="mt-10 flex justify-between items-center pt-6 border-t border-border">
         <Button variant="outline" onClick={handlePrev} disabled={currentStep === 1}>
           Previous Step
         </Button>
         <Button size="lg" onClick={handleNext}>
-          {currentStep === formDefinition.steps.length ? "Submit Report" : "Next Step"}
+          {currentStep === formDefinition.steps.length ? "Submit Report" : "Submit Report"}
         </Button>
       </div>
-    </div>
+    </Squircle>
   )
 }
 
