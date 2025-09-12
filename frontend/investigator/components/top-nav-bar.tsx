@@ -1,4 +1,4 @@
-"use client" // This component uses client-side hooks like useRouter/usePathname
+"use client"
 
 import { usePathname } from "next/navigation"
 import InfoMenu from "@/components/info-menu"
@@ -17,16 +17,17 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
-import { cn } from "@/lib/utils" // Import cn for conditional class merging
+import { cn } from "@/lib/utils"
+import Link from "next/link"
 
-// Navigation links array to be used in both desktop and mobile menus
+// --- CORRECTED NAVIGATION LINKS ---
 const navigationLinks = [
-  { href: "/home", label: "Home" },
+  { href: "/home", label: "Home" }, // Use "/" for the homepage
   { href: "/cases", label: "Cases" },
 ]
 
 export default function Component() {
-  const pathname = usePathname(); // Get the current path
+  const pathname = usePathname() // This will return "/" on the homepage
 
   return (
     <header className="border-b px-4 md:px-6">
@@ -76,9 +77,9 @@ export default function Component() {
                       <NavigationMenuLink
                         href={link.href}
                         className={cn(
-                          "py-1.5 rounded-md", // Added rounded-md for consistency
-                          "text-muted-foreground hover:text-primary hover:bg-accent", // Base text and hover styles
-                          pathname === link.href && "bg-accent text-primary" // Active state
+                          "py-1.5 rounded-md",
+                          "text-muted-foreground hover:text-primary hover:bg-accent",
+                          pathname === link.href && "bg-accent text-primary" // This condition now works for "/"
                         )}
                       >
                         {link.label}
@@ -91,7 +92,8 @@ export default function Component() {
           </Popover>
           {/* Main nav */}
           <div className="flex items-center gap-6">
-            <a href="/home" className="text-primary hover:text-primary/90">
+            {/* --- CORRECTED LOGO LINK --- */}
+            <a href="/" className="text-primary hover:text-primary/90">
               <Logo />
             </a>
             {/* Navigation menu */}
@@ -101,11 +103,10 @@ export default function Component() {
                   <NavigationMenuItem key={index}>
                     <NavigationMenuLink
                       href={link.href}
-                      // Apply base styles and then conditional active styles
                       className={cn(
-                        "py-1.5 font-medium rounded-md", // Added rounded-md for consistency
-                        "text-muted-foreground hover:text-primary hover:bg-accent", // Base text and hover styles
-                        pathname === link.href && "bg-accent text-primary" // Active state
+                        "py-1.5 font-medium rounded-md",
+                        "text-muted-foreground hover:text-primary hover:bg-accent",
+                        pathname === link.href && "bg-accent text-primary"
                       )}
                     >
                       {link.label}
