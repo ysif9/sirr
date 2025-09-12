@@ -10,7 +10,7 @@ services:
       - POSTGRES_PASSWORD=${POSTGRES_DB_PASSWORD:-postgres}
     ports:
       - "${POSTGRES_HOST_PORT:-5432}:5432"
-    restart: unless-stopped
+    restart: always
 
   redis:
     container_name: sirr_redis
@@ -19,7 +19,7 @@ services:
       - redis_data_dev:/data
     ports:
       - "${REDIS_HOST_PORT:-6379}:6379"
-    restart: unless-stopped
+    restart: always
 
   sirr_api:
     container_name: sirr_api
@@ -36,9 +36,9 @@ services:
       - POSTGRES_DB_HOST=${POSTGRES_DB_HOST:-db}
       - POSTGRES_DB_PORT=${POSTGRES_DB_PORT:-5432}
       # Default superuser credentials for development
-      - DJANGO_SUPERUSER_EMAIL=${PGADMIN_EMAIL:-admin@sirr.com}
-      - DJANGO_SUPERUSER_USERNAME=admin
-      - DJANGO_SUPERUSER_PASSWORD=${PGADMIN_PASSWORD:-admin}
+      - DJANGO_SUPERUSER_EMAIL=${DJANGO_SUPERUSER_EMAIL:-admin@sirr.com}
+      - DJANGO_SUPERUSER_USERNAME=${DJANGO_SUPERUSER_USER:-admin}
+      - DJANGO_SUPERUSER_PASSWORD=${DJANGO_SUPERUSER_PASSWORD:-admin}
     command: >
       sh -c "
         echo 'Waiting for postgres...'
@@ -61,7 +61,7 @@ services:
     depends_on:
       - db
       - redis
-    restart: unless-stopped
+    restart: always
 
   celery_worker:
     container_name: sirr_celery
@@ -98,7 +98,7 @@ services:
     depends_on:
       - db
       - redis
-    restart: unless-stopped
+    restart: always
 
 volumes:
   postgres_data_dev:
