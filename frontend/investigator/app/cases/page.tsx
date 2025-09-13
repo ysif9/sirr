@@ -9,15 +9,17 @@ import {
   AllCommunityModule,
   GridReadyEvent,
   ICellRendererParams,
+  RowClickedEvent, // Import RowClickedEvent
 } from "ag-grid-community";
 import { useState, useCallback } from "react";
+import { useRouter } from "next/navigation"; // Import useRouter
 // NEW: Import mock data and types from external files
 import { mockCasesData, ICaseInfo, Priority } from "@/lib/mock-data";
 
 // Register AG Grid modules
 ModuleRegistry.registerModules([AllCommunityModule]);
 
-// Custom Cell Renderer Component for Priority
+// Custom Cell Renderer Component for Priority (no changes here)
 const PriorityCellRenderer = (
   params: ICellRendererParams<ICaseInfo, Priority>
 ) => {
@@ -48,7 +50,7 @@ const PriorityCellRenderer = (
   );
 };
 
-// Custom Comparator for Priority Sorting
+// Custom Comparator for Priority Sorting (no changes here)
 const priorityOrder: { [key in Priority]: number } = {
   Critical: 1,
   High: 2,
@@ -62,10 +64,10 @@ const priorityComparator = (valueA: Priority, valueB: Priority) => {
 };
 
 export default function CasesPage() {
-  // Use the imported pre-generated data
+  const router = useRouter(); // Initialize router
   const [rowData] = useState<ICaseInfo[]>(mockCasesData);
 
-  // Column Definitions
+  // Column Definitions (no changes here)
   const colDefs: ColDef<ICaseInfo>[] = [
     {
       headerName: "",
@@ -106,9 +108,7 @@ export default function CasesPage() {
     floatingFilter: true,
   };
 
-  // Callback to set default sort and filter when grid is ready
   const onGridReady = useCallback((params: GridReadyEvent) => {
-    // Default Filter: Status != Closed
     params.api.setFilterModel({
       status: {
         filterType: "text",
@@ -116,8 +116,6 @@ export default function CasesPage() {
         filter: "Closed",
       },
     });
-
-    // Default Sort: Submitted At (descending), then Priority (ascending via custom comparator)
     params.api.applyColumnState({
       state: [
         { colId: "submittedAt", sort: "desc", sortIndex: 0 },
@@ -127,13 +125,23 @@ export default function CasesPage() {
     });
   }, []);
 
+  // --- NEW: ROW CLICK HANDLER ---
+  const handleRowClick = useCallback(
+    (event: RowClickedEvent<ICaseInfo>) => {
+      if (event.data) {
+        router.push(`/cases/${event.data.caseId}`);
+      }
+    },
+    [router]
+  );
+
   return (
     <div>
       <TopNavBar />
       <main className="p-4 md:p-8">
         <h1 className="mb-6 text-3xl font-bold">Case Files</h1>
         <div
-          className="ag-theme-quartz" // AG Grid theme
+          className="ag-theme-quartz"
           style={{ height: "calc(100vh - 12rem)", width: "100%" }}
         >
           <AgGridReact<ICaseInfo>
@@ -143,6 +151,7 @@ export default function CasesPage() {
             onGridReady={onGridReady}
             rowSelection="multiple"
             suppressRowClickSelection={true}
+            onRowClicked={handleRowClick} // Add this event handler
             pagination={true}
             paginationPageSize={20}
             paginationPageSizeSelector={[10, 20, 50, 100]}
