@@ -62,3 +62,5 @@ class BaseModel(TimestampedModel, UUIDModel):
         """Metadata options for the BaseModel."""
 
         abstract = True
+
+
