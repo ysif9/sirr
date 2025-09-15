@@ -24,19 +24,19 @@ from apps.common.models import BaseModel
 
 class ReportStatus(models.TextChoices):
     """Report status choices."""
-    SUBMITTED = _("submitted"), _("Submitted")
-    UNDER_REVIEW = _("under review"), _("Under Review")
-    APPROVED = _("approved"), _("Approved")
-    REJECTED = _("rejected"), _("Rejected")
-    CLOSED = _("closed"), _("Closed")
+    SUBMITTED = "submitted", _("Submitted")
+    UNDER_REVIEW = "under review", _("Under Review")
+    APPROVED = "approved", _("Approved")
+    REJECTED = "rejected", _("Rejected")
+    CLOSED = "closed", _("Closed")
 
 
 class ReportPriority(models.TextChoices):
     """Report priority choices."""
-    LOW = _("low"), _("Low")
-    MEDIUM = _("medium"), _("Medium")
-    HIGH = _("high"), _("High")
-    URGENT = _("urgent"), _("Urgent")
+    LOW = "low", _("Low")
+    MEDIUM = "medium", _("Medium")
+    HIGH = "high", _("High")
+    URGENT = "urgent", _("Urgent")
 
 
 def attachment_upload_path(instance: "Attachment", filename: str) -> str:
@@ -86,7 +86,8 @@ class Report(BaseModel):
     and priority assignment. Reports contain JSON data matching their
     template structure.
     """
-    template = models.ForeignKey(ReportTemplate, on_delete=models.SET_NULL, related_name="reports")
+    template = models.ForeignKey(ReportTemplate, on_delete=models.SET_NULL, related_name="reports", null=True,
+                                 blank=True)
     access_key = models.CharField(max_length=255, unique=True)
     data = models.JSONField(default=dict)
     status = models.CharField(max_length=50, choices=ReportStatus.choices, default=ReportStatus.SUBMITTED)
