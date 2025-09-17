@@ -16,18 +16,17 @@ from pathlib import Path
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", default="django-insecure-change-me-in-production-1234567891011121314151617181920")
+SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY",
+                            default="django-insecure-change-me-in-production-1234567891011121314151617181920")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
 ALLOWED_HOSTS = ["localhost", "127.0.0.1", "0.0.0.0"]
-
 
 # Application definition
 DJANGO_DEFAULT_APPS = [
@@ -48,6 +47,7 @@ THIRD_PARTY_APPS = [
 LOCAL_APPS = [
     "apps.common",
     "apps.users",
+    "apps.reports",
 ]
 
 INSTALLED_APPS = THIRD_PARTY_APPS + DJANGO_DEFAULT_APPS + LOCAL_APPS
@@ -97,7 +97,6 @@ DATABASES = {  # noqa: F811
     }
 }
 
-
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
 
@@ -116,7 +115,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 
@@ -127,7 +125,6 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
