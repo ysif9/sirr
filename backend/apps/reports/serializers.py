@@ -1,5 +1,7 @@
 from rest_framework import serializers
-from .models import ReportCategory, ReportTemplate, Report, Attachment, AIAnalysis, ReportAssignment, ReportRedaction
+
+from .models import AIAnalysis, Attachment, Report, ReportAssignment, ReportCategory, ReportRedaction, ReportTemplate
+
 
 # -------------------
 # Category serializers
@@ -30,7 +32,8 @@ class ReportTemplateSerializer(serializers.ModelSerializer):
 class ReportSerializer(serializers.ModelSerializer):
     class Meta:
         model = Report
-        fields = ["id", "template", "access_key", "data", "status", "score", "priority", "last_access_by_reporter", "expires_at"]
+        fields = ["id", "template", "access_key", "data", "status", "score", "priority", "last_access_by_reporter",
+                  "expires_at"]
 
 
 # -------------------

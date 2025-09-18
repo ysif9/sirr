@@ -1,13 +1,16 @@
-from rest_framework import viewsets, filters
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
-from .models import ReportCategory, ReportTemplate, Report, Attachment, AIAnalysis, ReportAssignment, ReportRedaction
-from .serializers import (
-    ReportCategorySerializer, ReportTemplateSerializer, ReportSerializer,
-    AttachmentSerializer, AIAnalysisSerializer, ReportAssignmentSerializer, ReportRedactionSerializer
-)
-
+from rest_framework import filters, viewsets
 from rest_framework.permissions import AllowAny
 
+from .models import AIAnalysis, Attachment, Report, ReportAssignment, ReportCategory, ReportRedaction, ReportTemplate
+from .serializers import (
+    AIAnalysisSerializer,
+    AttachmentSerializer,
+    ReportAssignmentSerializer,
+    ReportCategorySerializer,
+    ReportRedactionSerializer,
+    ReportSerializer,
+    ReportTemplateSerializer,
+)
 
 
 # -------------------
@@ -82,4 +85,3 @@ class ReportRedactionViewSet(viewsets.ModelViewSet):
     queryset = ReportRedaction.objects.all()
     serializer_class = ReportRedactionSerializer
     permission_classes = [AllowAny]
-
