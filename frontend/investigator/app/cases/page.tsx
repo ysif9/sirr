@@ -1,144 +1,139 @@
 "use client";
 
 import TopNavBar from "@/components/top-nav-bar";
-import "ag-grid-community/styles/ag-theme-quartz.css";
+import "ag-grid-community/styles/ag-theme-quartz.css"; // Core CSS
 import { AgGridReact } from "ag-grid-react";
-import { ColDef, ModuleRegistry, AllCommunityModule } from "ag-grid-community";
-import { useState } from "react";
+import {
+  ColDef,
+  ModuleRegistry,
+  AllCommunityModule,
+  GridReadyEvent,
+  ICellRendererParams,
+  RowClickedEvent, // Import RowClickedEvent
+} from "ag-grid-community";
+import { useState, useCallback } from "react";
+import { useRouter } from "next/navigation"; // Import useRouter
+// NEW: Import mock data and types from external files
+import { mockCasesData, ICaseInfo, Priority } from "@/lib/mock-data";
 
-// Register AG Grid modules globally.
+// Register AG Grid modules
 ModuleRegistry.registerModules([AllCommunityModule]);
 
-// New interface for the report data structure
-interface IReportInfo {
-  ReportInfoID: number;
-  ReportInfoLabel: string;
-  ReportInfoStatus: 'Submitted' | 'In Review' | 'Approved' | 'Rejected';
-  ReportInfoSubmissionDate: string; // Using ISO string format for dates
-  ReportInfoUpdateDate: string;
-  ReportInfoExpirationDate: string;
-  ReportInfoReadReceipt: boolean;
-  ReportInfoComments: string;
-  ReportInfoFiles: number;
-  ReportInfoIdentity: string;
-  ReportInfoRecipientCount: number;
-}
+// Custom Cell Renderer Component for Priority (no changes here)
+const PriorityCellRenderer = (
+  params: ICellRendererParams<ICaseInfo, Priority>
+) => {
+  if (!params.value) return null;
+  const priority = params.value;
+  let colorClass = "";
+  switch (priority) {
+    case "Critical":
+      colorClass = "bg-red-500";
+      break;
+    case "High":
+      colorClass = "bg-orange-400";
+      break;
+    case "Medium":
+      colorClass = "bg-yellow-400";
+      break;
+    case "Low":
+      colorClass = "bg-sky-500";
+      break;
+  }
+  return (
+    <div className="flex items-center gap-2 h-full">
+      <span
+        className={`inline-block h-2.5 w-2.5 rounded-full ${colorClass}`}
+      ></span>
+      <span>{priority}</span>
+    </div>
+  );
+};
 
-// New mock data matching the requested columns
-const mockReports: IReportInfo[] = [
-  {
-    ReportInfoID: 101,
-    ReportInfoLabel: "Q1 Financial Anomaly Report",
-    ReportInfoStatus: "Approved",
-    ReportInfoSubmissionDate: "2024-01-15T10:30:00Z",
-    ReportInfoUpdateDate: "2024-01-20T14:00:00Z",
-    ReportInfoExpirationDate: "2025-01-15T10:30:00Z",
-    ReportInfoReadReceipt: true,
-    ReportInfoComments: "Reviewed by compliance team. No issues found.",
-    ReportInfoFiles: 3,
-    ReportInfoIdentity: "Analyst-042",
-    ReportInfoRecipientCount: 5,
-  },
-  {
-    ReportInfoID: 102,
-    ReportInfoLabel: "Sector 7 Breach Analysis",
-    ReportInfoStatus: "In Review",
-    ReportInfoSubmissionDate: "2024-02-10T09:00:00Z",
-    ReportInfoUpdateDate: "2024-02-11T11:20:00Z",
-    ReportInfoExpirationDate: "2025-02-10T09:00:00Z",
-    ReportInfoReadReceipt: false,
-    ReportInfoComments: "Awaiting feedback from the cybersecurity division.",
-    ReportInfoFiles: 8,
-    ReportInfoIdentity: "Investigator-007",
-    ReportInfoRecipientCount: 3,
-  },
-  {
-    ReportInfoID: 103,
-    ReportInfoLabel: "Internal Affairs Q2 Summary",
-    ReportInfoStatus: "Submitted",
-    ReportInfoSubmissionDate: "2024-03-01T16:45:00Z",
-    ReportInfoUpdateDate: "2024-03-01T16:45:00Z",
-    ReportInfoExpirationDate: "2025-03-01T16:45:00Z",
-    ReportInfoReadReceipt: false,
-    ReportInfoComments: "Initial submission for departmental review.",
-    ReportInfoFiles: 1,
-    ReportInfoIdentity: "Admin-001",
-    ReportInfoRecipientCount: 12,
-  },
-  {
-    ReportInfoID: 104,
-    ReportInfoLabel: "Operation Phoenix Debrief",
-    ReportInfoStatus: "Rejected",
-    ReportInfoSubmissionDate: "2024-03-05T12:00:00Z",
-    ReportInfoUpdateDate: "2024-03-07T18:10:00Z",
-    ReportInfoExpirationDate: "2024-09-05T12:00:00Z",
-    ReportInfoReadReceipt: true,
-    ReportInfoComments: "Insufficient data. Requires resubmission with more evidence.",
-    ReportInfoFiles: 5,
-    ReportInfoIdentity: "FieldAgent-013",
-    ReportInfoRecipientCount: 2,
-  },
-];
+// Custom Comparator for Priority Sorting (no changes here)
+const priorityOrder: { [key in Priority]: number } = {
+  Critical: 1,
+  High: 2,
+  Medium: 3,
+  Low: 4,
+};
+const priorityComparator = (valueA: Priority, valueB: Priority) => {
+  const rankA = priorityOrder[valueA] || 5;
+  const rankB = priorityOrder[valueB] || 5;
+  return rankA - rankB;
+};
 
 export default function CasesPage() {
-  const [rowData, setRowData] = useState<IReportInfo[]>(mockReports);
+  const router = useRouter(); // Initialize router
+  const [rowData] = useState<ICaseInfo[]>(mockCasesData);
 
-  // Updated column definitions for the new data structure
-  const [colDefs] = useState<ColDef<IReportInfo>[]>([
+  // Column Definitions (no changes here)
+  const colDefs: ColDef<ICaseInfo>[] = [
     {
-      headerName: '',
+      headerName: "",
       checkboxSelection: true,
       headerCheckboxSelection: true,
       width: 50,
-      pinned: 'left',
-      lockPosition: 'left',
+      pinned: "left",
+      lockPosition: "left",
       suppressMovable: true,
-      filter: false, // Disable filter for the checkbox column
+      filter: false,
     },
-    { field: "ReportInfoID", headerName: "ID", width: 100 },
-    { field: "ReportInfoLabel", headerName: "Label", flex: 2, minWidth: 250 },
-    { field: "ReportInfoStatus", headerName: "Status", flex: 1, minWidth: 120 },
     {
-      field: "ReportInfoSubmissionDate",
-      headerName: "Submission Date",
+      field: "priority",
+      headerName: "Priority",
+      cellRenderer: PriorityCellRenderer,
+      comparator: priorityComparator,
+      width: 120,
+    },
+    { field: "caseId", headerName: "Case ID", width: 140 },
+    { field: "status", headerName: "Status", width: 120 },
+    { field: "crimeType", headerName: "Crime Type", flex: 2, minWidth: 200 },
+    { field: "location", headerName: "Location", flex: 1, minWidth: 150 },
+    {
+      field: "submittedAt",
+      headerName: "Submitted At",
       flex: 1,
-      minWidth: 180,
-      valueFormatter: (params) => new Date(params.value).toLocaleDateString(),
+      minWidth: 200,
+      valueFormatter: (params) =>
+        params.value ? new Date(params.value).toLocaleString() : "",
     },
-    {
-      field: "ReportInfoUpdateDate",
-      headerName: "Update Date",
-      flex: 1,
-      minWidth: 180,
-      valueFormatter: (params) => new Date(params.value).toLocaleDateString(),
-    },
-    {
-      field: "ReportInfoExpirationDate",
-      headerName: "Expiration Date",
-      flex: 1,
-      minWidth: 180,
-      valueFormatter: (params) => new Date(params.value).toLocaleDateString(),
-    },
-    {
-      field: "ReportInfoReadReceipt",
-      headerName: "Read",
-      width: 100,
-      // Replaced emoji with text for clarity
-      cellRenderer: (params: { value: boolean }) => params.value ? 'Yes' : 'No',
-      cellStyle: { textAlign: 'center' }
-    },
-    { field: "ReportInfoComments", headerName: "Comments", flex: 2, minWidth: 300, tooltipField: "ReportInfoComments" },
-    { field: "ReportInfoFiles", headerName: "Files", width: 100 },
-    { field: "ReportInfoIdentity", headerName: "Identity", flex: 1, minWidth: 150 },
-    { field: "ReportInfoRecipientCount", headerName: "Recipients", width: 120 },
-  ]);
+    { field: "assignedTo", headerName: "Assigned To", flex: 1, minWidth: 150 },
+  ];
 
   const defaultColDef: ColDef = {
     sortable: true,
-    filter: true,         // Default filter is true for other columns
+    filter: true,
     resizable: true,
     floatingFilter: true,
   };
+
+  const onGridReady = useCallback((params: GridReadyEvent) => {
+    params.api.setFilterModel({
+      status: {
+        filterType: "text",
+        type: "notEqual",
+        filter: "Closed",
+      },
+    });
+    params.api.applyColumnState({
+      state: [
+        { colId: "submittedAt", sort: "desc", sortIndex: 0 },
+        { colId: "priority", sort: "asc", sortIndex: 1 },
+      ],
+      defaultState: { sort: null },
+    });
+  }, []);
+
+  // --- NEW: ROW CLICK HANDLER ---
+  const handleRowClick = useCallback(
+    (event: RowClickedEvent<ICaseInfo>) => {
+      if (event.data) {
+        router.push(`/cases/${event.data.caseId}`);
+      }
+    },
+    [router]
+  );
 
   return (
     <div>
@@ -149,15 +144,17 @@ export default function CasesPage() {
           className="ag-theme-quartz"
           style={{ height: "calc(100vh - 12rem)", width: "100%" }}
         >
-          <AgGridReact<IReportInfo>
+          <AgGridReact<ICaseInfo>
             rowData={rowData}
             columnDefs={colDefs}
             defaultColDef={defaultColDef}
-            rowSelection="multiple" // Enable multi-row selection with checkboxes
-            suppressRowClickSelection={true} // Prevents row selection when clicking anywhere on the row
+            onGridReady={onGridReady}
+            rowSelection="multiple"
+            suppressRowClickSelection={true}
+            onRowClicked={handleRowClick} // Add this event handler
             pagination={true}
-            paginationPageSize={10}
-            paginationPageSizeSelector={[10, 20, 50]}
+            paginationPageSize={20}
+            paginationPageSizeSelector={[10, 20, 50, 100]}
           />
         </div>
       </main>
