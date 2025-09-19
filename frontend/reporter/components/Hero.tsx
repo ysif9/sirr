@@ -15,10 +15,6 @@ const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
   const { t } = useLanguage()
   const [isFollowUpModalOpen, setIsFollowUpModalOpen] = useState(false)
 
-  const handleAnimationComplete = () => {
-    console.log("Hero text animation completed!")
-  }
-
   return (
     <>
       <section className="relative text-center py-16 md:py-24 px-4">
@@ -29,7 +25,6 @@ const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
             delay={150}
             animateBy="words"
             direction="top"
-            onAnimationComplete={handleAnimationComplete}
             className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white tracking-tighter mb-4"
           />
           <p className="mt-4 text-lg md:text-xl text-gray-300 max-w-2xl mx-auto">{t("heroSubtitle")}</p>
