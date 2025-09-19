@@ -270,6 +270,97 @@ const environmentalCrimesFormSteps = [
   }
 ];
 
+/**
+ * A template for all suspicious activity reports.
+ */
+const suspiciousActivityFormSteps = [
+  {
+    step: 1,
+    title: "Activity Details",
+    fields: [
+      { id: "location", label: "Where did this happen?", type: "location", validation: { required: true } },
+      { id: "activity_datetime", label: "When did this happen?", type: "datetime_range", validation: { required: true } },
+      { id: "activity_description", label: "Please describe the suspicious behavior in detail.", type: "textarea", placeholder: "e.g., someone looking into car windows, testing doors, observing a house for a long time.", validation: { required: true } }
+    ]
+  },
+  {
+    step: 2,
+    title: "Subject & Vehicle Information",
+    fields: [
+      { id: "subject_description", label: "Please describe the person(s) involved.", type: "textarea", placeholder: "Include details like gender, age, build, clothing, and any distinguishing features.", validation: { required: true } },
+      { id: "vehicle_involved", label: "Was a vehicle involved?", type: "radio_group", options: ["Yes", "No", "Unsure"] },
+      { id: "vehicle_description", label: "Describe the vehicle, if any.", type: "textarea", placeholder: "Include make, model, color, license plate, and any unique features.", conditional: { field: "vehicle_involved", value: "Yes" } }
+    ]
+  },
+  {
+    step: 3,
+    title: "Evidence",
+    fields: [
+      { id: "evidence_upload", label: "Upload Photos or Videos", type: "file_upload", helperText: "Only upload evidence if it is safe to do so." }
+    ]
+  }
+];
+
+/**
+ * A template for all traffic and road safety concerns.
+ */
+const trafficRoadSafetyFormSteps = [
+  {
+    step: 1,
+    title: "Incident Details",
+    fields: [
+      { id: "location", label: "Where did this happen?", type: "location", validation: { required: true } },
+      { id: "incident_datetime", label: "When did this happen?", type: "datetime", validation: { required: true } },
+      { id: "incident_description", label: "Please describe what happened.", type: "textarea", placeholder: "Provide a detailed account of the driving behavior, hazard, or collision.", validation: { required: true } }
+    ]
+  },
+  {
+    step: 2,
+    title: "Vehicle & Driver Information",
+    fields: [
+      { id: "vehicle_description", label: "Describe the vehicle(s) involved.", type: "textarea", placeholder: "Include make, model, color, and any distinguishing features.", validation: { required: true } },
+      { id: "license_plate", label: "License Plate Number", type: "text", helperText: "Even a partial plate number is helpful." },
+      { id: "driver_description", label: "If you saw the driver, please provide a description.", type: "textarea" }
+    ]
+  },
+  {
+    step: 3,
+    title: "Evidence & Witnesses",
+    fields: [
+      { id: "evidence_upload", label: "Upload Photos or Videos", type: "file_upload", helperText: "e.g., dashcam footage, photos of the scene." },
+      { id: "witness_present", label: "Were there any witnesses?", type: "radio_group", options: ["Yes", "No", "Unsure"] },
+      { id: "witness_details", label: "Witness Information", type: "repeater", conditional: { field: "witness_present", value: "Yes" }, fields: [
+        { id: "witness_name", label: "Witness Name", type: "text" },
+        { id: "witness_contact", label: "Witness Contact Info", type: "text" }
+      ]}
+    ]
+  }
+];
+
+/**
+ * A template for all public safety and community concerns.
+ */
+const publicSafetyCommunityConcernsFormSteps = [
+  {
+    step: 1,
+    title: "Concern Details",
+    fields: [
+      { id: "location", label: "Where is the concern located?", type: "location", validation: { required: true } },
+      { id: "concern_datetime", label: "When did you observe this?", type: "datetime" },
+      { id: "concern_description", label: "Please describe the concern in detail.", type: "textarea", placeholder: "e.g., downed power line, chronic noise issue, animal neglect.", validation: { required: true } }
+    ]
+  },
+  {
+    step: 2,
+    title: "Additional Information & Evidence",
+    fields: [
+      { id: "person_involved_description", label: "If a person is involved, please provide a description.", type: "textarea" },
+      { id: "vehicle_involved_description", label: "If a vehicle is involved, please provide a description.", type: "textarea" },
+      { id: "evidence_upload", label: "Upload Photos or Videos", type: "file_upload", helperText: "Please upload any visual evidence if it is safe to do so." }
+    ]
+  }
+];
+
 
 // ========================================================================
 // Main Crime Data Structure
@@ -475,92 +566,19 @@ const crimeData = {
           forms: {
             prowling_casing: {
               title: "Report Prowling / Casing",
-              steps: [
-                  {
-                    step: 1,
-                    title: "Location and Behavior",
-                    fields: [
-                        { id: "location", label: "Where is this happening?", type: "location", validation: { required: true } },
-                        { id: "activity_datetime", label: "When is this happening?", type: "datetime", validation: { required: true } },
-                        { id: "reason_for_suspicion", label: "Describe the suspicious behavior.", type: "textarea", placeholder: "e.g., someone looking into car windows, testing doors, observing a house for a long time.", validation: { required: true } }
-                    ]
-                  },
-                   {
-                      step: 2,
-                      title: "Description",
-                      fields: [
-                           { id: "suspect_description", label: "Describe the person(s).", type: "textarea", validation: { required: true } },
-                           { id: "vehicle_description", label: "Describe any associated vehicle.", type: "textarea" }
-                      ]
-                  }
-              ]
+              steps: suspiciousActivityFormSteps
             },
             suspicious_vehicle: {
               title: "Report a Suspicious Vehicle",
-              steps: [
-                {
-                  step: 1,
-                  title: "Vehicle and Location",
-                  fields: [
-                    { id: "location", label: "Where is the vehicle located?", type: "location", validation: { required: true } },
-                    { id: "vehicle_description", label: "Describe the vehicle.", type: "textarea", placeholder: "Include Make, Model, Color, License Plate, and any visible damage or unique features.", validation: { required: true } },
-                    { id: "reason_for_suspicion", label: "Why do you find this vehicle suspicious?", type: "textarea", placeholder: "e.g., parked for several days, running but unoccupied, seen circling the block repeatedly.", validation: { required: true } }
-                  ]
-                },
-                {
-                  step: 2,
-                  title: "Timing and Evidence",
-                  fields: [
-                    { id: "duration", label: "How long has the vehicle been there?", type: "text", placeholder: "e.g., 3 hours, 2 days", validation: { required: true } },
-                    { id: "last_seen_time", label: "When did you last observe the vehicle?", type: "datetime" },
-                    { id: "evidence_upload", label: "Upload Photos", type: "file_upload", helperText: "Please upload photos if it is possible and safe to do so." }
-                  ]
-                }
-              ]
+              steps: suspiciousActivityFormSteps
             },
             suspicious_package: {
                 title: "Report a Suspicious Package or Item",
-                steps: [
-                    {
-                      step: 1,
-                      title: "Critical Safety Warning",
-                      fields: [
-                          { id: "disclaimer", label: "Disclaimer", type: "static_text", text: "If you believe this item is an immediate threat (e.g., ticking, has wires, or you suspect it's a bomb), DO NOT USE THIS FORM. Move to a safe location and CALL 911 immediately." }
-                      ]
-                    },
-                    {
-                      step: 2,
-                      title: "Item and Location",
-                      fields: [
-                          { id: "location", label: "Where is the item located?", type: "location", validation: { required: true } },
-                          { id: "item_description", label: "Describe the package or item.", type: "textarea", validation: { required: true } },
-                          { id: "reason_for_suspicion", label: "Why does it seem suspicious?", type: "textarea", placeholder: "e.g., unattended in a high-traffic area, seems out of place.", validation: { required: true } }
-                      ]
-                    }
-                ]
+                steps: suspiciousActivityFormSteps
             },
             unknown_visitor_impersonation: {
                 title: "Report an Unknown Visitor / Possible Impersonation",
-                steps: [
-                    {
-                      step: 1,
-                      title: "Incident Details",
-                      fields: [
-                          { id: "location", label: "Where did this happen?", type: "location", validation: { required: true } },
-                          { id: "incident_datetime", label: "When did this happen?", type: "datetime", validation: { required: true } },
-                          { id: "impersonation_type", label: "Who did they claim to be?", type: "text", placeholder: "e.g., utility worker, city official, police officer, salesperson.", validation: { required: true } }
-                      ]
-                    },
-                     {
-                        step: 2,
-                        title: "Description",
-                        fields: [
-                            { id: "reason_for_suspicion", label: "Why was their visit suspicious?", type: "textarea", placeholder: "e.g., they had no ID, the company had no record of the visit, their request was unusual.", validation: { required: true } },
-                            { id: "person_description", label: "Describe the person(s).", type: "textarea" },
-                            { id: "vehicle_description", label: "Describe their vehicle, if any.", type: "textarea" }
-                        ]
-                     }
-                ]
+                steps: suspiciousActivityFormSteps
             }
           }
         },
@@ -570,129 +588,27 @@ const crimeData = {
           forms: {
             dangerous_reckless_driving: {
               title: "Report Dangerous / Reckless Driving",
-              steps: [
-                {
-                  step: 1,
-                  title: "Incident Details",
-                  fields: [
-                    { id: "location", label: "Where did the dangerous driving occur?", type: "text", helperText: "Provide street name, cross streets, or a highway section.", validation: { required: true } },
-                    { id: "incident_datetime", label: "When did this happen?", type: "datetime", validation: { required: true } },
-                    { id: "driving_behavior", label: "What was the driving behavior?", type: "checkbox", validation: { required: true }, options: ["Excessive Speeding", "Swerving / Weaving in traffic", "Tailgating", "Running stop signs/lights", "Aggressive behavior / Road rage", "Distracted driving (e.g., on phone)"] },
-                    { id: "behavior_description", label: "Please describe the incident in more detail.", type: "textarea" }
-                  ]
-                },
-                {
-                  step: 2,
-                  title: "Vehicle Information",
-                  fields: [
-                    { id: "vehicle_description", label: "Describe the vehicle (make, model, color).", type: "textarea", validation: { required: true } },
-                    { id: "license_plate", label: "License plate number", type: "text", helperText: "Even a partial plate number is helpful." },
-                    { id: "driver_description", label: "If you saw the driver, please provide a description.", type: "textarea" },
-                    { id: "direction_of_travel", label: "What direction was the vehicle traveling?", type: "text" }
-                  ]
-                }
-              ]
+              steps: trafficRoadSafetyFormSteps
             },
             driving_under_influence: {
               title: "Report a Driver Under the Influence (DUI)",
-              steps: [
-                  {
-                    step: 1,
-                    title: "Urgent Warning",
-                    fields: [
-                      { id: "disclaimer", label: "Disclaimer", type: "static_text", text: "If this is happening now and the driver is a danger to others, please CALL 911 immediately. This form should be used for less urgent reporting." }
-                    ]
-                  },
-                  {
-                    step: 2,
-                    title: "Vehicle and Incident",
-                    fields: [
-                      { id: "location", label: "Where did you observe the driver?", type: "text", validation: { required: true } },
-                      { id: "incident_datetime", label: "When did this happen?", type: "datetime", validation: { required: true } },
-                      { id: "direction_of_travel", label: "What direction were they heading?", type: "text" },
-                      { id: "reason_for_suspicion", label: "What driving behavior did you observe?", type: "textarea", placeholder: "e.g., unable to stay in lane, erratic speed, smelled alcohol.", validation: { required: true } },
-                      { id: "vehicle_description", label: "Describe the vehicle.", type: "textarea", validation: { required: true }, placeholder: "Make, model, color, license plate." }
-                    ]
-                  }
-              ]
+              steps: trafficRoadSafetyFormSteps
             },
             traffic_collision_non_injury: {
                 title: "Report a Non-Injury Traffic Collision",
-                steps: [
-                    {
-                      step: 1,
-                      title: "Incident Details",
-                      fields: [
-                          { id: "disclaimer", label: "Disclaimer", type: "static_text", text: "If there are any injuries or significant road blockage, please call 911." },
-                          { id: "location", label: "Location of the collision", type: "location", validation: { required: true } },
-                          { id: "collision_datetime", label: "When did it happen?", type: "datetime", validation: { required: true } },
-                          { id: "incident_description", label: "Describe how the collision occurred.", type: "textarea" }
-                      ]
-                    },
-                    {
-                      step: 2,
-                      title: "Parties Involved",
-                      fields: [
-                          { id: "your_vehicle", label: "Your Vehicle (Make, Model, Plate)", type: "text" },
-                          { id: "other_vehicle", label: "Other Vehicle (Make, Model, Plate)", type: "text" },
-                          { id: "evidence_upload", label: "Upload photos of the scene and damage.", type: "file_upload" }
-                      ]
-                    }
-                ]
+                steps: trafficRoadSafetyFormSteps
             },
             road_hazard: {
               title: "Report a Road Hazard",
-              steps: [
-                  {
-                    step: 1,
-                    title: "Hazard Details",
-                    fields: [
-                      { id: "location", label: "Where is the hazard located?", type: "location", validation: { required: true } },
-                      { id: "hazard_type", label: "What kind of hazard is it?", type: "textarea", placeholder: "e.g., large debris in road, malfunctioning traffic light, large pothole, dead animal.", validation: { required: true } },
-                      { id: "hazard_description", label: "Provide more details.", type: "textarea" },
-                      { id: "evidence_upload", label: "Upload a photo of the hazard.", type: "file_upload" }
-                    ]
-                  }
-              ]
+              steps: trafficRoadSafetyFormSteps
             },
             illegal_parking: {
                 title: "Report Illegal Parking",
-                steps: [
-                  {
-                      step: 1,
-                      title: "Vehicle and Location",
-                      fields: [
-                        { id: "location", label: "Location of the vehicle", type: "location", validation: { required: true } },
-                        { id: "vehicle_description", label: "Vehicle Description (color, make, model)", type: "text", validation: { required: true } },
-                        { id: "license_plate", label: "License Plate Number", type: "text", validation: { required: true } },
-                        { id: "violation_type", label: "What is the parking violation?", type: "textarea", placeholder: "e.g., blocking a fire hydrant, parked in a crosswalk, blocking a driveway.", validation: { required: true } }
-                      ]
-                  }
-                ]
+                steps: trafficRoadSafetyFormSteps
             },
             abandoned_vehicle: {
               title: "Report an Abandoned Vehicle",
-              steps: [
-                {
-                  step: 1,
-                  title: "Vehicle Location & Timing",
-                  fields: [
-                    { id: "location", label: "Where is the vehicle located?", type: "location", validation: { required: true } },
-                    { id: "duration", label: "How long has the vehicle been at this location?", type: "text", placeholder: "e.g., 4 days, 2 weeks", validation: { required: true } }
-                  ]
-                },
-                {
-                  step: 2,
-                  title: "Vehicle Details",
-                  fields: [
-                    { id: "vehicle_make", label: "Vehicle Make", type: "text", placeholder: "e.g., Ford" },
-                    { id: "vehicle_model", label: "Vehicle Model", type: "text", placeholder: "e.g., Explorer" },
-                    { id: "vehicle_color", label: "Color", type: "text" },
-                    { id: "license_plate", label: "License Plate Number", type: "text" },
-                    { id: "vehicle_condition", label: "Describe the condition of the vehicle.", type: "textarea", placeholder: "e.g., flat tires, broken windows, looks operable." }
-                  ]
-                }
-              ]
+              steps: trafficRoadSafetyFormSteps
             }
           }
         },
@@ -702,31 +618,11 @@ const crimeData = {
           forms: {
             public_hazard: {
               title: "Report a Public Hazard",
-              steps: [
-                  {
-                      step: 1,
-                      title: "Hazard Details",
-                      fields: [
-                        { id: "location", label: "Where is the hazard?", type: "location", validation: { required: true } },
-                        { id: "hazard_description", label: "Describe the hazard.", type: "textarea", placeholder: "e.g., downed power line, open manhole cover, unsafe building condition.", validation: { required: true } },
-                        { id: "evidence_upload", label: "Upload a photo.", type: "file_upload" }
-                      ]
-                  }
-              ]
+              steps: publicSafetyCommunityConcernsFormSteps
             },
             noise_complaint: {
               title: "Report a Noise Complaint",
-              steps: [
-                  {
-                    step: 1,
-                    title: "Complaint Details",
-                    fields: [
-                      { id: "location", label: "Location of the noise source", type: "location", validation: { required: true } },
-                      { id: "noise_type", label: "What type of noise is it?", type: "text", placeholder: "e.g., loud music, construction, party, barking dog.", validation: { required: true } },
-                      { id: "duration", label: "How long has it been happening?", type: "text", placeholder: "e.g., for the last 2 hours." }
-                    ]
-                  }
-              ]
+              steps: publicSafetyCommunityConcernsFormSteps
             },
             missing_person: {
               title: "Report a Missing Person",
@@ -763,39 +659,11 @@ const crimeData = {
             },
             animal_related_concern: {
               title: "Report an Animal-Related Concern",
-              steps: [
-                {
-                  step: 1,
-                  title: "Type of Concern",
-                  fields: [
-                    { id: "concern_type", label: "What is the concern?", type: "select", options: ["Lost Pet", "Found Pet", "Animal Neglect or Cruelty", "Dangerous / Aggressive Animal"], validation: { required: true } }
-                  ]
-                },
-                {
-                  step: 2,
-                  title: "Details",
-                  fields: [
-                    { id: "location", label: "Location of Animal/Incident", type: "location", validation: { required: true } },
-                    { id: "animal_description", label: "Describe the animal(s)", type: "textarea", placeholder: "Type, breed, color, size, any distinguishing marks.", validation: { required: true } },
-                    { id: "concern_details", label: "Please describe the situation in detail", type: "textarea", validation: { required: true } },
-                    { id: "animal_photo", label: "Upload a photo", type: "file_upload", helperText: "If possible and safe to do so." }
-                  ]
-                }
-              ]
+              steps: publicSafetyCommunityConcernsFormSteps
             },
             code_violation: {
                 title: "Report a Code Violation",
-                steps: [
-                    {
-                      step: 1,
-                      title: "Violation Details",
-                      fields: [
-                        { id: "location", label: "Address of the violation", type: "location", validation: { required: true } },
-                        { id: "violation_type", label: "What is the code violation?", type: "textarea", placeholder: "e.g., overgrown lawn, trash and debris in yard, illegal sign, unpermitted construction.", validation: { required: true } },
-                        { id: "evidence_upload", label: "Upload photo(s)", type: "file_upload" }
-                      ]
-                    }
-                ]
+                steps: publicSafetyCommunityConcernsFormSteps
             },
             welfare_check: {
               title: "Request a Welfare Check",
