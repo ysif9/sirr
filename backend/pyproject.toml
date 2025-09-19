@@ -115,6 +115,7 @@ case-sensitive = true
 django_settings_module = "core.settings"
 
 [tool.poe.tasks]
+build = { cmd = "docker compose -f ../docker-compose.yml build ", help = "Build/rebuild the docker container." }
 dev = { cmd = "docker compose -f ../docker-compose.yml up", help = "Run the development server." }
 makemigrations = { cmd = "docker compose -f ../docker-compose.yml run --rm sirr_api python manage.py makemigrations --settings=core.settings", help = "Generate new database migrations." }
 migrate = { cmd = "docker compose -f ../docker-compose.yml run --rm sirr_api python manage.py migrate --settings=core.settings", help = "Apply database migrations." }
