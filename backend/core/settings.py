@@ -41,6 +41,7 @@ DJANGO_DEFAULT_APPS = [
 # Third-party apps
 THIRD_PARTY_APPS = [
     "rest_framework",
+    "corsheaders", # Ensure this is here
 ]
 
 # Local apps
@@ -52,8 +53,11 @@ LOCAL_APPS = [
 
 INSTALLED_APPS = THIRD_PARTY_APPS + DJANGO_DEFAULT_APPS + LOCAL_APPS
 
+# --- FIX: ADJUSTED MIDDLEWARE ORDER ---
+# CorsMiddleware should be placed as high as possible.
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'corsheaders.middleware.CorsMiddleware',  # <-- MOVED HIGHER
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -61,6 +65,12 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+# --- FIX: MORE PERMISSIVE CORS SETTING FOR DEBUGGING ---
+# This allows requests from any origin. If this works, the problem was a typo
+# in the CORS_ALLOWED_ORIGINS list.
+CORS_ALLOW_ALL_ORIGINS = True
+
 
 ROOT_URLCONF = 'core.urls'
 
@@ -186,3 +196,68 @@ SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
     'REFRESH_TOKEN_LIFETIME': timedelta(minutes=60),
 }
+
+
+# CORS settings with enhanced security
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",  # Frontend
+    "http://127.0.0.1:3000",
+    "http://localhost:8000",  # Backend
+    "http://127.0.0.1:8000",
+]
+
+CORS_ALLOW_CREDENTIALS = True
+
+CORS_ALLOW_HEADERS = [
+    "accept",
+    "accept-encoding",
+    "authorization",
+    "content-type",
+    "dnt",
+    "origin",
+    "user-agent",
+    "x-csrftoken",
+    "x-requested-with",
+]
+
+# Session and cookie settings
+SESSION_COOKIE_SECURE = False  # False for HTTP development
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = "Lax"
+SESSION_COOKIE_DOMAIN = None  # Allow cross-subdomain cookies
+
+# CSRF settings for cross-origin
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
+]
+CSRF_COOKIE_SECURE = False  # False for HTTP development
+CSRF_COOKIE_HTTPONLY = True
+CSRF_COOKIE_SAMESITE = "Lax"
+CSRF_COOKIE_DOMAIN = None
+CSRF_USE_SESSIONS = False
+CSRF_COOKIE_NAME = "csrftoken"
+
+# Enhanced CORS security
+CORS_ALLOW_METHODS = [
+    "DELETE",
+    "GET",
+    "OPTIONS",
+    "PATCH",
+    "POST",
+    "PUT",
+]
+
+# Security headers and middleware (development-friendly)
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+X_FRAME_OPTIONS = "SAMEORIGIN"  # SAMEORIGIN for dev
+# SECURE_HSTS_SECONDS = 0  # 0 for dev
+# SECURE_HSTS_INCLUDE_SUBDOMAINS = False  # False for dev
+# SECURE_HSTS_PRELOAD = False  # False for dev
+
+# Additional security settings (development-friendly)
+SECURE_REFERRER_POLICY = "no-referrer-when-downgrade"  # For dev
+# SECURE_CROSS_ORIGIN_OPENER_POLICY = 'unsafe-none'  # For dev
