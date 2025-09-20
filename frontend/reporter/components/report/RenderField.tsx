@@ -35,12 +35,15 @@ const RenderField: React.FC<RenderFieldProps> = ({ control, field, watch }) => {
       case "datetime": // Render as text for now
       case "datetime_range": // Render as text for now
       case "date_range": // Render as text for now
-        return <Input {...rhfProps} type={field.type} placeholder={field.placeholder} />
+        // FIX: Use `value={rhfProps.value ?? ''}` to prevent uncontrolled -> controlled warning
+        return <Input {...rhfProps} value={rhfProps.value ?? ""} type={field.type} placeholder={field.placeholder} />
       case "textarea":
-        return <Textarea {...rhfProps} placeholder={field.placeholder} />
+        // FIX: Use `value={rhfProps.value ?? ''}` to prevent uncontrolled -> controlled warning
+        return <Textarea {...rhfProps} value={rhfProps.value ?? ""} placeholder={field.placeholder} />
       case "radio_group":
         return (
-          <RadioGroup onValueChange={rhfProps.onChange} defaultValue={rhfProps.value} className="flex gap-4">
+          // FIX: Changed `defaultValue` to `value` for a controlled component
+          <RadioGroup onValueChange={rhfProps.onChange} value={rhfProps.value} className="flex gap-4">
             {field.options?.map((option: string) => (
               <div key={option} className="flex items-center space-x-2">
                 <RadioGroupItem value={option} id={`${field.id}-${option}`} />
@@ -51,7 +54,8 @@ const RenderField: React.FC<RenderFieldProps> = ({ control, field, watch }) => {
         )
       case "select":
         return (
-          <Select onValueChange={rhfProps.onChange} defaultValue={rhfProps.value}>
+          // FIX: Changed `defaultValue` to `value` for a controlled component
+          <Select onValueChange={rhfProps.onChange} value={rhfProps.value}>
             <SelectTrigger>
               <SelectValue placeholder={`Select ${field.label.toLowerCase()}`} />
             </SelectTrigger>

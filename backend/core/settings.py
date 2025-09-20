@@ -41,6 +41,7 @@ DJANGO_DEFAULT_APPS = [
 # Third-party apps
 THIRD_PARTY_APPS = [
     "rest_framework",
+    "corsheaders",
 ]
 
 # Local apps
@@ -52,8 +53,10 @@ LOCAL_APPS = [
 
 INSTALLED_APPS = THIRD_PARTY_APPS + DJANGO_DEFAULT_APPS + LOCAL_APPS
 
+# Middleware
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -186,3 +189,36 @@ SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
     'REFRESH_TOKEN_LIFETIME': timedelta(minutes=60),
 }
+
+# CORS settings with enhanced security
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",  # Frontend
+    "http://127.0.0.1:3000",
+    "http://localhost:8000",  # Backend
+    "http://127.0.0.1:8000",
+]
+
+CORS_ALLOW_HEADERS = [
+    "authorization",
+    "content-type",
+    "accept",
+    "origin",
+]
+
+# CSRF settings for cross-origin
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
+]
+
+# Enhanced CORS security
+CORS_ALLOW_METHODS = [
+    "GET",
+    "POST",
+    "PUT",
+    "PATCH",
+    "DELETE",
+    "OPTIONS",
+]
