@@ -90,10 +90,12 @@ class Report(BaseModel):
                                  blank=True)
     access_key = models.CharField(max_length=255, unique=True)
     
-    encrypted_body = models.BinaryField(help_text=_("The raw ciphertext of the report."))
+    encrypted_body = models.BinaryField(help_text=_("The raw ciphertext of the report."), null=True, blank=True)
     key_envelope = models.JSONField(
-        help_text=_("The encrypted report key (K_report) and the reporter's ephemeral public key."))
-    body_nonce = models.BinaryField(help_text=_("The 24-byte XChaCha20 nonce used for encrypting the report body."))
+        help_text=_("The encrypted report key (K_report) and the reporter's ephemeral public key."),
+        null=True, blank=True
+    )
+    body_nonce = models.BinaryField(help_text=_("The 24-byte XChaCha20 nonce used for encrypting the report body."), null=True, blank=True)
     associated_data = models.JSONField(
         default=dict,
         help_text=_("Non-secret, integrity-protected metadata (e.g., report type, coarse timestamp).")
@@ -150,16 +152,19 @@ class Attachment(BaseModel):
         ],
     )
     key_envelope = models.JSONField(
-        help_text=_("The encrypted attachment key (K_attach_i).")
+        help_text=_("The encrypted attachment key (K_attach_i)."),
+        null=True, blank=True
     )
     nonce = models.BinaryField(
-        help_text=_("The unique nonce for the attachment's encryption.")
+        help_text=_("The unique nonce for the attachment's encryption."),
+        null=True, blank=True
     )
     description = models.TextField(blank=True)
     checksum = models.CharField(
         max_length=64, 
         blank=True,
-        help_text=_("The SHA-256 hash of the encrypted file content (ciphertext).")
+        help_text=_("The SHA-256 hash of the encrypted file content (ciphertext)."),
+        null=True
     )
 
     @property
@@ -198,7 +203,7 @@ class AIAnalysis(models.Model):
     confidence = models.PositiveSmallIntegerField(default=0, validators=[MinValueValidator(0), MaxValueValidator(100)])
     analyzed_at = models.DateTimeField(auto_now_add=True, )
     model_version = models.CharField(max_length=50, default="v1")
-    analysis_data = models.JSONField(default=dict, blank=True)  # Store detailed results
+    analysis_data = models.JSONField(default=dict, blank=True)
 
     def __str__(self) -> str:
         return f"AI Analysis for Report {self.report.id}"
