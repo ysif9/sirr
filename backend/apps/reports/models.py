@@ -83,13 +83,22 @@ class Report(BaseModel):
 
     Represents individual reports submitted using templates, with full
     lifecycle management including status tracking, expiration, scoring,
-    and priority assignment. Reports contain JSON data matching their
-    template structure.
+    and priority assignment. The report body is stored as end-to-end
+    encrypted ciphertext.
     """
     template = models.ForeignKey(ReportTemplate, on_delete=models.SET_NULL, related_name="reports", null=True,
                                  blank=True)
     access_key = models.CharField(max_length=255, unique=True)
-    data = models.JSONField(default=dict)
+    
+    encrypted_body = models.BinaryField(help_text=_("The raw ciphertext of the report."))
+    key_envelope = models.JSONField(
+        help_text=_("The encrypted report key (K_report) and the reporter's ephemeral public key."))
+    body_nonce = models.BinaryField(help_text=_("The 24-byte XChaCha20 nonce used for encrypting the report body."))
+    associated_data = models.JSONField(
+        default=dict,
+        help_text=_("Non-secret, integrity-protected metadata (e.g., report type, coarse timestamp).")
+    )
+    
     status = models.CharField(max_length=50, choices=ReportStatus.choices, default=ReportStatus.SUBMITTED)
     score = models.IntegerField(default=0)
     priority = models.CharField(max_length=50, choices=ReportPriority.choices, default=ReportPriority.MEDIUM)

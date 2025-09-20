@@ -37,8 +37,20 @@ class ReportTemplateSerializer(serializers.ModelSerializer):
 class ReportSerializer(serializers.ModelSerializer):
     class Meta:
         model = Report
-        fields = ["id", "template", "access_key", "data", "status", "score", "priority", "last_access_by_reporter",
-                  "expires_at"]
+        fields = [
+            "id",
+            "template",
+            "access_key",
+            "encrypted_body",
+            "key_envelope",
+            "body_nonce",
+            "associated_data",
+            "status",
+            "score",
+            "priority",
+            "last_access_by_reporter",
+            "expires_at",
+        ]
         read_only_fields = ["id", "access_key", "score", "last_access_by_reporter", "expires_at", "created_at",
                             "updated_at"]
 
