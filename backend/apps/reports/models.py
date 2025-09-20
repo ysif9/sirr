@@ -83,13 +83,22 @@ class Report(BaseModel):
 
     Represents individual reports submitted using templates, with full
     lifecycle management including status tracking, expiration, scoring,
-    and priority assignment. Reports contain JSON data matching their
-    template structure.
+    and priority assignment. The report body is stored as end-to-end
+    encrypted ciphertext.
     """
     template = models.ForeignKey(ReportTemplate, on_delete=models.SET_NULL, related_name="reports", null=True,
                                  blank=True)
     access_key = models.CharField(max_length=255, unique=True)
-    data = models.JSONField(default=dict)
+    
+    encrypted_body = models.BinaryField(help_text=_("The raw ciphertext of the report."))
+    key_envelope = models.JSONField(
+        help_text=_("The encrypted report key (K_report) and the reporter's ephemeral public key."))
+    body_nonce = models.BinaryField(help_text=_("The 24-byte XChaCha20 nonce used for encrypting the report body."))
+    associated_data = models.JSONField(
+        default=dict,
+        help_text=_("Non-secret, integrity-protected metadata (e.g., report type, coarse timestamp).")
+    )
+    
     status = models.CharField(max_length=50, choices=ReportStatus.choices, default=ReportStatus.SUBMITTED)
     score = models.IntegerField(default=0)
     priority = models.CharField(max_length=50, choices=ReportPriority.choices, default=ReportPriority.MEDIUM)
@@ -116,12 +125,13 @@ class Attachment(BaseModel):
     File attachments associated with reports.
 
     Manages uploaded files linked to reports with metadata tracking,
-    file validation, and automatic cleanup. Supports various file types
-    with size limitations and integrity checking.
+    file validation, and automatic cleanup. The file content is stored
+    as end-to-end encrypted ciphertext.
     """
     report = models.ForeignKey(Report, on_delete=models.CASCADE, related_name="attachments")
     file = models.FileField(
         upload_to=attachment_upload_path,
+        help_text=_("The encrypted file content (ciphertext)."),
         validators=[
             FileExtensionValidator(
                 allowed_extensions=[
@@ -139,8 +149,18 @@ class Attachment(BaseModel):
             )
         ],
     )
+    key_envelope = models.JSONField(
+        help_text=_("The encrypted attachment key (K_attach_i).")
+    )
+    nonce = models.BinaryField(
+        help_text=_("The unique nonce for the attachment's encryption.")
+    )
     description = models.TextField(blank=True)
-    checksum = models.CharField(max_length=64, blank=True)
+    checksum = models.CharField(
+        max_length=64, 
+        blank=True,
+        help_text=_("The SHA-256 hash of the encrypted file content (ciphertext).")
+    )
 
     @property
     def mime_type(self) -> str | None:
