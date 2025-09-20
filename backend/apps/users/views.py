@@ -9,15 +9,16 @@ from .serializers import CaseworkerPublicKeySerializer, UserPublicKeyBundleSeria
 
 class CaseworkerPublicKeysView(generics.ListAPIView):
     """
-    A public, read-only endpoint to fetch the public key bundles for all designated
-    caseworkers.
+    A public, read-only endpoint to fetch the public key bundles for all active,
+    designated caseworkers.
     """
     permission_classes = [AllowAny]
     serializer_class = CaseworkerPublicKeySerializer
     queryset = User.objects.filter(
         is_caseworker=True,
+        is_active=True,
         public_key_bundle__isnull=False
-    ).only("id", "public_key_bundle")
+    ).only("id", "username", "public_key_bundle")
 
 
 class UserPublicKeyBundleView(APIView):
