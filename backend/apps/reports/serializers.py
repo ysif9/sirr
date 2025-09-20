@@ -2,7 +2,7 @@ import secrets
 
 from rest_framework import serializers
 
-from .models import AIAnalysis, Attachment, Report, ReportAssignment, ReportCategory, ReportRedaction, ReportTemplate
+from .models import AIAnalysis, Attachment, Report, ReportCategory, ReportRedaction, ReportTemplate
 
 
 # -------------------
@@ -49,6 +49,13 @@ class ReportSerializer(serializers.ModelSerializer):
         return super().create(validated_data)
 
 
+class ReportListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Report
+        fields = ["id", "status", "priority", "last_access_by_reporter",
+                  "expires_at"]
+
+
 # -------------------
 # Attachment serializers
 # -------------------
@@ -66,16 +73,6 @@ class AIAnalysisSerializer(serializers.ModelSerializer):
     class Meta:
         model = AIAnalysis
         fields = ["report", "is_spam", "confidence", "analyzed_at", "model_version", "analysis_data"]
-
-
-# -------------------
-# Assignment serializers
-# -------------------
-class ReportAssignmentSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ReportAssignment
-        fields = ["report", "assignee", "assigned_at", "last_access"]
-        read_only_fields = ["assigned_at", "last_access"]
 
 
 # -------------------
