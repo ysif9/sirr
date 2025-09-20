@@ -1,8 +1,5 @@
-import secrets
-
-from rest_framework import filters, status, viewsets
+from rest_framework import filters, viewsets
 from rest_framework.permissions import AllowAny
-from rest_framework.response import Response
 
 from .models import AIAnalysis, Attachment, Report, ReportAssignment, ReportCategory, ReportRedaction, ReportTemplate
 from .serializers import (
@@ -52,39 +49,7 @@ class ReportViewSet(viewsets.ModelViewSet):
     queryset = Report.objects.all()
     serializer_class = ReportSerializer
     permission_classes = [AllowAny]
-
-    # FIX: Override the create method to handle custom submission logic
-    def create(self, request, *args, **kwargs):
-        # Extract the nested form data from the request payload
-        form_data = request.data.get('data', {})
-        if not form_data:
-            return Response(
-                {'error': 'No form data provided in the "data" key.'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        # Generate a secure, random access key for the user
-        access_key = secrets.token_hex(16)
-
-        # Prepare the data for the ReportSerializer
-        report_data = {
-            'data': form_data,
-            'access_key': access_key
-            # Note: template is not being set here. You may need to pass
-            # the form identifier from the frontend to look up the template.
-        }
-
-        serializer = self.get_serializer(data=report_data)
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        
-        # Return only the access key, as expected by the frontend
-        headers = self.get_success_headers(serializer.data)
-        return Response(
-            {'access_key': access_key},
-            status=status.HTTP_201_CREATED,
-            headers=headers
-        )
+    
 
 # -------------------
 # Attachment viewset

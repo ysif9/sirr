@@ -1,3 +1,5 @@
+import secrets
+
 from rest_framework import serializers
 
 from .models import AIAnalysis, Attachment, Report, ReportAssignment, ReportCategory, ReportRedaction, ReportTemplate
@@ -39,6 +41,12 @@ class ReportSerializer(serializers.ModelSerializer):
                   "expires_at"]
         read_only_fields = ["id", "access_key", "score", "last_access_by_reporter", "expires_at", "created_at",
                             "updated_at"]
+
+    def create(self, validated_data):
+        # Generate a secure, random access key for the user
+        access_key = secrets.token_hex(16)
+        validated_data["access_key"] = access_key
+        return super().create(validated_data)
 
 
 # -------------------
