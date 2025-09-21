@@ -127,6 +127,13 @@ class ReportListSerializer(serializers.ModelSerializer):
                   "expires_at"]
 
 
+class ReportCreationResponseSerializer(serializers.ModelSerializer):
+    """Serializer to return just the access_key after a report is created."""
+    class Meta:
+        model = Report
+        fields = ["access_key"]
+
+
 # -------------------
 # Attachment serializers
 # -------------------
