@@ -1,13 +1,11 @@
 import base64
 import secrets
 from binascii import Error as BinasciiError
-from uuid import UUID
 
 from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
-from apps.users.models import User
 from .models import AIAnalysis, Attachment, Report, ReportAssignment, ReportCategory, ReportRedaction, ReportTemplate
 
 
@@ -128,7 +126,8 @@ class ReportSerializer(serializers.ModelSerializer):
 class AttachmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Attachment
-        fields = ["id", "report", "file", "key_envelope", "nonce", "description", "checksum", "mime_type", "file_extension"]
+        fields = ["id", "report", "file", "key_envelope", "nonce", "description", "checksum", "mime_type",
+                  "file_extension"]
         read_only_fields = ["id", "mime_type", "file_extension"]
 
 
