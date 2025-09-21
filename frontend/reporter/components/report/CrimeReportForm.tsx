@@ -3,8 +3,8 @@
 import React, { useState } from "react"
 import { useForm } from "react-hook-form"
 import { FormDefinition, Field } from "@/lib/crime-forms"
-import { getFirstCaseworker, submitReport } from "@/lib/api"
-import { createUnassignedEncryptedPayload, encryptReportPayload } from "@/lib/crypto-utils"
+import { getAdminPublicKey, submitReport } from "@/lib/api"
+import { encryptReportPayload } from "@/lib/crypto-utils"
 import ReportStepper from "@/components/Stepper"
 import RenderField from "./RenderField"
 import { Button } from "../ui/button"
@@ -30,27 +30,24 @@ const CrimeReportForm: React.FC<CrimeReportFormProps> = ({ formDefinition }) => 
     setSubmissionError(null)
 
     try {
-      const recipient = await getFirstCaseworker()
+      // Fetch the single system-wide admin public key
+      const adminKey = await getAdminPublicKey()
+      if (!adminKey) {
+        throw new Error("Could not retrieve the system's public key. Submission is temporarily unavailable.")
+      }
+
       const reportData = getValues()
-      let payload
 
       const associated_data = {
         form_title: formDefinition.title,
         submitted_at_coarse: new Date().toISOString().substring(0, 10), // e.g., "2025-09-20"
       }
 
-      if (recipient) {
-        // Standard E2EE Path: Encrypt for the found recipient
-        const encryptedPayload = encryptReportPayload(reportData, recipient)
-        payload = { ...encryptedPayload, associated_data }
-      } else {
-        // Fallback Path: No recipients available, create an unrecoverable "write-only" report
-        console.warn("No recipients found. Submitting an unrecoverable encrypted report.")
-        const unassignedPayload = createUnassignedEncryptedPayload(reportData)
-        payload = { ...unassignedPayload, associated_data }
-      }
+      // Directly encrypt the payload for the admin.
+      const encryptedPayload = encryptReportPayload(reportData, adminKey)
+      const payload = { ...encryptedPayload, associated_data }
 
-      // Submit the report (either standard or unassigned)
+      // Submit the report
       const result = await submitReport(payload)
       setSubmissionData(result)
     } catch (error: any) {
