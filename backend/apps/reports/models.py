@@ -225,6 +225,11 @@ class ReportAssignment(models.Model):
     assignee = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="assigned_reports")
     assigned_at = models.DateTimeField(auto_now_add=True)
     last_access = models.DateTimeField(null=True, blank=True)
+    key_envelope = models.JSONField(
+        null=True,
+        blank=True,
+        help_text=_("The re-encrypted report key (K_report) for the assigned investigator.")
+    )
 
     class Meta:
         verbose_name = _("Report Assignment")
