@@ -1,9 +1,7 @@
 from django.db.models import Prefetch
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters, viewsets
-from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
 from rest_framework import filters, status, viewsets
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 
 from .filters import ReportFilter
@@ -12,7 +10,6 @@ from .serializers import (
     AIAnalysisSerializer,
     AttachmentSerializer,
     EncryptedReportSubmissionSerializer,
-    ReportAssignmentSerializer,
     ReportCategorySerializer,
     ReportListSerializer,
     ReportRedactionSerializer,
