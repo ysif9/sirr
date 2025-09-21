@@ -1,10 +1,33 @@
 from rest_framework import generics, status
+from rest_framework.exceptions import NotFound
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .models import User
 from .serializers import CaseworkerPublicKeySerializer, UserPublicKeyBundleSerializer
+
+
+class SystemInboxPublicKeyView(APIView):
+    """
+    A public, read-only endpoint to fetch the public key bundle for the
+    system's designated admin inbox.
+    """
+    permission_classes = [AllowAny]
+
+    def get(self, request, *args, **kwargs):
+        """Return the public key of the first active superuser."""
+        admin_user = User.objects.filter(
+            is_superuser=True,
+            is_active=True,
+            public_key_bundle__isnull=False
+        ).order_by('date_joined').first()
+
+        if not admin_user:
+            raise NotFound(detail="System inbox public key is not configured or available.")
+
+        serializer = CaseworkerPublicKeySerializer(admin_user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class CaseworkerPublicKeysView(generics.ListAPIView):

@@ -21,31 +21,32 @@ class EncryptedReportSubmissionAPITest(APITestCase):
     def setUp(self):
         """
         Set up the test environment. This runs before each test.
-        1. Generate a key pair for a caseworker.
-        2. Create the caseworker user object with their public key bundle.
+        1. Generate a key pair for a system admin.
+        2. Create the admin user object with their public key bundle.
         """
-        # 1. Generate caseworker's long-term X25519 key pair
-        self.caseworker_private_key = PrivateKey.generate()
-        caseworker_public_key_bytes = self.caseworker_private_key.public_key.__bytes__()
+        # 1. Generate admin's long-term X25519 key pair
+        self.admin_private_key = PrivateKey.generate()
+        admin_public_key_bytes = self.admin_private_key.public_key.__bytes__()
 
         # For simplicity, we use a placeholder for the Kyber key.
         # The backend's validation requires it to be present and have the correct length.
         kyber_placeholder = base64.b64encode(b'\x00' * 1568).decode('utf-8')
         
-        # 2. Create the caseworker user in the test database
-        self.caseworker = User.objects.create_user(
-            username="testcaseworker",
-            is_caseworker=True,
+        # 2. Create the admin user in the test database
+        self.admin_user = User.objects.create_user(
+            username="testadmin",
+            is_superuser=True,
             is_active=True,
             public_key_bundle={
-                "identity_key_x25519": base64.b64encode(caseworker_public_key_bytes).decode('utf-8'),
+                "identity_key_x25519": base64.b64encode(admin_public_key_bytes).decode('utf-8'),
                 "kem_key_kyber": kyber_placeholder,
             }
         )
     
     def test_successful_encrypted_report_submission(self):
         """
-        Tests the entire E2EE submission flow from the perspective of a client.
+        Tests the entire E2EE submission flow from the perspective of a client
+        submitting to the system inbox.
         """
         # ===================================================================
         # 1. SIMULATE CLIENT-SIDE ENCRYPTION
@@ -76,13 +77,13 @@ class EncryptedReportSubmissionAPITest(APITestCase):
         
         # Create a "Box" to perform authenticated encryption using ECDH (X25519)
         # This derives a shared secret to encrypt K_report.
-        caseworker_public_key = self.caseworker_private_key.public_key
-        key_wrapping_box = Box(reporter_ephemeral_private_key, caseworker_public_key)
+        admin_public_key = self.admin_private_key.public_key
+        key_wrapping_box = Box(reporter_ephemeral_private_key, admin_public_key)
         
         # Encrypt (wrap) K_report. A random nonce is generated automatically.
         wrapped_k_report_with_nonce = key_wrapping_box.encrypt(k_report)
         
-        # The key envelope contains everything the caseworker needs to unwrap K_report
+        # The key envelope contains everything the admin needs to unwrap K_report
         key_envelope = {
             "reporter_ephemeral_public_key": base64.b64encode(reporter_ephemeral_public_key_bytes).decode('utf-8'),
             "wrapped_report_key": base64.b64encode(wrapped_k_report_with_nonce).decode('utf-8'),
@@ -94,7 +95,6 @@ class EncryptedReportSubmissionAPITest(APITestCase):
         # ===================================================================
         
         api_payload = {
-            "recipient_id": str(self.caseworker.id),
             "encrypted_body": base64.b64encode(encrypted_body_bytes).decode('utf-8'),
             "body_nonce": base64.b64encode(nonce).decode('utf-8'),
             "key_envelope": key_envelope,
