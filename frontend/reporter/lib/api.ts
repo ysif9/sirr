@@ -1,5 +1,3 @@
-import { AdminEncryptedPayload } from "./crypto-utils";
-
 // Hardcode the API URL as per the refactoring instructions to ensure consistency.
 const API_BASE_URL = "http://localhost:8000";
 
@@ -32,21 +30,32 @@ export async function getAdminPublicKey(): Promise<AdminPublicKey> {
 }
 
 /**
- * Submits the encrypted report payload to the backend.
- * All reports are now sent to the admin inbox, so no recipient_id is needed.
- * @param {AdminEncryptedPayload} payload The encrypted data and metadata.
+ * Submits the report with optional attachments using multipart/form-data.
+ * @param {object} reportData The plaintext report data.
+ * @param {FileList | null} attachments The files to upload.
  * @returns {Promise<{ access_key: string }>} The submission result containing the access key.
  * @throws {Error} If the submission fails.
  */
 export async function submitReport(
-  payload: AdminEncryptedPayload
+  reportData: object,
+  attachments: FileList | null
 ): Promise<{ access_key: string }> {
+  const formData = new FormData();
+
+  // Append the report data as a JSON string. The backend will parse this field.
+  formData.append("report_data", JSON.stringify(reportData));
+
+  // Iterate over the attachments and append each file.
+  if (attachments) {
+    for (let i = 0; i < attachments.length; i++) {
+      formData.append("attachments", attachments[i]);
+    }
+  }
+
   const response = await fetch(`${API_BASE_URL}/api/reports/`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(payload),
+    // The browser will automatically set the 'Content-Type' header with the correct boundary.
+    body: formData,
   });
 
   if (!response.ok) {
