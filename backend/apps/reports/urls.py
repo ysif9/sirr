@@ -4,7 +4,6 @@ from rest_framework.routers import DefaultRouter
 from .views import (
     AIAnalysisViewSet,
     AttachmentViewSet,
-    ReportAssignmentViewSet,
     ReportCategoryViewSet,
     ReportRedactionViewSet,
     ReportTemplateViewSet,
@@ -17,7 +16,6 @@ router.register(r"templates", ReportTemplateViewSet)
 router.register(r"reports", ReportViewSet)
 router.register(r"attachments", AttachmentViewSet)
 router.register(r"ai-analyses", AIAnalysisViewSet)
-router.register(r"assignments", ReportAssignmentViewSet)
 router.register(r"redactions", ReportRedactionViewSet)
 
 urlpatterns = [

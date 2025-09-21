@@ -1,5 +1,5 @@
 version = 1
-revision = 3
+revision = 2
 requires-python = ">=3.13"
 resolution-markers = [
     "python_full_version >= '3.14' and platform_python_implementation != 'PyPy'",
@@ -236,6 +236,18 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/96/10/f7abd052606f111785bc94dd055dc0d95b03a4daad3d2c18dea50efa9262/django-diagram-0.0.1.tar.gz", hash = "sha256:7fa243ddaf3e71c0438274424214b7fd38d68acbf3f17f015460d40a0a4a05ab", size = 5953, upload-time = "2023-02-18T22:45:42.618Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/0c/35/438e2cd7e768609e04d067ce94a2584170f81e621c32c61f5906ac4bfab1/django_diagram-0.0.1-py3-none-any.whl", hash = "sha256:84fef6edc2ace54c7304c445d6f48ba9b44fd19f328410caa17b19f92013c659", size = 6906, upload-time = "2023-02-18T22:45:39.237Z" },
+]
+
+[[package]]
+name = "django-filter"
+version = "25.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "django" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/b5/40/c702a6fe8cccac9bf426b55724ebdf57d10a132bae80a17691d0cf0b9bac/django_filter-25.1.tar.gz", hash = "sha256:1ec9eef48fa8da1c0ac9b411744b16c3f4c31176c867886e4c48da369c407153", size = 143021, upload-time = "2025-02-14T16:30:53.238Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/07/a6/70dcd68537c434ba7cb9277d403c5c829caf04f35baf5eb9458be251e382/django_filter-25.1-py3-none-any.whl", hash = "sha256:4fa48677cf5857b9b1347fed23e355ea792464e0fe07244d1fdfb8a806215b80", size = 94114, upload-time = "2025-02-14T16:30:50.435Z" },
 ]
 
 [[package]]
@@ -644,6 +656,7 @@ dependencies = [
     { name = "celery" },
     { name = "django" },
     { name = "django-cors-headers" },
+    { name = "django-filter" },
     { name = "django-redis" },
     { name = "djangorestframework" },
     { name = "djangorestframework-simplejwt" },
@@ -667,6 +680,7 @@ requires-dist = [
     { name = "celery", specifier = ">=5.5.3" },
     { name = "django", specifier = ">=5.2.6" },
     { name = "django-cors-headers", specifier = ">=4.9.0" },
+    { name = "django-filter", specifier = ">=25.1" },
     { name = "django-redis", specifier = ">=6.0.0" },
     { name = "djangorestframework", specifier = ">=3.16.1" },
     { name = "djangorestframework-simplejwt", specifier = ">=5.5.1" },

@@ -235,6 +235,9 @@ class ReportAssignment(models.Model):
         verbose_name = _("Report Assignment")
         verbose_name_plural = _("Report Assignments")
         unique_together = ("report", "assignee")
+        indexes = [
+            models.Index(fields=["assignee"]),
+        ]
 
 
 class ReportRedaction(BaseModel):
