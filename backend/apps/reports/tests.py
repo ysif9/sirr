@@ -10,6 +10,7 @@ from rest_framework.test import APITestCase
 from apps.reports.models import Report
 from apps.users.models import User
 
+
 # NOTE: This test simulates the "classical-only" key wrapping using X25519
 # as described in the plan. The backend supports the hybrid scheme, but this
 # is sufficient to test the API data flow.
@@ -121,6 +122,7 @@ class EncryptedReportSubmissionAPITest(APITestCase):
         # Fetch the created report from the database to verify its contents
         created_report = Report.objects.first()
         self.assertIsNotNone(created_report)
+        assert created_report is not None  # for mypy
 
         # Verify that the encrypted data was stored correctly (after decoding from Base64)
         self.assertEqual(created_report.encrypted_body, encrypted_body_bytes)
