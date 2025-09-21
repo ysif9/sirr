@@ -45,9 +45,13 @@ class EncryptedReportSubmissionSerializer(serializers.ModelSerializer):
     """
     Serializer for submitting a new, end-to-end encrypted report.
 
-    Validates the cryptographic components of the payload, including Base64-encoded
-    ciphertext and nonce, and ensures the recipient exists. It is responsible for
-    creating the Report record and generating the reporter's `access_key`.
+    This serializer handles two cases:
+    1.  Reports encrypted for a specific recipient (`recipient_id` and `key_envelope` are provided).
+    2.  Reports submitted without a recipient (no `recipient_id` or `key_envelope`). These reports
+        are considered "write-only" as their content is not decryptable by any party.
+
+    It validates cryptographic components and is responsible for creating the Report record
+    and generating the reporter's `access_key`.
     """
     encrypted_body = serializers.CharField(
         write_only=True,
@@ -59,10 +63,14 @@ class EncryptedReportSubmissionSerializer(serializers.ModelSerializer):
     )
     recipient_id = serializers.UUIDField(
         write_only=True,
-        help_text="The UUID of the caseworker recipient."
+        help_text="The UUID of the caseworker recipient.",
+        required=False,
+        allow_null=True
     )
-
-    key_envelope = serializers.JSONField()
+    key_envelope = serializers.JSONField(
+        required=False,
+        allow_null=True
+    )
     associated_data = serializers.JSONField(required=False, default=dict)
 
     class Meta:
@@ -95,11 +103,30 @@ class EncryptedReportSubmissionSerializer(serializers.ModelSerializer):
             )
         return decoded_nonce
 
-    def validate_recipient_id(self, value: UUID):
-        """Ensure the recipient is a valid, active caseworker."""
+    def validate_recipient_id(self, value: UUID | None):
+        """Ensure the recipient is a valid, active caseworker, or None."""
+        if value is None:
+            return None
         if not User.objects.filter(id=value, is_caseworker=True, is_active=True).exists():
             raise ValidationError(_("A valid recipient (caseworker) with this ID does not exist."))
         return value
+
+    def validate(self, data):
+        """
+        Cross-field validation.
+        - If a recipient_id is provided, a key_envelope must also be provided.
+        - If no recipient_id is provided, key_envelope must be null or absent.
+        """
+        recipient_id = data.get("recipient_id")
+        key_envelope = data.get("key_envelope")
+
+        if recipient_id and not key_envelope:
+            raise ValidationError(_("A `key_envelope` is required when a `recipient_id` is provided."))
+
+        if not recipient_id and key_envelope:
+            raise ValidationError(_("A `key_envelope` should not be provided without a `recipient_id`."))
+
+        return data
 
     def create(self, validated_data):
         # The `recipient_id` is used for validation only and is not a field on the Report model.
