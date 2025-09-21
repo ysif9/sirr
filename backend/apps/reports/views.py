@@ -72,6 +72,7 @@ class ReportViewSet(viewsets.ModelViewSet):
 
         if self.request.user.is_authenticated:
             queryset = queryset.filter(assignments__assignee=self.request.user)
+            return queryset
 
         return queryset.none()
 
