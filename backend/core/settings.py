@@ -42,6 +42,7 @@ DJANGO_DEFAULT_APPS = [
 THIRD_PARTY_APPS = [
     "rest_framework",
     "corsheaders",
+    "django_filters",
 ]
 
 # Local apps
