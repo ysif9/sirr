@@ -14,6 +14,7 @@ from .models import AIAnalysis, Attachment, Report, ReportAssignment, ReportCate
 from .serializers import (
     AIAnalysisSerializer,
     AttachmentSerializer,
+    EncryptedReportCreationSerializer,
     ReportCategorySerializer,
     ReportCreationResponseSerializer,
     ReportListSerializer,
@@ -64,9 +65,11 @@ class ReportViewSet(viewsets.ModelViewSet):
     ordering_fields = ["created_at", "updated_at", "score", "priority"]
 
     def get_serializer_class(self):
-        """Use a different serializer for list view."""
+        """Use a different serializer for list and create views."""
         if self.action == "list":
             return ReportListSerializer
+        if self.action == "create":
+            return EncryptedReportCreationSerializer
         return super().get_serializer_class()
 
     def get_queryset(self):
@@ -98,39 +101,46 @@ class ReportViewSet(viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         """
-        Creates a new report from a multipart/form-data request.
+        Creates a new, end-to-end encrypted report from a multipart/form-data request.
 
-        This endpoint accepts plaintext report data as a JSON string and optional file attachments.
-        - `report_data`: A JSON string containing the report's details.
-        - `attachments`: One or more files.
+        This endpoint expects:
+        - `payload`: A JSON string with cryptographic metadata for the report and its attachments.
+        - File uploads: Encrypted file blobs, with form field names matching the `id`
+          specified in the attachment metadata within the payload.
         """
-        report_data_str = request.data.get("report_data")
-        if not report_data_str:
-            raise ParseError("The 'report_data' field is required.")
+        payload_str = request.data.get("payload")
+        if not payload_str:
+            raise ParseError("The 'payload' field containing cryptographic metadata is required.")
 
         try:
-            report_data = json.loads(report_data_str)
+            payload_data = json.loads(payload_str)
         except json.JSONDecodeError:
-            raise ParseError("Invalid JSON format for 'report_data'.")
+            raise ParseError("Invalid JSON format for 'payload'.")
+
+        serializer = self.get_serializer(data=payload_data)
+        serializer.is_valid(raise_exception=True)
+        validated_data = serializer.validated_data
+
+        attachments_metadata = validated_data.pop("attachments", [])
 
         with transaction.atomic():
+            # Create the main Report record with its encrypted body
             report = Report.objects.create(
-                associated_data=report_data,
                 access_key=secrets.token_hex(16),
-                # E2EE fields are null for plaintext submissions
-                encrypted_body=None,
-                key_envelope=None,
-                body_nonce=None,
+                **validated_data,
             )
 
-            uploaded_files = request.FILES.getlist('attachments')
-            for uploaded_file in uploaded_files:
+            # Create Attachment records for each uploaded file
+            for meta in attachments_metadata:
+                attachment_id = meta.pop("id")
+                uploaded_file = request.FILES.get(attachment_id)
+                if not uploaded_file:
+                    raise ParseError(f"Attachment with ID '{attachment_id}' not found in the uploaded files.")
+
                 Attachment.objects.create(
                     report=report,
                     file=uploaded_file,
-                    # E2EE fields are null for plaintext submissions
-                    key_envelope=None,
-                    nonce=None
+                    **meta,  # Unpack nonce, key_envelope, checksum
                 )
 
         response_serializer = ReportCreationResponseSerializer(report)

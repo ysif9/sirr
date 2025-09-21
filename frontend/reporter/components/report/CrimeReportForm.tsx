@@ -29,12 +29,15 @@ const CrimeReportForm: React.FC<CrimeReportFormProps> = ({ formDefinition }) => 
     setSubmissionError(null)
 
     try {
-      const reportData = getValues()
-      // First, get the file(s) from the form state
-      const attachments = getValues("evidence_upload") as FileList | null
+      const allFormValues = getValues()
+      const attachments = allFormValues.evidence_upload as FileList | null
 
-      // The call to encryptReportPayload is removed.
-      // Call the updated submitReport function, passing the reportData and attachments.
+      // Create a copy of the form values and remove the file upload field.
+      // The FileList is handled separately and is not JSON-serializable.
+      const reportData = { ...allFormValues }
+      delete reportData.evidence_upload
+
+      // Call the updated submitReport function, passing the clean reportData and attachments.
       const result = await submitReport(reportData, attachments)
       setSubmissionData(result)
     } catch (error: any) {

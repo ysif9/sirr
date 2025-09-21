@@ -1,61 +1,69 @@
-// Hardcode the API URL as per the refactoring instructions to ensure consistency.
+import { encryptReportAndAttachments } from "./crypto-utils";
+
 const API_BASE_URL = "http://localhost:8000";
 
 // Define the shape of the system's public key object we expect from the API.
-// This matches the structure returned by the SystemInboxPublicKeyView.
 export interface AdminPublicKey {
   id: string;
   username: string;
   public_key_bundle: {
-    identity_key_x25519: string; // This is a Base64 encoded public key
-    kem_key_kyber: string;
+    identity_key_x25519: string; // Base64 encoded public key
+    kem_key_kyber: string; // Base64 encoded Kyber key
   };
 }
 
 /**
- * Fetches the system-wide admin public key.
+ * Fetches the system-wide admin public key required for encryption.
  * @returns {Promise<AdminPublicKey>} The system's public key.
  * @throws {Error} If the API request fails.
  */
 export async function getAdminPublicKey(): Promise<AdminPublicKey> {
-  // This endpoint fetches the single key for the system admin inbox.
   const response = await fetch(`${API_BASE_URL}/api/system/public-key/`);
-
   if (!response.ok) {
     throw new Error(`Failed to fetch system public key: ${response.statusText}`);
   }
-
-  const adminKey: AdminPublicKey = await response.json();
-  return adminKey;
+  return response.json();
 }
 
 /**
- * Submits the report with optional attachments using multipart/form-data.
+ * Fully encrypts and submits the report and attachments using multipart/form-data.
  * @param {object} reportData The plaintext report data.
  * @param {FileList | null} attachments The files to upload.
- * @returns {Promise<{ access_key: string }>} The submission result containing the access key.
- * @throws {Error} If the submission fails.
+ * @returns {Promise<{ access_key: string }>} The submission result with the access key.
+ * @throws {Error} If submission fails.
  */
 export async function submitReport(
   reportData: object,
   attachments: FileList | null
 ): Promise<{ access_key: string }> {
+  // 1. Fetch the admin's public key
+  const adminKey = await getAdminPublicKey();
+
+  // 2. Encrypt the entire report payload and all attachments
+  const { encryptedPayload, encryptedAttachments } = await encryptReportAndAttachments(
+    reportData,
+    attachments,
+    adminKey
+  );
+
+  // 3. Prepare the multipart form data for submission
   const formData = new FormData();
-
-  // Append the report data as a JSON string. The backend will parse this field.
-  formData.append("report_data", JSON.stringify(reportData));
-
-  // Iterate over the attachments and append each file.
-  if (attachments) {
-    for (let i = 0; i < attachments.length; i++) {
-      formData.append("attachments", attachments[i]);
-    }
+  
+  // The backend expects all cryptographic info in a single JSON string field named "payload".
+  formData.append("payload", JSON.stringify(encryptedPayload));
+  
+  // Append each encrypted attachment as a file blob.
+  // The key used here (`attachment.id`) MUST match the `id` in the payload's attachment metadata.
+  if (encryptedAttachments) {
+    encryptedAttachments.forEach(attachment => {
+      formData.append(attachment.id, attachment.blob, attachment.filename);
+    });
   }
 
+  // 4. Send the encrypted data to the backend
   const response = await fetch(`${API_BASE_URL}/api/reports/`, {
     method: "POST",
-    // The browser will automatically set the 'Content-Type' header with the correct boundary.
-    body: formData,
+    body: formData, // The browser will set the Content-Type to multipart/form-data automatically
   });
 
   if (!response.ok) {
