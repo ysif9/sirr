@@ -1,10 +1,11 @@
 import base64
 import json
 
-from apps.users.models import User
 from django.core.management.base import BaseCommand, CommandParser
 from django.db import transaction
 from nacl.public import PrivateKey
+
+from apps.users.models import User
 
 
 class Command(BaseCommand):
