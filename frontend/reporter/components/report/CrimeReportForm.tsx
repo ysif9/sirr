@@ -1,10 +1,10 @@
-// FILE: components/report/CrimeReportForm.tsx
-
 "use client"
 
 import React, { useState } from "react"
 import { useForm } from "react-hook-form"
 import { FormDefinition, Field } from "@/lib/crime-forms"
+import { getAdminPublicKey, submitReport } from "@/lib/api"
+import { encryptReportPayload } from "@/lib/crypto-utils"
 import ReportStepper from "@/components/Stepper"
 import RenderField from "./RenderField"
 import { Button } from "../ui/button"
@@ -29,71 +29,60 @@ const CrimeReportForm: React.FC<CrimeReportFormProps> = ({ formDefinition }) => 
     setIsSubmitting(true)
     setSubmissionError(null)
 
-    // --- FIX: Hardcode the API URL to bypass environment variable issues ---
-    const API_BASE_URL = "http://localhost:8000";
-    console.log("Using API Base URL (hardcoded):", API_BASE_URL);
-
     try {
-      if (!API_BASE_URL) { // This check is now redundant but safe
-          throw new Error("API URL is not configured.");
+      // Fetch the single system-wide admin public key
+      const adminKey = await getAdminPublicKey()
+      if (!adminKey) {
+        throw new Error("Could not retrieve the system's public key. Submission is temporarily unavailable.")
       }
 
-      const apiUrl = `${API_BASE_URL}/api/reports/`;
-      console.log("Sending POST request to:", apiUrl);
+      const reportData = getValues()
 
-      const response = await fetch(apiUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ data: getValues() }),
-      });
-
-      // Check if the response is JSON before trying to parse it
-      const contentType = response.headers.get("content-type");
-      if (!contentType || !contentType.includes("application/json")) {
-        const textResponse = await response.text();
-        throw new Error(`Expected JSON response, but received ${response.statusText}. Response body: ${textResponse.substring(0, 200)}...`);
+      const associated_data = {
+        form_title: formDefinition.title,
+        submitted_at_coarse: new Date().toISOString().substring(0, 10), // e.g., "2025-09-20"
       }
-      
-      const result = await response.json();
 
-      if (!response.ok) {
-        const errorMessage = Object.values(result).flat().join(" ") || `Request failed with status ${response.status}`;
-        throw new Error(errorMessage);
-      }
-      setSubmissionData(result);
+      // Directly encrypt the payload for the admin.
+      const encryptedPayload = encryptReportPayload(reportData, adminKey)
+      const payload = { ...encryptedPayload, associated_data }
+
+      // Submit the report
+      const result = await submitReport(payload)
+      setSubmissionData(result)
     } catch (error: any) {
-      console.error("Submission Error:", error);
-      setSubmissionError(error.message);
+      console.error("Submission Error:", error)
+      setSubmissionError(error.message || "An unexpected error occurred during submission.")
     } finally {
-      setIsSubmitting(false);
+      setIsSubmitting(false)
     }
   }
 
   const handleNext = async () => {
-    const fieldsToValidate = formDefinition.steps[currentStep - 1].fields.map((f: Field) => f.id);
-    const isValid = await trigger(fieldsToValidate);
+    const fieldsToValidate = formDefinition.steps[currentStep - 1].fields.map((f: Field) => f.id)
+    const isValid = await trigger(fieldsToValidate)
     if (isValid && currentStep < formDefinition.steps.length) {
-      setCurrentStep(currentStep + 1);
+      setCurrentStep(currentStep + 1)
     } else if (isValid && currentStep === formDefinition.steps.length) {
-      await handleSubmit();
+      await handleSubmit()
     }
   }
 
   const handlePrev = () => {
     if (currentStep > 1) {
-      setCurrentStep(currentStep - 1);
+      setCurrentStep(currentStep - 1)
     }
   }
 
   const handleReset = () => {
-    reset();
-    setCurrentStep(1);
-    setSubmissionData(null);
-    setSubmissionError(null);
+    reset()
+    setCurrentStep(1)
+    setSubmissionData(null)
+    setSubmissionError(null)
   }
 
-  const activeStep = formDefinition.steps[currentStep - 1];
-  const isLastStep = currentStep === formDefinition.steps.length;
+  const activeStep = formDefinition.steps[currentStep - 1]
+  const isLastStep = currentStep === formDefinition.steps.length
 
   if (submissionData) {
     return (
@@ -104,7 +93,7 @@ const CrimeReportForm: React.FC<CrimeReportFormProps> = ({ formDefinition }) => 
       >
         <SubmissionSuccess accessKey={submissionData.access_key} onReset={handleReset} />
       </Squircle>
-    );
+    )
   }
 
   return (
@@ -126,18 +115,22 @@ const CrimeReportForm: React.FC<CrimeReportFormProps> = ({ formDefinition }) => 
         </div>
       </form>
 
-      {submissionError && <div className="mt-4 text-center text-red-500 bg-red-500/10 p-3 rounded-md border border-red-500/20">{submissionError}</div>}
+      {submissionError && (
+        <div className="mt-4 text-center text-red-500 bg-red-500/10 p-3 rounded-md border border-red-500/20">
+          {submissionError}
+        </div>
+      )}
 
       <div className="mt-10 flex justify-between items-center pt-6 border-t border-border">
         <Button variant="outline" onClick={handlePrev} disabled={currentStep === 1 || isSubmitting}>
           Previous Step
         </Button>
         <Button size="lg" onClick={handleNext} disabled={isSubmitting}>
-          {isSubmitting ? "Submitting..." : isLastStep ? "Submit Report" : "Next Step"}
+          {isSubmitting ? "Encrypting & Submitting..." : isLastStep ? "Submit Secure Report" : "Next Step"}
         </Button>
       </div>
     </Squircle>
-  );
+  )
 }
 
-export default CrimeReportForm;
+export default CrimeReportForm

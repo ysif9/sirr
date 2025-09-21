@@ -1,10 +1,12 @@
-from rest_framework import filters, viewsets
+from rest_framework import filters, status, viewsets
 from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
 
 from .models import AIAnalysis, Attachment, Report, ReportAssignment, ReportCategory, ReportRedaction, ReportTemplate
 from .serializers import (
     AIAnalysisSerializer,
     AttachmentSerializer,
+    EncryptedReportSubmissionSerializer,
     ReportAssignmentSerializer,
     ReportCategorySerializer,
     ReportRedactionSerializer,
@@ -49,6 +51,34 @@ class ReportViewSet(viewsets.ModelViewSet):
     queryset = Report.objects.all()
     serializer_class = ReportSerializer
     permission_classes = [AllowAny]
+
+    def get_serializer_class(self):
+        """
+        Use the submission serializer for creating reports and the
+        standard one for all other actions.
+        """
+        if self.action == "create":
+            return EncryptedReportSubmissionSerializer
+        return super().get_serializer_class()
+
+    def create(self, request, *args, **kwargs):
+        """
+        Creates a new encrypted report from an E2EE payload.
+
+        This endpoint accepts the encrypted report body, nonce, key envelope,
+        and recipient ID. Upon successful validation and creation, it returns
+        only the `access_key` to the reporter to maintain anonymity.
+        """
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        report = serializer.save()
+
+        headers = self.get_success_headers(serializer.data)
+        return Response(
+            {"access_key": report.access_key},
+            status=status.HTTP_201_CREATED,
+            headers=headers
+        )
     
 
 # -------------------
