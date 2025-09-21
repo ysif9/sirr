@@ -10,7 +10,6 @@ from rest_framework.test import APITestCase
 from apps.reports.models import Report
 from apps.users.models import User
 
-
 # NOTE: This test simulates the "classical-only" key wrapping using X25519
 # as described in the plan. The backend supports the hybrid scheme, but this
 # is sufficient to test the API data flow.
