@@ -2,12 +2,17 @@ from django.db.models import Prefetch
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, viewsets
 from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
+from rest_framework import filters, status, viewsets
+from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
 
 from .filters import ReportFilter
 from .models import AIAnalysis, Attachment, Report, ReportAssignment, ReportCategory, ReportRedaction, ReportTemplate
 from .serializers import (
     AIAnalysisSerializer,
     AttachmentSerializer,
+    EncryptedReportSubmissionSerializer,
+    ReportAssignmentSerializer,
     ReportCategorySerializer,
     ReportListSerializer,
     ReportRedactionSerializer,
@@ -60,6 +65,8 @@ class ReportViewSet(viewsets.ModelViewSet):
         """Use a different serializer for list view."""
         if self.action == "list":
             return ReportListSerializer
+        if self.action == "create":
+            return EncryptedReportSubmissionSerializer
         return super().get_serializer_class()
 
     def get_queryset(self):
@@ -89,6 +96,24 @@ class ReportViewSet(viewsets.ModelViewSet):
         self.permission_classes = permission_map.get(self.action, [AllowAny])
         return super().get_permissions()
 
+    def create(self, request, *args, **kwargs):
+        """
+        Creates a new encrypted report from an E2EE payload.
+
+        This endpoint accepts the encrypted report body, nonce, key envelope,
+        and recipient ID. Upon successful validation and creation, it returns
+        only the `access_key` to the reporter to maintain anonymity.
+        """
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        report = serializer.save()
+
+        headers = self.get_success_headers(serializer.data)
+        return Response(
+            {"access_key": report.access_key},
+            status=status.HTTP_201_CREATED,
+            headers=headers
+        )
 
 # -------------------
 # Attachment viewset
