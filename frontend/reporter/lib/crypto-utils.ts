@@ -123,7 +123,7 @@ export async function encryptReportAndAttachments(
         nonce: uint8ArrayToBase64(attachmentNonce),
         key_envelope: {
             wrapped_key: uint8ArrayToBase64(wrappedAttachmentKeyWithNonce),
-            scheme: "x25519-xchacha20poly1035"
+            scheme: "x25519-xchacha20poly1305"
         },
       });
     }
