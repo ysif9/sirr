@@ -155,7 +155,7 @@ class ReportViewSet(viewsets.ModelViewSet):
 # Attachment viewset
 # -------------------
 
-class AttachmentViewSet(mixins.DestroyModelMixin,viewsets.ReadOnlyModelViewSet):
+class AttachmentViewSet(viewsets.ModelViewSet):
     queryset = Attachment.objects.all()
     serializer_class = AttachmentSerializer
     permission_classes = [AllowAny]
@@ -168,7 +168,7 @@ class AttachmentViewSet(mixins.DestroyModelMixin,viewsets.ReadOnlyModelViewSet):
 # -------------------
 # AI Analysis viewset
 # -------------------
-class AIAnalysisViewSet(viewsets.ModelViewSet):
+class AIAnalysisViewSet(mixins.DestroyModelMixin,viewsets.ReadOnlyModelViewSet):
     queryset = AIAnalysis.objects.all()
     serializer_class = AIAnalysisSerializer
     permission_classes = [AllowAny]
