@@ -1,6 +1,11 @@
+import json
+import secrets
+
+from django.db import transaction
 from django.db.models import Prefetch
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, status, viewsets
+from rest_framework.exceptions import ParseError
 from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 
@@ -9,8 +14,9 @@ from .models import AIAnalysis, Attachment, Report, ReportAssignment, ReportCate
 from .serializers import (
     AIAnalysisSerializer,
     AttachmentSerializer,
-    EncryptedReportSubmissionSerializer,
+    EncryptedReportCreationSerializer,
     ReportCategorySerializer,
+    ReportCreationResponseSerializer,
     ReportListSerializer,
     ReportRedactionSerializer,
     ReportSerializer,
@@ -59,11 +65,11 @@ class ReportViewSet(viewsets.ModelViewSet):
     ordering_fields = ["created_at", "updated_at", "score", "priority"]
 
     def get_serializer_class(self):
-        """Use a different serializer for list view."""
+        """Use a different serializer for list and create views."""
         if self.action == "list":
             return ReportListSerializer
         if self.action == "create":
-            return EncryptedReportSubmissionSerializer
+            return EncryptedReportCreationSerializer
         return super().get_serializer_class()
 
     def get_queryset(self):
@@ -95,19 +101,52 @@ class ReportViewSet(viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         """
-        Creates a new encrypted report from an E2EE payload.
+        Creates a new, end-to-end encrypted report from a multipart/form-data request.
 
-        This endpoint accepts the encrypted report body, nonce, key envelope,
-        and recipient ID. Upon successful validation and creation, it returns
-        only the `access_key` to the reporter to maintain anonymity.
+        This endpoint expects:
+        - `payload`: A JSON string with cryptographic metadata for the report and its attachments.
+        - File uploads: Encrypted file blobs, with form field names matching the `id`
+          specified in the attachment metadata within the payload.
         """
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        report = serializer.save()
+        payload_str = request.data.get("payload")
+        if not payload_str:
+            raise ParseError("The 'payload' field containing cryptographic metadata is required.")
 
-        headers = self.get_success_headers(serializer.data)
+        try:
+            payload_data = json.loads(payload_str)
+        except json.JSONDecodeError:
+            raise ParseError("Invalid JSON format for 'payload'.")
+
+        serializer = self.get_serializer(data=payload_data)
+        serializer.is_valid(raise_exception=True)
+        validated_data = serializer.validated_data
+
+        attachments_metadata = validated_data.pop("attachments", [])
+
+        with transaction.atomic():
+            # Create the main Report record with its encrypted body
+            report = Report.objects.create(
+                access_key=secrets.token_hex(16),
+                **validated_data,
+            )
+
+            # Create Attachment records for each uploaded file
+            for meta in attachments_metadata:
+                attachment_id = meta.pop("id")
+                uploaded_file = request.FILES.get(attachment_id)
+                if not uploaded_file:
+                    raise ParseError(f"Attachment with ID '{attachment_id}' not found in the uploaded files.")
+
+                Attachment.objects.create(
+                    report=report,
+                    file=uploaded_file,
+                    **meta,  # Unpack nonce, key_envelope, checksum
+                )
+
+        response_serializer = ReportCreationResponseSerializer(report)
+        headers = self.get_success_headers(response_serializer.data)
         return Response(
-            {"access_key": report.access_key},
+            response_serializer.data,
             status=status.HTTP_201_CREATED,
             headers=headers
         )
