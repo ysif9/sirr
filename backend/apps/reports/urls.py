@@ -14,7 +14,7 @@ router = DefaultRouter()
 router.register(r"rep-categories", ReportCategoryViewSet)
 router.register(r"templates", ReportTemplateViewSet)
 router.register(r"reports", ReportViewSet)
-router.register(r"attachments", AttachmentViewSet)
+# router.register(r"attachments", AttachmentViewSet) 
 router.register(r"ai-analyses", AIAnalysisViewSet)
 router.register(r"redactions", ReportRedactionViewSet)
 

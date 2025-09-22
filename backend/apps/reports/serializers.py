@@ -91,9 +91,31 @@ class EncryptedReportCreationSerializer(serializers.Serializer):
 
     def validate_body_nonce(self, value: str) -> bytes:
         return b64decode_field(value, expected_length=24)
+    
+
+    
+# -------------------
+# Attachment serializers
+# -------------------
+class AttachmentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Attachment
+        fields = [
+            "id",
+            "file",
+            "key_envelope",
+            "nonce",
+            "description",
+            "checksum",
+            "mime_type",
+            "file_extension",
+        ]
+        read_only_fields = ["id", "mime_type", "file_extension"]
 
 
 class ReportSerializer(serializers.ModelSerializer):
+    attachments = AttachmentSerializer(many=True, required=False)
+
     class Meta:
         model = Report
         fields = [
@@ -109,9 +131,17 @@ class ReportSerializer(serializers.ModelSerializer):
             "priority",
             "last_access_by_reporter",
             "expires_at",
+            "attachments",   
         ]
-        read_only_fields = ["id", "access_key", "score", "last_access_by_reporter", "expires_at", "created_at",
-                            "updated_at"]
+        read_only_fields = [
+            "id",
+            "access_key",
+            "score",
+            "last_access_by_reporter",
+            "expires_at",
+            "created_at",
+            "updated_at",
+        ]
 
 
 class ReportListSerializer(serializers.ModelSerializer):
@@ -128,15 +158,6 @@ class ReportCreationResponseSerializer(serializers.ModelSerializer):
         fields = ["access_key"]
 
 
-# -------------------
-# Attachment serializers
-# -------------------
-class AttachmentSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Attachment
-        fields = ["id", "report", "file", "key_envelope", "nonce", "description", "checksum", "mime_type",
-                  "file_extension"]
-        read_only_fields = ["id", "mime_type", "file_extension"]
 
 
 # -------------------

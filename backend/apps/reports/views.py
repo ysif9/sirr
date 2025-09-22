@@ -4,7 +4,7 @@ import secrets
 from django.db import transaction
 from django.db.models import Prefetch
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters, status, viewsets
+from rest_framework import filters, status, viewsets,mixins
 from rest_framework.exceptions import ParseError
 from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
@@ -154,10 +154,15 @@ class ReportViewSet(viewsets.ModelViewSet):
 # -------------------
 # Attachment viewset
 # -------------------
-class AttachmentViewSet(viewsets.ModelViewSet):
+
+class AttachmentViewSet(mixins.DestroyModelMixin,viewsets.ReadOnlyModelViewSet):
     queryset = Attachment.objects.all()
     serializer_class = AttachmentSerializer
     permission_classes = [AllowAny]
+
+
+
+
 
 
 # -------------------
