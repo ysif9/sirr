@@ -6,7 +6,8 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
 from apps.users.models import User
-from .models import AIAnalysis, Attachment, Report, ReportCategory, ReportRedaction, ReportTemplate
+
+from .models import AIAnalysis, Attachment, Report, ReportAssignment, ReportCategory, ReportRedaction, ReportTemplate
 
 
 # -------------------
@@ -113,6 +114,37 @@ class ReportSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ["id", "access_key", "score", "last_access_by_reporter", "expires_at", "created_at",
                             "updated_at"]
+
+
+class CaseworkerReportSerializer(ReportSerializer):
+    """
+    A specialized serializer for caseworkers that provides the re-encrypted
+    key envelope from their specific report assignment.
+    """
+    key_envelope = serializers.SerializerMethodField()
+
+    class Meta(ReportSerializer.Meta):
+        # Inherits all fields from ReportSerializer.Meta, including the overridden 'key_envelope'.
+        pass
+
+    def get_key_envelope(self, obj: Report) -> dict | None:
+        """
+        Retrieves the correct key envelope from the ReportAssignment record
+        for the currently authenticated caseworker.
+
+        This method relies on the 'assignments' related manager being prefetched
+        in the view's queryset to be efficient.
+        """
+        request = self.context.get("request")
+        if not request or not hasattr(request, "user"):
+            return None
+
+        # The view's get_queryset prefetches assignments, so this loop is efficient.
+        for assignment in obj.assignments.all():
+            if assignment.assignee_id == request.user.id:
+                return assignment.key_envelope
+
+        return None  # Should not be reached if queryset is filtered correctly for caseworkers
 
 
 class ReportListSerializer(serializers.ModelSerializer):

@@ -22,6 +22,7 @@ from .models import AIAnalysis, Attachment, Report, ReportAssignment, ReportCate
 from .serializers import (
     AIAnalysisSerializer,
     AttachmentSerializer,
+    CaseworkerReportSerializer,
     EncryptedReportCreationSerializer,
     ReportAssignmentSerializer,
     ReportCategorySerializer,
@@ -74,13 +75,29 @@ class ReportViewSet(viewsets.ModelViewSet):
     ordering_fields = ["created_at", "updated_at", "score", "priority"]
 
     def get_serializer_class(self):
-        """Use a different serializer for list and create views."""
+        """
+        Dynamically determine the serializer class based on the action and user type.
+        - Caseworkers get a special serializer with their re-encrypted key envelope.
+        - Admins get different serializers for list vs. other actions.
+        - The 'create' and 'assign' actions have their own specific serializers.
+        """
+        user = self.request.user
+        is_caseworker_only = user.is_authenticated and user.is_caseworker and not user.is_superuser
+
+        # If the user is a caseworker (but not an admin), always use the serializer
+        # that provides the correct key envelope for them.
+        if is_caseworker_only:
+            return CaseworkerReportSerializer
+
+        # Default behavior for admins and other user types
         if self.action == "list":
             return ReportListSerializer
         if self.action == "create":
             return EncryptedReportCreationSerializer
         if self.action == "assign":
             return ReportAssignmentSerializer
+
+        # For 'retrieve', 'update', etc., for an admin
         return super().get_serializer_class()
 
     def get_queryset(self):
