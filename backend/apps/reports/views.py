@@ -211,7 +211,7 @@ class ReportViewSet(viewsets.ModelViewSet):
             try:
                 report_envelope = report.key_envelope
                 reporter_ephem_pk_b64 = report_envelope["reporter_ephemeral_public_key"]
-                wrapped_report_key_b64 = report_envelope["wrapped_report_key"]
+                wrapped_report_key_b64 = report_envelope["wrapped_key"]
                 reporter_ephem_pk = PublicKey(base64.b64decode(reporter_ephem_pk_b64))
                 reporter_to_admin_box = Box(admin_private_key, reporter_ephem_pk)
                 k_report = reporter_to_admin_box.decrypt(base64.b64decode(wrapped_report_key_b64))
@@ -224,13 +224,15 @@ class ReportViewSet(viewsets.ModelViewSet):
                 for attachment in report.attachments.all():
                     if not attachment.key_envelope:
                         continue
-                    wrapped_attach_key_b64 = attachment.key_envelope["wrapped_report_key"]
+                    wrapped_attach_key_b64 = attachment.key_envelope["wrapped_key"]
                     k_attach = reporter_to_admin_box.decrypt(base64.b64decode(wrapped_attach_key_b64))
                     key_bundle["attachment_keys"][str(attachment.id)] = base64.b64encode(k_attach).decode("utf-8")
 
                 if not key_bundle["attachment_keys"]:
                     del key_bundle["attachment_keys"]
-            except (KeyError, BinasciiError, CryptoError):
+            except KeyError as e:
+                raise ValidationError(f"The key envelope is missing a required field: {e}")
+            except (BinasciiError, CryptoError):
                 raise ValidationError("Failed to decrypt original report keys. The key envelope may be corrupt.")
 
             # --- Step C (Key Bundling & Re-Encryption) ---

@@ -96,15 +96,16 @@ class EncryptedReportCreationSerializer(serializers.Serializer):
 
 
 class ReportSerializer(serializers.ModelSerializer):
+    # This class definition should already exist
     class Meta:
         model = Report
         fields = [
             "id",
             "template",
             "access_key",
-            "encrypted_body",
+            "encrypted_body", # This field is important
             "key_envelope",
-            "body_nonce",
+            "body_nonce",     # This field is important
             "associated_data",
             "status",
             "score",
@@ -124,8 +125,12 @@ class CaseworkerReportSerializer(ReportSerializer):
     key_envelope = serializers.SerializerMethodField()
 
     class Meta(ReportSerializer.Meta):
-        # Inherits all fields from ReportSerializer.Meta, including the overridden 'key_envelope'.
-        pass
+        # --- THIS IS THE FIX ---
+        # Explicitly inherit all fields from the parent serializer. This ensures
+        # that 'encrypted_body' and 'body_nonce' are included in the API response
+        # for the investigator.
+        fields = ReportSerializer.Meta.fields
+        # --- END OF FIX ---
 
     def get_key_envelope(self, obj: Report) -> dict | None:
         """
@@ -135,16 +140,14 @@ class CaseworkerReportSerializer(ReportSerializer):
         This method relies on the 'assignments' related manager being prefetched
         in the view's queryset to be efficient.
         """
+        # ... (rest of the function is unchanged)
         request = self.context.get("request")
         if not request or not hasattr(request, "user"):
             return None
-
-        # The view's get_queryset prefetches assignments, so this loop is efficient.
         for assignment in obj.assignments.all():
             if assignment.assignee_id == request.user.id:
                 return assignment.key_envelope
-
-        return None  # Should not be reached if queryset is filtered correctly for caseworkers
+        return None
 
 
 class ReportListSerializer(serializers.ModelSerializer):

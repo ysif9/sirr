@@ -223,3 +223,4 @@ CORS_ALLOW_METHODS = [
     "DELETE",
     "OPTIONS",
 ]
+ADMIN_PRIVATE_KEY = os.environ.get("ADMIN_PRIVATE_KEY", None)
