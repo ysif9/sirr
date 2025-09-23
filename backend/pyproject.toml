@@ -127,6 +127,7 @@ down = { cmd = "docker compose -f ../docker-compose.yml down --remove-orphans", 
 clean = { cmd = "docker compose -f ../docker-compose.yml down --remove-orphans -v", help = "Docker down and dropping volumes/database" }
 createsuperuser = { cmd = "docker compose -f ../docker-compose.yml exec sirr_api python manage.py createsuperuser --settings=core.settings", help = "Create a Django superuser inside the API container." }
 create_test_admin = { cmd = "docker compose -f ../docker-compose.yml exec sirr_api python manage.py create_admin_with_keys", help = "Automated creation of an admin with a new keypair." }
+create_test_caseworker = { cmd = "docker compose -f ../docker-compose.yml exec sirr_api python manage.py create_test_caseworker", help = "Automated creation of a caseworker with a new keypair." }
 
 [tool.poe.tasks.startapp]
 help = "Create a new Django app under apps/<app> using Docker"
