@@ -5,6 +5,7 @@ from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
+from apps.users.models import User
 from .models import AIAnalysis, Attachment, Report, ReportCategory, ReportRedaction, ReportTemplate
 
 
@@ -126,6 +127,25 @@ class ReportCreationResponseSerializer(serializers.ModelSerializer):
     class Meta:
         model = Report
         fields = ["access_key"]
+
+
+class ReportAssignmentSerializer(serializers.Serializer):
+    """Serializer for validating the report assignment request."""
+    assignee_id = serializers.PrimaryKeyRelatedField(
+        queryset=User.objects.all(),
+        source="assignee",
+        write_only=True,
+        help_text="The UUID of the caseworker to assign the report to."
+    )
+
+    class Meta:
+        fields = ["assignee_id"]
+
+    def create(self, validated_data):
+        raise NotImplementedError()
+
+    def update(self, instance, validated_data):
+        raise NotImplementedError()
 
 
 # -------------------

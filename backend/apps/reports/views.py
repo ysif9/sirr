@@ -1,13 +1,21 @@
+import base64
 import json
 import secrets
+from binascii import Error as BinasciiError
 
+from django.conf import settings
 from django.db import transaction
 from django.db.models import Prefetch
 from django_filters.rest_framework import DjangoFilterBackend
+from nacl.exceptions import CryptoError
+from nacl.public import Box, PrivateKey, PublicKey
 from rest_framework import filters, status, viewsets
-from rest_framework.exceptions import ParseError
+from rest_framework.decorators import action
+from rest_framework.exceptions import NotFound, ParseError, ValidationError
 from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
+
+from apps.users.models import User
 
 from .filters import ReportFilter
 from .models import AIAnalysis, Attachment, Report, ReportAssignment, ReportCategory, ReportRedaction, ReportTemplate
@@ -15,6 +23,7 @@ from .serializers import (
     AIAnalysisSerializer,
     AttachmentSerializer,
     EncryptedReportCreationSerializer,
+    ReportAssignmentSerializer,
     ReportCategorySerializer,
     ReportCreationResponseSerializer,
     ReportListSerializer,
@@ -70,6 +79,8 @@ class ReportViewSet(viewsets.ModelViewSet):
             return ReportListSerializer
         if self.action == "create":
             return EncryptedReportCreationSerializer
+        if self.action == "assign":
+            return ReportAssignmentSerializer
         return super().get_serializer_class()
 
     def get_queryset(self):
@@ -95,6 +106,7 @@ class ReportViewSet(viewsets.ModelViewSet):
             "partial_update": [IsAuthenticated],
             "update": [IsAdminUser],
             "destroy": [IsAdminUser],
+            "assign": [IsAdminUser],
         }
         self.permission_classes = permission_map.get(self.action, [AllowAny])
         return super().get_permissions()
@@ -150,6 +162,89 @@ class ReportViewSet(viewsets.ModelViewSet):
             status=status.HTTP_201_CREATED,
             headers=headers
         )
+
+    @action(detail=True, methods=["post"], url_path="assign")
+    def assign(self, request, pk=None):
+        """
+        Assigns a report to a caseworker, re-encrypting the report and attachment keys for them.
+        """
+        report = self.get_object()
+
+        # --- Step A (Validation) ---
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        assignee = serializer.validated_data["assignee"]
+
+        if not assignee.is_caseworker:
+            raise ValidationError({"assignee_id": "Target user must be a caseworker."})
+        if not assignee.public_key_bundle or "identity_key_x25519" not in assignee.public_key_bundle:
+            raise ValidationError({"assignee_id": "Target caseworker does not have a valid public key bundle."})
+
+        try:
+            admin_b64_key = getattr(settings, "ADMIN_PRIVATE_KEY", None)
+            if not admin_b64_key:
+                raise ValueError("ADMIN_PRIVATE_KEY is not set.")
+            admin_pk_bytes = base64.b64decode(admin_b64_key)
+            admin_private_key = PrivateKey(admin_pk_bytes)
+        except (BinasciiError, ValueError):
+            raise ValidationError("Server configuration error: Could not load the admin private key.")
+
+        with transaction.atomic():
+            # --- Step B (Decryption of All Keys) ---
+            try:
+                report_envelope = report.key_envelope
+                reporter_ephem_pk_b64 = report_envelope["reporter_ephemeral_public_key"]
+                wrapped_report_key_b64 = report_envelope["wrapped_report_key"]
+                reporter_ephem_pk = PublicKey(base64.b64decode(reporter_ephem_pk_b64))
+                reporter_to_admin_box = Box(admin_private_key, reporter_ephem_pk)
+                k_report = reporter_to_admin_box.decrypt(base64.b64decode(wrapped_report_key_b64))
+
+                key_bundle = {
+                    "report_key": base64.b64encode(k_report).decode("utf-8"),
+                    "attachment_keys": {},
+                }
+
+                for attachment in report.attachments.all():
+                    if not attachment.key_envelope:
+                        continue
+                    wrapped_attach_key_b64 = attachment.key_envelope["wrapped_report_key"]
+                    k_attach = reporter_to_admin_box.decrypt(base64.b64decode(wrapped_attach_key_b64))
+                    key_bundle["attachment_keys"][str(attachment.id)] = base64.b64encode(k_attach).decode("utf-8")
+
+                if not key_bundle["attachment_keys"]:
+                    del key_bundle["attachment_keys"]
+            except (KeyError, BinasciiError, CryptoError):
+                raise ValidationError("Failed to decrypt original report keys. The key envelope may be corrupt.")
+
+            # --- Step C (Key Bundling & Re-Encryption) ---
+            try:
+                caseworker_pk_b64 = assignee.public_key_bundle["identity_key_x25519"]
+                caseworker_pk = PublicKey(base64.b64decode(caseworker_pk_b64))
+                admin_ephemeral_private_key = PrivateKey.generate()
+                admin_to_caseworker_box = Box(admin_ephemeral_private_key, caseworker_pk)
+                key_bundle_json = json.dumps(key_bundle).encode("utf-8")
+                encrypted_bundle = admin_to_caseworker_box.encrypt(key_bundle_json)
+
+                new_key_envelope = {
+                    "sender_ephemeral_public_key": base64.b64encode(bytes(admin_ephemeral_private_key.public_key)).decode("utf-8"),
+                    "wrapped_key_bundle": base64.b64encode(encrypted_bundle).decode("utf-8"),
+                    "scheme": "x25519-xchacha20poly1305",
+                }
+            except (KeyError, BinasciiError, CryptoError):
+                raise ValidationError("Failed to re-encrypt keys for caseworker. Their public key may be invalid.")
+
+            # --- Step D (Database Transaction) ---
+            assignment, _ = ReportAssignment.objects.update_or_create(
+                report=report,
+                assignee=assignee,
+                defaults={"key_envelope": new_key_envelope},
+            )
+
+        return Response(
+            {"status": "Report assigned successfully", "assignment_id": assignment.pk},
+            status=status.HTTP_201_CREATED,
+        )
+
 
 # -------------------
 # Attachment viewset
