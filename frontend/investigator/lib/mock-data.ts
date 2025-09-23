@@ -1,12 +1,14 @@
+// START OF lib/mock-data.ts
 import { crimeTypeList } from "./crime-types";
-import { v4 as uuidv4 } from 'uuid'; // You'll need to install uuid: npm install uuid @types/uuid
+import { v4 as uuidv4 } from 'uuid';
 
-// --- NEW DETAILED INTERFACES ---
+// --- NEW/UPDATED INTERFACES ---
 
 export type Priority = "Critical" | "High" | "Medium" | "Low";
 export type Status = "New" | "Assigned" | "Active" | "Closed" | "Flagged for Review";
 export type PersonType = "Suspect" | "Victim" | "Witness";
 export type AttachmentType = "Image" | "Video" | "Audio" | "Document";
+export type LogType = "Interview" | "Evidence Collection" | "Canvass" | "Communication" | "Analyst Report" | "General";
 
 export interface IReporter {
   name: string;
@@ -38,10 +40,21 @@ export interface IAttachment {
   timestamp: string;
 }
 
+export interface IVehicle {
+  id: string;
+  make: string;
+  model: string;
+  year?: number;
+  color?: string;
+  licensePlate?: string;
+  description: string;
+}
+
 export interface INote {
   id: string;
   timestamp: string;
   author: string;
+  logType: LogType;
   note: string;
 }
 
@@ -58,12 +71,20 @@ export interface ICaseInfo {
 
   // New detail fields
   reportedAt: string; // Submission Timestamp
-  incident_description: string;
   reporter: IReporter;
   timeline: ITimelineEvent[];
   personsInvolved: IPerson[];
   attachments: IAttachment[];
   investigatorNotes: INote[];
+  vehicles: IVehicle[];
+  
+  // New fields for dynamic form rendering
+  formKey: {
+    reportTypeKey: string;
+    categoryKey: string;
+    formKey: string;
+  };
+  formData: { [key: string]: any; };
 }
 
 // Helper functions for data generation
@@ -86,14 +107,15 @@ export const generateMockCases = (count: number): ICaseInfo[] => {
   const priorities: Priority[] = ["Critical", "High", "Medium", "Low"];
   const statuses: Status[] = ["New", "Assigned", "Active", "Closed", "Flagged for Review"];
   const investigators = ["Jane Smith", "Harvey Specter", "Mike Ross", "Olivia Benson", "Elliot Stabler", "Unassigned"];
-  const locations = ["123 Maple St", "456 Oak Ave", "Downtown Core", "North Park", "Southside District", "West End", "The Marina"];
-  const reporterNames = ["John Doe", "Anonymous", "Samantha Ray", "Michael Chen", "Emily White"];
-  const noteAuthors = ["Det. Miller", "Sgt. Jones", "Admin", "Forensics"];
+  const locations = ["123 Maple St, North Park", "456 Oak Ave, Downtown", "789 Pine Ln, Southside", "101 River Rd, West End"];
+  const reporterNames = ["John Doe", "Anonymous", "Samantha Ray", "Michael Chen"];
+  const noteAuthors = ["Det. Miller", "Sgt. Jones", "Forensics Unit", "Capt. Rodriguez"];
+  const logTypes: LogType[] = ["Interview", "Evidence Collection", "Canvass", "Communication", "Analyst Report", "General"];
 
   for (let i = 0; i < count; i++) {
     const incidentDate = randomDate(new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), new Date());
-    const reportedDate = new Date(incidentDate.getTime() + Math.random() * (24 * 60 * 60 * 1000)); // Reported within 24h of incident
-    const caseId = `C24-${String(1234 + i).padStart(6, "0")}`;
+    const reportedDate = new Date(incidentDate.getTime() + Math.random() * (24 * 60 * 60 * 1000));
+    const caseId = `VC2023-${String(891 + i).padStart(4, "0")}`;
     const assignedTo = getRandomElement(investigators);
     const reporterName = getRandomElement(reporterNames);
 
@@ -101,20 +123,19 @@ export const generateMockCases = (count: number): ICaseInfo[] => {
       priority: getRandomElement(priorities),
       caseId: caseId,
       status: getRandomElement(statuses),
-      crimeType: formatCrimeType(getRandomElement(crimeTypeList)),
+      // For consistency, let's use the burglary form for all mock cases
+      crimeType: "Report a Burglary / Break-in",
       location: getRandomElement(locations),
       submittedAt: incidentDate.toISOString(),
       reportedAt: reportedDate.toISOString(),
       assignedTo: assignedTo,
-      
-      incident_description: "A detailed narrative of the incident goes here. The reporter described seeing two individuals arguing near the main intersection. The argument escalated, and one individual was seen pushing the other to the ground before fleeing the scene. The reporting party was approximately 50 feet away and could provide a general description of the suspect.",
       
       reporter: {
         name: reporterName,
         contact: reporterName === "Anonymous" ? "N/A" : `user${i}@example.com`,
         isAnonymous: reporterName === "Anonymous",
         reportingHistory: Math.floor(Math.random() * 5),
-        credibilityScore: Math.floor(Math.random() * 40) + 60, // 60-100
+        credibilityScore: Math.floor(Math.random() * 40) + 60,
       },
 
       timeline: [
@@ -125,22 +146,54 @@ export const generateMockCases = (count: number): ICaseInfo[] => {
       ],
 
       personsInvolved: [
-        { id: uuidv4(), type: "Victim", name: "Jane Doe", age: 34, description: "Wearing a red jacket and blue jeans. Appeared distressed." },
-        { id: uuidv4(), type: "Suspect", name: "Unknown", description: "Male, approx. 6' tall, wearing a dark hoodie and black pants. Fled east on Main St." },
+        { id: uuidv4(), type: "Victim", name: "Jane Doe", age: 34, description: "Homeowner, discovered the break-in." },
+        { id: uuidv4(), type: "Witness", name: "Bob Neighbor", description: "Saw a suspicious vehicle around the time of the incident." },
+      ],
+      
+      vehicles: [
+          {id: uuidv4(), make: "Ford", model: "Transit", licensePlate: "AB12 3CD", description: "White van seen leaving the area hastily. Reported by witness."}
       ],
 
       attachments: [
-        { id: uuidv4(), type: "Image", fileName: "scene_photo_1.jpg", url: `https://picsum.photos/seed/${caseId}1/400/300`, timestamp: reportedDate.toISOString() },
-        { id: uuidv4(), type: "Video", fileName: "bystander_video.mp4", url: "#", timestamp: reportedDate.toISOString() },
+        { id: uuidv4(), type: "Image", fileName: "doorbell_cam.jpg", url: `https://picsum.photos/seed/${caseId}1/400/300`, timestamp: reportedDate.toISOString() },
+        { id: uuidv4(), type: "Image", fileName: "forced_entry.jpg", url: `https://picsum.photos/seed/${caseId}2/400/300`, timestamp: reportedDate.toISOString() },
+        { id: uuidv4(), type: "Video", fileName: "security_footage.mp4", url: "#", timestamp: reportedDate.toISOString() },
       ],
 
       investigatorNotes: [
-        { id: uuidv4(), timestamp: new Date(reportedDate.getTime() + 3 * 3600*1000).toISOString(), author: "Det. Miller", note: "Initial review complete. Will attempt to contact RP for more details." }
-      ]
+        { id: uuidv4(), timestamp: new Date(reportedDate.getTime() + 8 * 3600*1000).toISOString(), author: "Det. Miller", logType: "Canvass", note: "Conducted neighborhood canvass. Spoke with witness Bob Neighbor who reported seeing a white van. No other witnesses came forward." },
+        { id: uuidv4(), timestamp: new Date(reportedDate.getTime() + 4 * 3600*1000).toISOString(), author: "Sgt. Jones", logType: "Evidence Collection", note: "Forensics team collected fingerprints from the point of entry. Evidence submitted to lab." },
+        { id: uuidv4(), timestamp: new Date(reportedDate.getTime() + 3 * 3600*1000).toISOString(), author: "Det. Miller", logType: "Interview", note: "Initial interview with victim completed. Victim is compiling a list of stolen items." }
+      ],
+
+      // Corresponds to lib/crime-forms.ts -> theftBurglaryFormSteps
+      formKey: {
+        reportTypeKey: "report_a_crime",
+        categoryKey: "theft_burglary_property_damage",
+        formKey: "burglary_break_in",
+      },
+      formData: {
+        location: "123 Maple St, North Park",
+        property_type: "House",
+        time_discovered: incidentDate.toISOString(),
+        was_anything_stolen: "Yes",
+        stolen_items: [
+            { item_name: "MacBook Pro 16\"", item_value: 2500, item_description: "Serial: C02Z1234ABCD" },
+            { item_name: "Assorted Jewelry", item_value: 5000, item_description: "Gold necklace, diamond earrings" },
+        ],
+        was_anything_damaged: "Yes",
+        damage_description: "Back door frame was splintered during forced entry. Window pane on the door was shattered.",
+        suspect_info: "Witness saw one individual, male, wearing dark clothing and a baseball cap, getting into a white van.",
+        vehicle_involved: "Yes",
+        vehicle_description: "White Ford Transit van, possibly late model. Partial license plate might be AB12.",
+        evidence_upload: true, // Indicates files were uploaded
+        witness_present: "Yes"
+      }
     });
   }
   return cases;
 };
 
 // Pre-generate the data so the component doesn't regenerate on every render
-export const mockCasesData = generateMockCases(100);
+export const mockCasesData = generateMockCases(20);
+// END OF lib/mock-data.ts
