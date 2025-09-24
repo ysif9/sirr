@@ -1,0 +1,89 @@
+{
+  "report_type_key": "report_a_concern",
+  "category_key": "traffic_road_safety",
+  "report_type_title": "Report a Concern",
+  "category_title": "Traffic & Road Safety",
+  "category_subtitle": "Driving issues that do not involve a crime against a person.",
+  "fields": {
+    "location": {
+      "label": "Where did this happen?",
+      "type": "location",
+      "validation": {
+        "required": true
+      },
+      "step_title": "Incident Details"
+    },
+    "incident_datetime": {
+      "label": "When did this happen?",
+      "type": "datetime",
+      "validation": {
+        "required": true
+      },
+      "step_title": "Incident Details"
+    },
+    "incident_description": {
+      "label": "Please describe what happened.",
+      "type": "textarea",
+      "placeholder": "Provide a detailed account of the driving behavior, hazard, or collision.",
+      "validation": {
+        "required": true
+      },
+      "step_title": "Incident Details"
+    },
+    "vehicle_description": {
+      "label": "Describe the vehicle(s) involved.",
+      "type": "textarea",
+      "placeholder": "Include make, model, color, and any distinguishing features.",
+      "validation": {
+        "required": true
+      },
+      "step_title": "Vehicle & Driver Information"
+    },
+    "license_plate": {
+      "label": "License Plate Number",
+      "type": "text",
+      "helperText": "Even a partial plate number is helpful.",
+      "step_title": "Vehicle & Driver Information"
+    },
+    "driver_description": {
+      "label": "If you saw the driver, please provide a description.",
+      "type": "textarea",
+      "step_title": "Vehicle & Driver Information"
+    },
+    "evidence_upload": {
+      "label": "Upload Photos or Videos",
+      "type": "file_upload",
+      "helperText": "e.g., dashcam footage, photos of the scene.",
+      "step_title": "Evidence & Witnesses"
+    },
+    "witness_present": {
+      "label": "Were there any witnesses?",
+      "type": "radio_group",
+      "options": [
+        "Yes",
+        "No",
+        "Unsure"
+      ],
+      "step_title": "Evidence & Witnesses"
+    },
+    "witness_details": {
+      "label": "Witness Information",
+      "type": "repeater",
+      "conditional": {
+        "field": "witness_present",
+        "value": "Yes"
+      },
+      "step_title": "Evidence & Witnesses",
+      "fields": {
+        "witness_name": {
+          "label": "Witness Name",
+          "type": "text"
+        },
+        "witness_contact": {
+          "label": "Witness Contact Info",
+          "type": "text"
+        }
+      }
+    }
+  }
+}

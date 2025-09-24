@@ -1,0 +1,145 @@
+{
+  "report_type_key": "report_a_crime",
+  "category_key": "theft_burglary_property_damage",
+  "report_type_title": "Report a Crime",
+  "category_title": "Theft, Burglary & Property Damage",
+  "category_subtitle": "Stolen property or damage where no force was used.",
+  "fields": {
+    "location": {
+      "label": "Where did the burglary happen?",
+      "type": "location",
+      "validation": {
+        "required": true
+      },
+      "step_title": "Location & Timing"
+    },
+    "property_type": {
+      "label": "What type of property was entered?",
+      "type": "select",
+      "options": [
+        "House",
+        "Apartment/Condo",
+        "Business",
+        "Garage",
+        "Storage Unit",
+        "Other"
+      ],
+      "validation": {
+        "required": true
+      },
+      "step_title": "Location & Timing"
+    },
+    "time_discovered": {
+      "label": "When did you discover the break-in?",
+      "type": "datetime",
+      "validation": {
+        "required": true
+      },
+      "step_title": "Location & Timing"
+    },
+    "time_occurred": {
+      "label": "When do you believe it occurred?",
+      "type": "datetime_range",
+      "helperText": "Provide the time range when you were away or the property was unoccupied.",
+      "step_title": "Location & Timing"
+    },
+    "was_anything_stolen": {
+      "label": "Was anything stolen?",
+      "type": "radio_group",
+      "options": [
+        "Yes",
+        "No",
+        "Unsure"
+      ],
+      "step_title": "Incident Details"
+    },
+    "stolen_items": {
+      "label": "List of Stolen Items",
+      "type": "repeater",
+      "conditional": {
+        "field": "was_anything_stolen",
+        "value": "Yes"
+      },
+      "step_title": "Incident Details",
+      "fields": {
+        "item_name": {
+          "label": "Item",
+          "type": "text",
+          "placeholder": "e.g., Laptop, Jewelry"
+        },
+        "item_value": {
+          "label": "Estimated Value ($)",
+          "type": "number"
+        },
+        "item_description": {
+          "label": "Description / Serial Number",
+          "type": "text"
+        }
+      }
+    },
+    "was_anything_damaged": {
+      "label": "Was there any damage to a property or item?",
+      "type": "radio_group",
+      "options": [
+        "Yes",
+        "No",
+        "Unsure"
+      ],
+      "step_title": "Incident Details"
+    },
+    "damage_description": {
+      "label": "What was damaged?",
+      "type": "textarea",
+      "placeholder": "Describe any damaged doors, windows, furniture, etc.",
+      "conditional": {
+        "field": "was_anything_damaged",
+        "value": "Yes"
+      },
+      "step_title": "Incident Details"
+    },
+    "suspect_info": {
+      "label": "Do you have any suspect information?",
+      "type": "textarea",
+      "placeholder": "Description, name, etc...",
+      "step_title": "Suspect & Evidence"
+    },
+    "vehicle_involved": {
+      "label": "Was a vehilce used or sighted?",
+      "type": "radio_group",
+      "options": [
+        "Yes",
+        "No",
+        "Unsure"
+      ],
+      "validation": {
+        "required": true
+      },
+      "step_title": "Suspect & Evidence"
+    },
+    "vehicle_description": {
+      "label": "Description of any involved vehicles.",
+      "type": "textarea",
+      "placeholder": "Make, model, license plate.",
+      "conditional": {
+        "field": "vehicle_involved",
+        "value": "Yes"
+      },
+      "step_title": "Suspect & Evidence"
+    },
+    "evidence_upload": {
+      "label": "Upload Evidence",
+      "type": "file_upload",
+      "helperText": "e.g., doorbell camera footage, photos.",
+      "step_title": "Suspect & Evidence"
+    },
+    "witness_present": {
+      "label": "Were there any witnesses?",
+      "type": "radio_group",
+      "options": [
+        "Yes",
+        "No"
+      ],
+      "step_title": "Suspect & Evidence"
+    }
+  }
+}

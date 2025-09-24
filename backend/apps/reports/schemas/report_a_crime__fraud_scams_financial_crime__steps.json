@@ -1,0 +1,112 @@
+{
+  "report_type_key": "report_a_crime",
+  "category_key": "fraud_scams_financial_crime",
+  "report_type_title": "Report a Crime",
+  "category_title": "Fraud, Scams & Financial Crime",
+  "category_subtitle": "Deception for financial gain or to compromise info.",
+  "fields": {
+    "location": {
+      "label": "Where did that happen?",
+      "type": "location",
+      "validation": {
+        "required": true
+      },
+      "step_title": "Incident Details"
+    },
+    "time_occurred": {
+      "label": "When do you believe it occurred?",
+      "type": "datetime_range",
+      "validation": {
+        "required": true
+      },
+      "step_title": "Incident Details"
+    },
+    "financial_loss": {
+      "label": "Did you lose any money or property?",
+      "type": "radio_group",
+      "options": [
+        "Yes",
+        "No"
+      ],
+      "step_title": "Possible Damages"
+    },
+    "loss_amount": {
+      "label": "Total Estimated Loss ($)",
+      "type": "number",
+      "conditional": {
+        "field": "financial_loss",
+        "value": "Yes"
+      },
+      "step_title": "Possible Damages"
+    },
+    "payment_method": {
+      "label": "How did you pay?",
+      "type": "text",
+      "placeholder": "e.g., Credit Card, Bank Transfer, Gift Card, Cryptocurrency",
+      "conditional": {
+        "field": "financial_loss",
+        "value": "Yes"
+      },
+      "step_title": "Possible Damages"
+    },
+    "identity_stolen": {
+      "label": "Was your identity stolen?",
+      "type": "radio_group",
+      "options": [
+        "Yes",
+        "No"
+      ],
+      "step_title": "Possible Damages"
+    },
+    "identity_used_for": {
+      "label": "If yes, what was it used for?",
+      "type": "textarea",
+      "placeholder": "e.g., opening accounts, taking loans, online purchases",
+      "conditional": {
+        "field": "identity_stolen",
+        "value": "Yes"
+      },
+      "step_title": "Possible Damages"
+    },
+    "counterfeit_occurred": {
+      "label": "Was anything counterfeited or forged?",
+      "type": "radio_group",
+      "options": [
+        "Yes",
+        "No"
+      ],
+      "step_title": "Possible Damages"
+    },
+    "counterfeit_details": {
+      "label": "If yes, what was counterfeited?",
+      "type": "textarea",
+      "placeholder": "e.g., checks, documents, signatures, ID cards",
+      "conditional": {
+        "field": "counterfeit_occurred",
+        "value": "Yes"
+      },
+      "step_title": "Possible Damages"
+    },
+    "suspect_info": {
+      "label": "Do you have any suspect information?",
+      "type": "textarea",
+      "placeholder": "Description, name, etc...",
+      "step_title": "Suspect & Evidence"
+    },
+    "evidence_upload": {
+      "label": "Upload Evidence",
+      "type": "file_upload",
+      "helperText": "e.g., doorbell camera footage, photos.",
+      "step_title": "Suspect & Evidence"
+    },
+    "witness_present": {
+      "label": "Were there any witnesses?",
+      "type": "radio_group",
+      "options": [
+        "Yes",
+        "No"
+      ],
+      "step_title": "Suspect & Evidence"
+    }
+  }
+}

@@ -1,0 +1,180 @@
+{
+  "report_type_key": "report_a_crime",
+  "category_key": "vehicle_related_crime",
+  "report_type_title": "Report a Crime",
+  "category_title": "Vehicle-Related Crime",
+  "category_subtitle": "Crimes specifically involving motor vehicles.",
+  "fields": {
+    "location": {
+      "label": "Where was the vehicle parked?",
+      "type": "location",
+      "validation": {
+        "required": true
+      },
+      "step_title": "Incident Details"
+    },
+    "time_occurred": {
+      "label": "When do you believe the theft occurred?",
+      "type": "datetime_range",
+      "validation": {
+        "required": true
+      },
+      "step_title": "Incident Details"
+    },
+    "vehicle_entered": {
+      "label": "Was your vehicle entered?",
+      "type": "radio_group",
+      "options": [
+        "Yes",
+        "No",
+        "Unsure"
+      ],
+      "validation": {
+        "required": true
+      },
+      "step_title": "Incident Details"
+    },
+    "vehicle_entry": {
+      "label": "How did the suspect get into your vehicle?",
+      "type": "select",
+      "options": [
+        "Window was broken",
+        "Doors were unlocked",
+        "Trunk was forced open",
+        "Unsure",
+        "Other"
+      ],
+      "conditional": {
+        "field": "vehicle_entered",
+        "value": "Yes"
+      },
+      "step_title": "Incident Details"
+    },
+    "was_anything_stolen": {
+      "label": "Was anything stolen?",
+      "type": "radio_group",
+      "options": [
+        "Yes",
+        "No",
+        "Unsure"
+      ],
+      "step_title": "Incident Details"
+    },
+    "stolen_items": {
+      "label": "List of Stolen Items",
+      "type": "repeater",
+      "conditional": {
+        "field": "was_anything_stolen",
+        "value": "Yes"
+      },
+      "step_title": "Incident Details",
+      "fields": {
+        "item_name": {
+          "label": "Item",
+          "type": "text",
+          "placeholder": "e.g., Laptop, Jewelry"
+        },
+        "item_value": {
+          "label": "Estimated Value ($)",
+          "type": "number"
+        },
+        "item_description": {
+          "label": "Description / Serial Number",
+          "type": "text"
+        }
+      }
+    },
+    "own_vehicle_make": {
+      "label": "Vehicle Make",
+      "type": "text",
+      "placeholder": "e.g., Honda",
+      "validation": {
+        "required": true
+      },
+      "step_title": "Vehicles Information"
+    },
+    "own_vehicle_model": {
+      "label": "Vehicle Model",
+      "type": "text",
+      "placeholder": "e.g., Civic",
+      "validation": {
+        "required": true
+      },
+      "step_title": "Vehicles Information"
+    },
+    "own_vehicle_year": {
+      "label": "Year",
+      "type": "number",
+      "validation": {
+        "required": true
+      },
+      "step_title": "Vehicles Information"
+    },
+    "own_vehicle_color": {
+      "label": "Color",
+      "type": "text",
+      "validation": {
+        "required": true
+      },
+      "step_title": "Vehicles Information"
+    },
+    "own_license_plate": {
+      "label": "License Plate Number",
+      "type": "text",
+      "validation": {
+        "required": true
+      },
+      "step_title": "Vehicles Information"
+    },
+    "own_vin_number": {
+      "label": "VIN",
+      "type": "text",
+      "helperText": "Vehicle Identification Number, found on your dashboard or registration.",
+      "step_title": "Vehicles Information"
+    },
+    "suspect_info": {
+      "label": "Do you have any suspect information?",
+      "type": "textarea",
+      "placeholder": "Description, name, etc...",
+      "step_title": "Suspect & Evidence"
+    },
+    "vehicle_involved": {
+      "label": "Was a vehilce used or sighted?",
+      "type": "radio_group",
+      "options": [
+        "Yes",
+        "No",
+        "Unsure"
+      ],
+      "validation": {
+        "required": true
+      },
+      "step_title": "Suspect & Evidence"
+    },
+    "vehicle_description": {
+      "label": "Description of any involved vehicles.",
+      "type": "textarea",
+      "placeholder": "Make, model, license plate.",
+      "conditional": {
+        "field": "vehicle_involved",
+        "value": "Yes"
+      },
+      "step_title": "Suspect & Evidence"
+    },
+    "evidence_upload": {
+      "label": "Upload Evidence",
+      "type": "file_upload",
+      "helperText": "e.g., doorbell camera footage, photos.",
+      "step_title": "Suspect & Evidence"
+    },
+    "witness_present": {
+      "label": "Were there any witnesses?",
+      "type": "radio_group",
+      "options": [
+        "Yes",
+        "No"
+      ],
+      "step_title": "Suspect & Evidence"
+    }
+  }
+}

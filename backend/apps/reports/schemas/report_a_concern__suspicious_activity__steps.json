@@ -1,0 +1,69 @@
+{
+  "report_type_key": "report_a_concern",
+  "category_key": "suspicious_activity",
+  "report_type_title": "Report a Concern",
+  "category_title": "Suspicious Activity",
+  "category_subtitle": "Behavior that may be a precursor to a crime.",
+  "fields": {
+    "location": {
+      "label": "Where did this happen?",
+      "type": "location",
+      "validation": {
+        "required": true
+      },
+      "step_title": "Activity Details"
+    },
+    "activity_datetime": {
+      "label": "When did this happen?",
+      "type": "datetime_range",
+      "validation": {
+        "required": true
+      },
+      "step_title": "Activity Details"
+    },
+    "activity_description": {
+      "label": "Please describe the suspicious behavior in detail.",
+      "type": "textarea",
+      "placeholder": "e.g., someone looking into car windows, testing doors, observing a house for a long time.",
+      "validation": {
+        "required": true
+      },
+      "step_title": "Activity Details"
+    },
+    "subject_description": {
+      "label": "Please describe the person(s) involved.",
+      "type": "textarea",
+      "placeholder": "Include details like gender, age, build, clothing, and any distinguishing features.",
+      "validation": {
+        "required": true
+      },
+      "step_title": "Subject & Vehicle Information"
+    },
+    "vehicle_involved": {
+      "label": "Was a vehicle involved?",
+      "type": "radio_group",
+      "options": [
+        "Yes",
+        "No",
+        "Unsure"
+      ],
+      "step_title": "Subject & Vehicle Information"
+    },
+    "vehicle_description": {
+      "label": "Describe the vehicle, if any.",
+      "type": "textarea",
+      "placeholder": "Include make, model, color, license plate, and any unique features.",
+      "conditional": {
+        "field": "vehicle_involved",
+        "value": "Yes"
+      },
+      "step_title": "Subject & Vehicle Information"
+    },
+    "evidence_upload": {
+      "label": "Upload Photos or Videos",
+      "type": "file_upload",
+      "helperText": "Only upload evidence if it is safe to do so.",
+      "step_title": "Evidence"
+    }
+  }
+}
