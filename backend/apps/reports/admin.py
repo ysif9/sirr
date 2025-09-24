@@ -220,9 +220,11 @@ class ReportAdmin(admin.ModelAdmin):
                 }
 
                 for attachment in report.attachments.all():
-                    if not attachment.key_envelope: continue
+                    if not attachment.key_envelope:
+                        continue
                     wrapped_attach_key_b64 = attachment.key_envelope.get("wrapped_key")
-                    if not wrapped_attach_key_b64: continue
+                    if not wrapped_attach_key_b64:
+                        continue
                     k_attach = reporter_to_admin_box.decrypt(base64.b64decode(wrapped_attach_key_b64))
                     key_bundle["attachment_keys"][str(attachment.id)] = base64.b64encode(k_attach).decode("utf-8")
 

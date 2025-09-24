@@ -7,7 +7,7 @@ from rest_framework.exceptions import ValidationError
 
 from apps.users.models import User
 
-from .models import AIAnalysis, Attachment, Report, ReportAssignment, ReportCategory, ReportRedaction, ReportTemplate
+from .models import AIAnalysis, Attachment, Report, ReportCategory, ReportRedaction, ReportTemplate
 
 
 # -------------------

@@ -12,11 +12,9 @@ from nacl.exceptions import CryptoError
 from nacl.public import Box, PrivateKey, PublicKey
 from rest_framework import filters, status, viewsets
 from rest_framework.decorators import action
-from rest_framework.exceptions import NotFound, ParseError, ValidationError
+from rest_framework.exceptions import ParseError, ValidationError
 from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
-
-from apps.users.models import User
 
 from .filters import ReportFilter
 from .models import AIAnalysis, Attachment, Report, ReportAssignment, ReportCategory, ReportRedaction, ReportTemplate
