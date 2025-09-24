@@ -1,6 +1,7 @@
 import base64
 import json
 from binascii import Error as BinasciiError
+from typing import Any
 
 from django.conf import settings
 from django.contrib import admin, messages
@@ -40,9 +41,9 @@ def decrypt_report_body(report: Report) -> dict | str:
 
         # 3. Unwrap the symmetric report key (K_report) using the asymmetric key envelope.
         envelope = report.key_envelope
-        reporter_ephem_pk = PublicKey(base64.b64decode(envelope["reporter_ephemeral_public_key"]))
+        reporter_ephem_pk = PublicKey(base64.b64decode(envelope["reporter_ephemeral_public_key"]))  # type: ignore
         # Handle both possible key names for backward compatibility or variations
-        wrapped_report_key_b64 = envelope.get("wrapped_report_key")
+        wrapped_report_key_b64 = envelope.get("wrapped_report_key")  # type: ignore
         wrapped_report_key = base64.b64decode(wrapped_report_key_b64)
 
         reporter_to_admin_box = Box(admin_private_key, reporter_ephem_pk)
@@ -50,7 +51,7 @@ def decrypt_report_body(report: Report) -> dict | str:
 
         # 4. Decrypt the main report body using the unwrapped symmetric key.
         secret_box = SecretBox(k_report)
-        decrypted_json = secret_box.decrypt(report.encrypted_body, nonce=report.body_nonce)
+        decrypted_json = secret_box.decrypt(report.encrypted_body, nonce=report.body_nonce)  # type: ignore
 
         return json.loads(decrypted_json)
 
@@ -208,12 +209,12 @@ class ReportAdmin(admin.ModelAdmin):
 
                 reporter_ephem_pk_b64 = report_envelope["reporter_ephemeral_public_key"]
                 wrapped_key_b64 = report_envelope.get("wrapped_report_key") or report_envelope.get("wrapped_key")
-                
+
                 reporter_ephem_pk = PublicKey(base64.b64decode(reporter_ephem_pk_b64))
                 reporter_to_admin_box = Box(admin_private_key, reporter_ephem_pk)
                 k_report = reporter_to_admin_box.decrypt(base64.b64decode(wrapped_key_b64))
 
-                key_bundle = {
+                key_bundle: dict[str, Any] = {
                     "report_key": base64.b64encode(k_report).decode("utf-8"),
                     "attachment_keys": {},
                 }
@@ -233,7 +234,7 @@ class ReportAdmin(admin.ModelAdmin):
                 caseworker_pk = PublicKey(base64.b64decode(caseworker_pk_b64))
                 admin_ephemeral_private_key = PrivateKey.generate()
                 admin_to_caseworker_box = Box(admin_ephemeral_private_key, caseworker_pk)
-                
+
                 key_bundle_json = json.dumps(key_bundle).encode("utf-8")
                 encrypted_bundle = admin_to_caseworker_box.encrypt(key_bundle_json)
 
@@ -254,7 +255,7 @@ class ReportAdmin(admin.ModelAdmin):
 
         # Filter the formset's new objects to only include successful ones
         formset.new_objects = [a for a in newly_added_assignments if a not in failed_assignments]
-        
+
         # Finally, call the parent method to save the formset
         super().save_formset(request, form, formset, change)
 

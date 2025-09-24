@@ -2,6 +2,7 @@ import base64
 import json
 import secrets
 from binascii import Error as BinasciiError
+from typing import Any
 
 from django.conf import settings
 from django.db import transaction
@@ -216,7 +217,7 @@ class ReportViewSet(viewsets.ModelViewSet):
                 reporter_to_admin_box = Box(admin_private_key, reporter_ephem_pk)
                 k_report = reporter_to_admin_box.decrypt(base64.b64decode(wrapped_report_key_b64))
 
-                key_bundle = {
+                key_bundle: dict[str, Any] = {
                     "report_key": base64.b64encode(k_report).decode("utf-8"),
                     "attachment_keys": {},
                 }

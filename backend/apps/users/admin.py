@@ -25,7 +25,7 @@ class UserAdmin(BaseUserAdmin):
     ordering = ("username",)
 
     # Add custom fields to the fieldsets for the user detail view
-    fieldsets = BaseUserAdmin.fieldsets + (
+    fieldsets = BaseUserAdmin.fieldsets + (  # type: ignore
         (_("Custom Properties"), {"fields": ("is_caseworker", "public_key_bundle")}),
     )
     add_fieldsets = BaseUserAdmin.add_fieldsets + (

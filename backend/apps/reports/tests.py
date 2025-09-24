@@ -3,12 +3,11 @@ import json
 
 import nacl.secret
 import nacl.utils
-from django.test import override_settings
 from nacl.public import Box, PrivateKey, PublicKey
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-from apps.reports.models import Report, ReportAssignment
+from apps.reports.models import Report
 from apps.users.models import User
 
 
@@ -90,13 +89,13 @@ class InvestigatorAssignmentE2EFlowTest(APITestCase):
         # --- Encrypt Report and Store Originals for Verification ---
         self.k_report = nacl.utils.random(nacl.secret.SecretBox.KEY_SIZE)
         self.plaintext_report_body = {"title": "Initial Unassigned Report", "details": "This report will be assigned."}
-        
+
         box = nacl.secret.SecretBox(self.k_report)
-        
+
         # Store original nonce and ciphertext as instance variables to verify their integrity later
         self.original_nonce_bytes = nacl.utils.random(nacl.secret.SecretBox.NONCE_SIZE)
         self.original_encrypted_body_bytes = box.encrypt(json.dumps(self.plaintext_report_body).encode('utf-8'), self.original_nonce_bytes)
-        
+
         reporter_ephemeral_pk = PrivateKey.generate()
         key_wrapping_box = Box(reporter_ephemeral_pk, self.admin_private_key.public_key)
         wrapped_k_report = key_wrapping_box.encrypt(self.k_report)
@@ -112,10 +111,10 @@ class InvestigatorAssignmentE2EFlowTest(APITestCase):
             "body_nonce": base64.b64encode(self.original_nonce_bytes).decode('utf-8'),
             "key_envelope": key_envelope
         }
-        
+
         post_data = {"payload": json.dumps(report_payload)}
         response = self.client.post("/api/reports/", post_data)
-        
+
         self.assertEqual(response.status_code, status.HTTP_201_CREATED, f"Report submission failed in setUp: {response.content}")
         self.report = Report.objects.first()
 
@@ -125,7 +124,7 @@ class InvestigatorAssignmentE2EFlowTest(APITestCase):
         """
         # --- Admin assigns the report ---
         self.client.force_authenticate(user=self.admin_user)
-        assignment_url = f"/api/reports/{self.report.id}/assign/"
+        assignment_url = f"/api/reports/{self.report.id}/assign/"  # type: ignore
         assignment_payload = {"assignee_id": str(self.investigator_user.id)}
         with self.settings(ADMIN_PRIVATE_KEY=self.admin_private_key_b64):
             response = self.client.post(assignment_url, assignment_payload, format='json')
@@ -133,7 +132,7 @@ class InvestigatorAssignmentE2EFlowTest(APITestCase):
 
         # --- Investigator fetches the report ---
         self.client.force_authenticate(user=self.investigator_user)
-        report_detail_url = f"/api/reports/{self.report.id}/"
+        report_detail_url = f"/api/reports/{self.report.id}/"  # type: ignore
         response = self.client.get(report_detail_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         report_data_from_api = response.data
@@ -160,7 +159,7 @@ class InvestigatorAssignmentE2EFlowTest(APITestCase):
         # Now, attempt decryption with the verified data
         report_body_box = nacl.secret.SecretBox(decrypted_k_report)
         decrypted_body_json = report_body_box.decrypt(encrypted_body_from_api_bytes, nonce=body_nonce_from_api_bytes)
-        
+
         decrypted_body = json.loads(decrypted_body_json)
         self.assertEqual(decrypted_body, self.plaintext_report_body, "Decrypted report content must match original.")
 
