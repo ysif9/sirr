@@ -1806,6 +1806,7 @@ dev = [
     { name = "django-stubs" },
     { name = "djangorestframework-stubs" },
     { name = "mypy" },
+    { name = "pandas" },
     { name = "poethepoet" },
     { name = "ruff" },
 ]
@@ -1832,6 +1833,7 @@ dev = [
     { name = "django-stubs", specifier = ">=5.2.2" },
     { name = "djangorestframework-stubs", specifier = ">=3.16.2" },
     { name = "mypy", specifier = ">=1.17.1" },
+    { name = "pandas", specifier = ">=2.3.2" },
     { name = "poethepoet", specifier = ">=0.37.0" },
     { name = "ruff", specifier = ">=0.12.12" },
 ]

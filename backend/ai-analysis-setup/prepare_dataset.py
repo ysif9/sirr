@@ -1,6 +1,13 @@
+import os
 import random
+import time
 
+import dspy
+import pandas as pd
 from datasets import load_dataset
+from tqdm import tqdm
+
+from apps.reports.services.spam_detection_service import SpamDetectionService
 
 
 def load_crime_reports_dataset() -> None:
@@ -22,6 +29,62 @@ def load_crime_reports_dataset() -> None:
 
     print("\n Saved 300 train samples and 60 test samples as CSV.")
 
-def label_dataset_spam() -> None:
-    """Label the dataset as spam or not spam using teacher model."""
-    pass
+
+def label_dataset_spam(max_retries: int = 5) -> None:
+    """Label the dataset as spam or not spam using teacher model,
+    retrying on rate limit errors with progress bar."""
+
+    spam_service = SpamDetectionService()
+
+    # Load dataset
+    data = pd.read_csv("crime_dataset/crime_reports_train_sample.csv")
+    # first 250
+    descriptions = pd.DataFrame(data["crimeaditionalinfo"][:250])
+
+    print("Using teacher model...")
+
+    results = []
+    with dspy.context(
+        lm=dspy.LM(
+            "gemini/gemini-2.5-flash",
+            api_key=os.environ.get("GOOGLE_API_KEY"),
+        )
+    ):
+        for text in tqdm(
+            descriptions["crimeaditionalinfo"],
+            desc="Labeling dataset",
+            unit="row",
+        ):
+            attempt = 0
+            while attempt < max_retries:
+                try:
+                    pred = spam_service.detect_spam(text)
+                    results.append(pred)
+                    break  # success → break retry loop
+                except Exception as e:
+                    if "limit" in str(e).lower():
+                        attempt += 1
+                        wait_time = 60
+                        print(
+                            f"\n Rate limit hit. Sleeping {wait_time}s "
+                            f"(Attempt {attempt}/{max_retries})"
+                        )
+                        time.sleep(wait_time)
+                    else:
+                        results.append(None)
+                        break  # stop retry loop for non-rate-limit error
+
+    # Convert results into DataFrame columns
+    descriptions["is_spam_teacher"] = [
+        r.is_spam if r else None for r in results
+    ]
+    descriptions["confidence_teacher"] = [
+        r.confidence if r else None for r in results
+    ]
+
+    descriptions.to_csv("labeled_crime_reports_train_sample.csv", index=False)
+    print("\n Saved labeled dataset as CSV.")
+
+
+if __name__ == "__main__":
+    label_dataset_spam(10)

@@ -1,7 +1,10 @@
+import logging
 from typing import Literal
 
 import dspy
 from dspy import Prediction
+
+# logging.basicConfig(level=logging.DEBUG)
 
 lm = dspy.LM("ollama_chat/deepseek-r1:8b", api_base="http://localhost:11434", )
 dspy.configure(lm=lm)
@@ -11,7 +14,7 @@ class SpamDetection(dspy.Signature):
     """Analyze the reports and determine whether each one is spam or legitimate."""
     description: str = dspy.InputField(description="The report body to analyze.")
     is_spam: Literal["spam", "not_spam"] = dspy.OutputField(description="Whether the report is spam.")
-    confidence: float = dspy.OutputField(description="The confidence score of the prediction.")
+    confidence: float = dspy.OutputField(description="The confidence score of the prediction.", le=1.0, ge=0.0)
 
 
 class SpamDetectionService:
@@ -39,6 +42,7 @@ class SpamDetectionService:
         """Classify the report as spam or not spam."""
         cleaned_report_body = self._remove_redundant_keys(report_body)
         answer = self.classify(description=cleaned_report_body)
+        print(dspy.inspect_history(1))
         return answer
 
 

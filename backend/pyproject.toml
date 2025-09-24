@@ -24,6 +24,7 @@ dev = [
   "django-stubs>=5.2.2",
   "djangorestframework-stubs>=3.16.2",
   "mypy>=1.17.1",
+  "pandas>=2.3.2",
   "poethepoet>=0.37.0",
   "ruff>=0.12.12",
 ]
