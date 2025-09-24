@@ -1,44 +1,54 @@
-"use client"
-import { Eye, EyeOff, GalleryVerticalEnd } from "lucide-react";
+"use client";
+import { Eye, EyeOff, GalleryVerticalEnd, KeyRound, User } from "lucide-react";
 import { useState, FormEvent } from "react";
-import { useRouter } from 'next/navigation';
+import { useAuth } from "@/contexts/AuthContext";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-
-// Mock user data
-const mockUser = {
-  email: 'admin@sirr.gov',
-  password: 'password123',
-};
+import { Textarea } from "@/components/ui/textarea";
 
 export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
   const [showPassword, setShowPassword] = useState(false);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [username, setUsername] = useState("testcaseworker"); // Default to username
+  const [password, setPassword] = useState("yoursecurepassword");
+  const [privateKey, setPrivateKey] = useState("");
   const [error, setError] = useState("");
-  const router = useRouter();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { login } = useAuth();
 
-  const handleSubmit = (event: FormEvent) => {
+  const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
     setError("");
+    setIsSubmitting(true);
 
-    // Validation for @sirr.gov domain
-    if (!email.endsWith('@sirr.gov')) {
-      setError("Access is restricted to '@sirr.gov' emails only.");
+    if (!username.trim()) {
+      setError("Username is required.");
+      setIsSubmitting(false);
       return;
     }
-    
-    // Check credentials against mock user
-    if (email === mockUser.email && password === mockUser.password) {
-      router.push('/login/otp'); // Redirect to OTP page
-    } else {
-      setError("Invalid email or password.");
+
+    if (!privateKey.trim()) {
+      setError("Private key is required for authentication.");
+      setIsSubmitting(false);
+      return;
+    }
+
+    try {
+      await login(username, password, privateKey);
+      // Redirect is handled by the login function
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "An unknown error occurred."
+      );
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -47,55 +57,52 @@ export function LoginForm({
       <form onSubmit={handleSubmit}>
         <div className="flex flex-col gap-6">
           <div className="flex flex-col items-center gap-2">
-            <a
-              href="#"
-              className="flex flex-col items-center gap-2 font-medium"
-            >
+            <a href="#" className="flex flex-col items-center gap-2 font-medium">
               <div className="flex size-8 items-center justify-center rounded-md">
                 <GalleryVerticalEnd className="size-6" />
               </div>
-              {/* This span is for screen readers and isn't visible.
-                  The main visible title is below in the h1 tag. */}
-              <span className="sr-only">Sirr.</span> 
+              <span className="sr-only">Sirr.</span>
             </a>
-            <h1 className="text-xl font-bold">Welcome to Sirr.</h1> {/* Changed title */}
-            {/* Removed: Don't have an account? Sign up link */}
+            <h1 className="text-xl font-bold">Investigator Portal</h1>
           </div>
-          <div className="flex flex-col gap-6">
-            <div className="grid gap-3">
-              <Label htmlFor="email">Email</Label>
+          <div className="flex flex-col gap-4">
+            <div className="grid gap-2">
+              <Label htmlFor="username">Username</Label>
               <Input
-                id="email"
-                type="email"
-                placeholder="m@sirr.gov"
+                id="username"
+                type="text"
+                placeholder="Enter your username"
                 required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                disabled={isSubmitting}
               />
             </div>
-            <div className="grid gap-3"> {/* Added password field */}
+            <div className="grid gap-2">
               <Label htmlFor="password">Password</Label>
-              <div className="relative"> {/* Wrapper for Input and toggle icon */}
+              <div className="relative">
                 <Input
                   id="password"
-                  type={showPassword ? "text" : "password"} // Toggle type based on state
+                  type={showPassword ? "text" : "password"}
                   placeholder="********"
                   required
-                  className="pr-10" // Add padding to the right for the toggle icon
+                  className="pr-10"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  disabled={isSubmitting}
                 />
                 <Button
-                  type="button" // Important: prevent form submission when clicking the toggle
-                  variant="ghost" // Style as a subtle button
+                  type="button"
+                  variant="ghost"
                   size="sm"
-                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent" // Position the button
-                  onClick={() => setShowPassword((prev) => !prev)} // Toggle password visibility
+                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  disabled={isSubmitting}
                 >
                   {showPassword ? (
-                    <Eye className="h-4 w-4" aria-hidden="true" /> // Eye icon when password is shown
+                    <Eye className="h-4 w-4" aria-hidden="true" />
                   ) : (
-                    <EyeOff className="h-4 w-4" aria-hidden="true" /> // EyeOff icon when password is hidden
+                    <EyeOff className="h-4 w-4" aria-hidden="true" />
                   )}
                   <span className="sr-only">
                     {showPassword ? "Hide password" : "Show password"}
@@ -103,9 +110,28 @@ export function LoginForm({
                 </Button>
               </div>
             </div>
+            <div className="grid gap-2">
+              <Label htmlFor="privateKey">Private Key</Label>
+              <div className="relative">
+                <KeyRound
+                  className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground"
+                  aria-hidden="true"
+                />
+                <Textarea
+                  id="privateKey"
+                  placeholder="Paste your Base64-encoded private key"
+                  required
+                  className="pl-9"
+                  rows={3}
+                  value={privateKey}
+                  onChange={(e) => setPrivateKey(e.target.value)}
+                  disabled={isSubmitting}
+                />
+              </div>
+            </div>
             {error && <p className="text-sm text-destructive">{error}</p>}
-            <Button type="submit" className="w-full">
-              Login
+            <Button type="submit" className="w-full" disabled={isSubmitting}>
+              {isSubmitting ? "Logging in..." : "Login"}
             </Button>
           </div>
         </div>

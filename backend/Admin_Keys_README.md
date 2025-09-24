@@ -26,6 +26,7 @@ Follow these steps to create your test admin and configure your backend for E2EE
     Execute the automated command, providing the desired username, email, and password:
     ```bash
     poe create_test_admin --username=testadmin --email=test@sirr.com --password=yoursecurepassword
+	poe create_test_caseworker --username=testcaseworker --email=testinv@sirr.com --password=yoursecurepassword
     ```
     (Replace `testadmin`, `test@sirr.com`, and `yoursecurepassword` with your actual testing credentials.)
 
@@ -56,3 +57,5 @@ Follow these steps to create your test admin and configure your backend for E2EE
 
 *   **Django Admin:** Access `http://localhost:8000/admin/` and log in with the `testadmin` credentials. Check the `Users` section to confirm your `testadmin` exists and has a `public_key_bundle` populated.
 *   **Frontend Submission:** Use your frontend application to submit a test report. The backend should now be able to receive and process it.
+
+note: while the architecture accounts for Kyber for future post-quantum readiness, the current implementation uses only X25519 for key exchange due to immediate priorities. The kem_key_kyber field serves as a reserved spot.

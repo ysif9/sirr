@@ -39,6 +39,8 @@ services:
       - DJANGO_SUPERUSER_EMAIL=${DJANGO_SUPERUSER_EMAIL:-admin@sirr.com}
       - DJANGO_SUPERUSER_USERNAME=${DJANGO_SUPERUSER_USER:-admin}
       - DJANGO_SUPERUSER_PASSWORD=${DJANGO_SUPERUSER_PASSWORD:-admin}
+      # Admin private key for development
+      - ADMIN_PRIVATE_KEY=${ADMIN_PRIVATE_KEY}
     command: >
       sh -c "
         echo 'Waiting for postgres...'
