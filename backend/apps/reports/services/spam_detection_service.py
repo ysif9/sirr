@@ -1,5 +1,3 @@
-import json
-import os
 from typing import Literal
 
 import dspy
@@ -10,13 +8,14 @@ dspy.configure(lm=lm)
 
 
 class SpamDetection(dspy.Signature):
-    """Detect model for spam detection."""
+    """Analyze the reports and determine whether each one is spam or legitimate."""
     description: str = dspy.InputField(description="The report body to analyze.")
     is_spam: Literal["spam", "not_spam"] = dspy.OutputField(description="Whether the report is spam.")
     confidence: float = dspy.OutputField(description="The confidence score of the prediction.")
 
 
 class SpamDetectionService:
+    """Service for detecting spam in reports."""
 
     def __init__(self) -> None:
         """Initialize the spam detection service."""
@@ -47,5 +46,3 @@ spam_service = SpamDetectionService()
 
 print(spam_service.detect_spam(
     """Looking for a new way to lose weight ? Try Tea now! With our natural and organic ingredients, you're sure to see results in no time! Our tea is not only delicious but also healthy because it's loaded with superfoods! Don't wait any longer to be the best version of yourself, sip our skinny tea and make your dreams come true!"""))
-
-

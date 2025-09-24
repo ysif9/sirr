@@ -19,6 +19,7 @@ dependencies = [
 ]
 [dependency-groups]
 dev = [
+  "datasets>=4.1.1",
   "django-diagram>=0.0.1",
   "django-stubs>=5.2.2",
   "djangorestframework-stubs>=3.16.2",
