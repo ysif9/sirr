@@ -225,3 +225,31 @@ CORS_ALLOW_METHODS = [
     "OPTIONS",
 ]
 ADMIN_PRIVATE_KEY = os.environ.get("ADMIN_PRIVATE_KEY", None)
+
+AUTH_PASSWORD_VALIDATORS = [
+    {
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
+    },
+    {
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
+        "OPTIONS": {"min_length": 15},  # adjust as needed
+    },
+    {
+        "NAME": "apps.users.validators.ComplexityValidator",
+    },
+]
+
+
+PASSWORD_HASHERS = [
+    
+    "django.contrib.auth.hashers.Argon2PasswordHasher",
+
+    
+    "django.contrib.auth.hashers.BCryptSHA256PasswordHasher",
+
+   
+    "django.contrib.auth.hashers.PBKDF2PasswordHasher",
+
+    
+    "django.contrib.auth.hashers.PBKDF2SHA1PasswordHasher",
+]

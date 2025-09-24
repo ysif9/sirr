@@ -15,6 +15,10 @@ dependencies = [
   "psycopg[binary]>=3.2.10",
   "redis[hiredis]>=6.4.0",
   "pynacl>=1.6.0",
+  "django-pwnedpasswords-validator>=1.0.1",
+  "django-pwned-passwords>=4.1.0",
+  "argon2-cffi>=25.1.0",
+  "bcrypt>=4.3.0",
 ]
 [dependency-groups]
 dev = [

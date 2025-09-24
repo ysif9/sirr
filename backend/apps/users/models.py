@@ -21,3 +21,6 @@ class User(UUIDModel, AbstractUser):
     class Meta:
         verbose_name = _("User")
         verbose_name_plural = _("Users")
+
+    def __str__(self):
+        return self.username    
