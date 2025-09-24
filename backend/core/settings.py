@@ -194,6 +194,7 @@ SIMPLE_JWT = {
 # CORS settings with enhanced security
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",  # Frontend
+    "http://localhost:3001",
     "http://127.0.0.1:3000",
     "http://localhost:8000",  # Backend
     "http://127.0.0.1:8000",

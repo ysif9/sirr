@@ -9,6 +9,7 @@ import {
   AllCommunityModule,
   GridReadyEvent,
   RowClickedEvent,
+  ValueFormatterParams,
 } from "ag-grid-community";
 import { useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -18,13 +19,13 @@ import { Loader2, AlertTriangle } from "lucide-react";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
-// Interface for the data coming from the API list view
+// Interface updated to match the new fields from the API
 interface ICaseFromApi {
   id: string;
+  created_at: string;
   status: string;
-  priority: string;
-  // associated_data might contain more info, but is not in ReportListSerializer
-  // We will adapt the grid to show what we have.
+  score: number;
+  last_access_by_reporter: string | null;
 }
 
 export default function CasesPage() {
@@ -37,14 +38,12 @@ export default function CasesPage() {
   useEffect(() => {
     const fetchCases = async () => {
       if (!isAuthenticated) {
-        // Wait for auth check to complete before fetching
         return;
       }
       setIsLoading(true);
       setError(null);
       try {
         const response = await apiClient.get("/reports/");
-        // The API returns data in a paginated format under the 'results' key
         setRowData(response.data.results || []);
       } catch (err) {
         console.error("Failed to fetch cases:", err);
@@ -57,14 +56,44 @@ export default function CasesPage() {
     fetchCases();
   }, [isAuthenticated]);
 
+  // Column definitions updated to match the requirements
   const colDefs: ColDef<ICaseFromApi>[] = [
     {
-      field: "priority",
-      headerName: "Priority",
-      width: 120,
+      headerName: "",
+      checkboxSelection: true,
+      headerCheckboxSelection: true,
+      width: 50,
+      resizable: false,
+      filter: false,
     },
-    { field: "id", headerName: "Case ID", flex: 1, minWidth: 300 },
-    { field: "status", headerName: "Status", flex: 1, minWidth: 150 },
+    {
+      field: "created_at",
+      headerName: "Created At",
+      width: 220,
+      valueFormatter: (params: ValueFormatterParams) =>
+        params.value ? new Date(params.value).toLocaleString() : "N/A",
+    },
+    {
+      field: "status",
+      headerName: "Status",
+      width: 150,
+      // Example of cell styling based on value
+      cellStyle: params => {
+        if (params.value === 'submitted') {
+            return { color: 'white', backgroundColor: '#3b82f6' };
+        }
+        return null;
+      }
+    },
+    { field: "score", headerName: "Score", width: 100 },
+    {
+      field: "last_access_by_reporter",
+      headerName: "Last Access",
+      width: 220,
+      valueFormatter: (params: ValueFormatterParams) =>
+        params.value ? new Date(params.value).toLocaleString() : "N/A",
+    },
+    { field: "id", headerName: "Case ID", flex: 1, minWidth: 250 },
   ];
 
   const defaultColDef: ColDef = {
@@ -75,9 +104,8 @@ export default function CasesPage() {
   };
 
   const onGridReady = useCallback((params: GridReadyEvent) => {
-    // Default sorting can be applied here if needed
     params.api.applyColumnState({
-      state: [{ colId: "priority", sort: "asc", sortIndex: 0 }],
+      state: [{ colId: "created_at", sort: "desc" }],
       defaultState: { sort: null },
     });
   }, []);

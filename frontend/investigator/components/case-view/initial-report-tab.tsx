@@ -24,6 +24,7 @@ export default function InitialReportTab({ caseData }: InitialReportTabProps) {
     return (
       <div className="text-center text-muted-foreground">
         <p>Could not load the report form template for this case.</p>
+        <p className="text-xs">Form Keys: {caseData.formKey.reportTypeKey}, {caseData.formKey.categoryKey}, {caseData.formKey.formKey}</p>
       </div>
     );
   }
@@ -42,6 +43,7 @@ export default function InitialReportTab({ caseData }: InitialReportTabProps) {
                 field={field}
                 formData={caseData.formData}
                 allAttachments={caseData.attachments}
+                attachmentKeys={caseData.attachmentKeys}
               />
             ))}
           </AccordionContent>

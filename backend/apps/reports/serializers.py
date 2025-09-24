@@ -55,6 +55,28 @@ class ReportTemplateSerializer(serializers.ModelSerializer):
 
 
 # -------------------
+# Attachment serializers
+# -------------------
+class AttachmentSerializer(serializers.ModelSerializer):
+    """
+    Serializer for attachments. Includes a method to correctly
+    Base64-encode the binary nonce for client-side decryption.
+    """
+    nonce = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Attachment
+        fields = ["id", "report", "file", "key_envelope", "nonce", "description", "checksum", "mime_type",
+                  "file_extension"]
+        read_only_fields = ["id", "mime_type", "file_extension"]
+
+    def get_nonce(self, obj: Attachment) -> str | None:
+        """Base64-encode the binary nonce for JSON serialization."""
+        if obj.nonce:
+            return base64.b64encode(obj.nonce).decode('utf-8')
+        return None
+
+# -------------------
 # Report serializers
 # -------------------
 class EncryptedAttachmentMetadataSerializer(serializers.Serializer):
@@ -112,6 +134,7 @@ class ReportSerializer(serializers.ModelSerializer):
             "priority",
             "last_access_by_reporter",
             "expires_at",
+            "created_at", # Ensure created_at is here
         ]
         read_only_fields = ["id", "access_key", "score", "last_access_by_reporter", "expires_at", "created_at",
                             "updated_at"]
@@ -120,30 +143,24 @@ class ReportSerializer(serializers.ModelSerializer):
 class CaseworkerReportSerializer(ReportSerializer):
     """
     A specialized serializer for caseworkers that provides the re-encrypted
-    key envelope from their specific report assignment.
+    key envelope from their specific report assignment and includes attachment metadata.
     """
     key_envelope = serializers.SerializerMethodField()
+    attachments = AttachmentSerializer(many=True, read_only=True)
 
     class Meta(ReportSerializer.Meta):
-        # --- THIS IS THE FIX ---
-        # Explicitly inherit all fields from the parent serializer. This ensures
-        # that 'encrypted_body' and 'body_nonce' are included in the API response
-        # for the investigator.
-        fields = ReportSerializer.Meta.fields
-        # --- END OF FIX ---
+        # Explicitly inherit fields and add 'attachments' for the detail view.
+        fields = ReportSerializer.Meta.fields + ["attachments"]
 
     def get_key_envelope(self, obj: Report) -> dict | None:
         """
         Retrieves the correct key envelope from the ReportAssignment record
         for the currently authenticated caseworker.
-
-        This method relies on the 'assignments' related manager being prefetched
-        in the view's queryset to be efficient.
         """
-        # ... (rest of the function is unchanged)
         request = self.context.get("request")
         if not request or not hasattr(request, "user"):
             return None
+        # The view's queryset should prefetch 'assignments' for efficiency.
         for assignment in obj.assignments.all():
             if assignment.assignee_id == request.user.id:
                 return assignment.key_envelope
@@ -151,10 +168,20 @@ class CaseworkerReportSerializer(ReportSerializer):
 
 
 class ReportListSerializer(serializers.ModelSerializer):
+    """
+    Serializer for the list view of reports, providing the fields
+    required by the investigator portal's main table.
+    """
     class Meta:
         model = Report
-        fields = ["id", "status", "priority", "last_access_by_reporter",
-                  "expires_at"]
+        fields = [
+            "id",
+            "created_at",
+            "status",
+            "score",
+            "last_access_by_reporter",
+            "priority", # Included for potential sorting/filtering
+        ]
 
 
 class ReportCreationResponseSerializer(serializers.ModelSerializer):
@@ -167,7 +194,7 @@ class ReportCreationResponseSerializer(serializers.ModelSerializer):
 class ReportAssignmentSerializer(serializers.Serializer):
     """Serializer for validating the report assignment request."""
     assignee_id = serializers.PrimaryKeyRelatedField(
-        queryset=User.objects.all(),
+        queryset=User.objects.filter(is_caseworker=True, is_active=True),
         source="assignee",
         write_only=True,
         help_text="The UUID of the caseworker to assign the report to."
@@ -181,17 +208,6 @@ class ReportAssignmentSerializer(serializers.Serializer):
 
     def update(self, instance, validated_data):
         raise NotImplementedError()
-
-
-# -------------------
-# Attachment serializers
-# -------------------
-class AttachmentSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Attachment
-        fields = ["id", "report", "file", "key_envelope", "nonce", "description", "checksum", "mime_type",
-                  "file_extension"]
-        read_only_fields = ["id", "mime_type", "file_extension"]
 
 
 # -------------------

@@ -14,34 +14,43 @@ import EntitiesTab from "@/components/case-view/entities-tab";
 import { useAuth } from "@/contexts/AuthContext";
 import apiClient from "@/lib/api";
 import { decryptReport } from "@/lib/crypto";
-import type { ICaseInfo } from "@/lib/mock-data";
+import type { ICaseInfo, IApiAttachment } from "@/lib/mock-data";
 import { Loader2, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 // Helper function to transform API data to ICaseInfo
-const transformApiDataToCaseInfo = (apiData: any, decryptedBody: any): ICaseInfo => {
-  // NOTE: This is a placeholder transformation. As the API evolves,
-  // this function should be updated to pull real data for attachments, notes, etc.
+const transformApiDataToCaseInfo = (
+  apiData: any,
+  decryptedBody: any,
+  attachmentKeys: { [key: string]: string }
+): ICaseInfo => {
+  // Dynamically get form keys from the report's associated data
+  const formIdentifier = apiData.associated_data?.formIdentifier || {};
+  const {
+    reportTypeKey = "report_a_crime", // Fallback to a default for safety
+    categoryKey = "theft_burglary_property_damage",
+    formKey = "burglary_break_in",
+  } = formIdentifier;
+
   return {
     caseId: apiData.id,
-    priority: apiData.priority.charAt(0).toUpperCase() + apiData.priority.slice(1), // Capitalize
+    priority: apiData.priority.charAt(0).toUpperCase() + apiData.priority.slice(1),
     status: apiData.status,
     crimeType: apiData.associated_data?.formTitle || "Unknown Report Type",
     location: decryptedBody?.location || "Location not found in report",
     submittedAt: apiData.created_at,
-    assignedTo: "Current User", // Placeholder
+    assignedTo: "Current User", // This can be enhanced later
     reportedAt: apiData.created_at,
     reporter: { name: "Anonymous", isAnonymous: true, contact: "", credibilityScore: 0, reportingHistory: 0 },
-    timeline: [],
-    personsInvolved: [],
-    attachments: [],
-    investigatorNotes: [],
-    vehicles: [],
-    formKey: { // This is a placeholder and may need to come from the API in the future
-      reportTypeKey: "report_a_crime",
-      categoryKey: "theft_burglary_property_damage",
-      formKey: "burglary_break_in",
-    },
+    timeline: [], // Placeholder for future implementation
+    personsInvolved: [], // Placeholder for future implementation
+    vehicles: [], // Placeholder for future implementation
+    investigatorNotes: [], // Placeholder for future implementation
+
+    // Decrypted and structured data
+    attachments: apiData.attachments || [],
+    attachmentKeys: attachmentKeys,
+    formKey: { reportTypeKey, categoryKey, formKey },
     formData: decryptedBody || {},
   };
 };
@@ -58,7 +67,6 @@ export default function CaseDetailPage() {
 
   useEffect(() => {
     if (!isAuthenticated) {
-      // Don't fetch until authentication is confirmed
       return;
     }
 
@@ -72,32 +80,33 @@ export default function CaseDetailPage() {
       setIsLoading(true);
       setError(null);
       try {
-        // 1. Fetch the encrypted case data
         const response = await apiClient.get(`/reports/${caseId}/`);
         const encryptedCase = response.data;
 
-        // 2. Decrypt the report body
-        const decryptedBody = decryptReport(
+        const decryptionResult = decryptReport(
           privateKey,
           encryptedCase.key_envelope,
           encryptedCase.encrypted_body,
           encryptedCase.body_nonce
         );
 
-        if (!decryptedBody) {
+        if (!decryptionResult) {
           throw new Error("Decryption failed. Please check your private key and the case data.");
         }
+        
+        const { reportBody, attachmentKeys } = decryptionResult;
 
-        // 3. Transform data for UI components
-        const formattedCaseData = transformApiDataToCaseInfo(encryptedCase, decryptedBody);
+        // Debugging log as requested
+        console.log("DECRYPTED REPORT BODY:", reportBody);
+
+        const formattedCaseData = transformApiDataToCaseInfo(encryptedCase, reportBody, attachmentKeys);
         setCaseData(formattedCaseData);
-
       } catch (err: any) {
         console.error("Failed to load or decrypt case:", err);
         if (err.response?.status === 404) {
-             setError(`The case ID "${caseId}" does not match any records accessible to you.`);
+          setError(`The case ID "${caseId}" does not match any records accessible to you.`);
         } else {
-            setError(err.message || "An unexpected error occurred while loading the case.");
+          setError(err.message || "An unexpected error occurred while loading the case.");
         }
       } finally {
         setIsLoading(false);
@@ -112,10 +121,10 @@ export default function CaseDetailPage() {
       <div className="flex flex-col h-screen">
         <TopNavBar />
         <div className="flex-1 flex items-center justify-center">
-           <div className="flex flex-col items-center gap-4">
-             <Loader2 className="h-12 w-12 animate-spin text-primary" />
-             <p className="text-muted-foreground">Loading and decrypting case...</p>
-           </div>
+          <div className="flex flex-col items-center gap-4">
+            <Loader2 className="h-12 w-12 animate-spin text-primary" />
+            <p className="text-muted-foreground">Loading and decrypting case...</p>
+          </div>
         </div>
       </div>
     );
@@ -126,10 +135,10 @@ export default function CaseDetailPage() {
       <div>
         <TopNavBar />
         <main className="p-4 md:p-8 text-center">
-            <AlertTriangle className="h-12 w-12 text-destructive mx-auto mb-4" />
-            <h1 className="text-2xl font-bold">Could Not Load Case</h1>
-            <p className="text-muted-foreground mt-2">{error || `The case ID "${caseId}" does not match any records.`}</p>
-            <Button onClick={() => router.push('/cases')} className="mt-6">Back to Cases</Button>
+          <AlertTriangle className="h-12 w-12 text-destructive mx-auto mb-4" />
+          <h1 className="text-2xl font-bold">Could Not Load Case</h1>
+          <p className="text-muted-foreground mt-2">{error || `The case ID "${caseId}" does not match any records.`}</p>
+          <Button onClick={() => router.push('/cases')} className="mt-6">Back to Cases</Button>
         </main>
       </div>
     );
@@ -143,30 +152,10 @@ export default function CaseDetailPage() {
         <Tabs defaultValue="initial-report" className="w-full">
           <ScrollArea>
             <TabsList className="before:bg-border relative mb-3 h-auto w-full gap-0.5 bg-transparent p-0 before:absolute before:inset-x-0 before:bottom-0 before:h-px">
-              <TabsTrigger
-                value="initial-report"
-                className="bg-muted overflow-hidden rounded-b-none border-x border-t py-2 data-[state=active]:z-10 data-[state=active]:shadow-none"
-              >
-                Initial Report
-              </TabsTrigger>
-              <TabsTrigger
-                value="investigation-log"
-                className="bg-muted overflow-hidden rounded-b-none border-x border-t py-2 data-[state=active]:z-10 data-[state=active]:shadow-none"
-              >
-                Investigation Log
-              </TabsTrigger>
-              <TabsTrigger
-                value="evidence-manager"
-                className="bg-muted overflow-hidden rounded-b-none border-x border-t py-2 data-[state=active]:z-10 data-[state=active]:shadow-none"
-              >
-                Evidence Manager
-              </TabsTrigger>
-              <TabsTrigger
-                value="entities"
-                className="bg-muted overflow-hidden rounded-b-none border-x border-t py-2 data-[state=active]:z-10 data-[state=active]:shadow-none"
-              >
-                Entities
-              </TabsTrigger>
+              <TabsTrigger value="initial-report">Initial Report</TabsTrigger>
+              <TabsTrigger value="investigation-log">Investigation Log</TabsTrigger>
+              <TabsTrigger value="evidence-manager">Evidence Manager</TabsTrigger>
+              <TabsTrigger value="entities">Entities</TabsTrigger>
             </TabsList>
             <ScrollBar orientation="horizontal" />
           </ScrollArea>
