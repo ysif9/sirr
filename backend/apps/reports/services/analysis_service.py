@@ -105,7 +105,7 @@ class ReportAnalyzerService:
             cleaned_report_body = self._remove_unwanted_keys(report_body)
             yaml_body = yaml.dump(cleaned_report_body)
             logger.info(f"Cleaned report: {yaml_body}")
-            return self.program(description=cleaned_report_body)
+            return self.program(description=yaml_body)
         except Exception as e:
             logger.error(f"Failed to analyze report: {e}")
             return Prediction(

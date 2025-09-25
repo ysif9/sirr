@@ -10,11 +10,12 @@ import pandas as pd
 from dspy import GEPA, Example, Prediction
 
 from apps.reports.services.analysis_service import ReportAnalyzerModule
+from core.settings import BASE_DIR
 
 
 def init_dataset() -> tuple[list[Example], list[Example], list[Example]]:
     """Initialize the dataset."""
-    dataset = pd.read_csv("../../../sirr-datasets/labeled_crime_reports.csv")
+    dataset = pd.read_csv(BASE_DIR / "sirr-datasets/labeled_crime_reports.csv")
     dspy_dataset = [
         dspy.Example({
             "description": row["description"],
@@ -129,4 +130,3 @@ class ModelOptimizer:
         optimized_program.save(path)
 
         return optimized_program
-
