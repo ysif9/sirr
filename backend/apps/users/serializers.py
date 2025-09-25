@@ -3,7 +3,6 @@ from binascii import Error as BinasciiError
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
-
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
@@ -71,8 +70,6 @@ class UserPublicKeyBundleSerializer(serializers.Serializer):
 
         return value
 
-User = get_user_model()
-
 class UserRegistrationSerializer(serializers.ModelSerializer):
     password = serializers.CharField(
         write_only=True,
@@ -83,7 +80,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
     password2 = serializers.CharField(write_only=True, required=True,style={"input_type": "password"})
 
     class Meta:
-        model = User
+        model = get_user_model()
         fields = ["id", "username", "email", "password", "password2", "is_caseworker"]
         extra_kwargs = {"is_caseworker": {"default": True}}
 
@@ -101,4 +98,4 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         )
         user.set_password(validated_data["password"])  # runs validators + hashing
         user.save()
-        return user    
+        return user

@@ -1,7 +1,9 @@
 # apps/users/validators.py
 import re
+
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext as _
+
 
 class ComplexityValidator:
     def validate(self, password, user=None):

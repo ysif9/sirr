@@ -1,15 +1,12 @@
+from django.contrib.auth import get_user_model
 from rest_framework import generics, status
 from rest_framework.exceptions import NotFound
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from rest_framework import generics
-from django.contrib.auth import get_user_model
-from .serializers import UserRegistrationSerializer
-
 from .models import User
-from .serializers import CaseworkerPublicKeySerializer, UserPublicKeyBundleSerializer
+from .serializers import CaseworkerPublicKeySerializer, UserPublicKeyBundleSerializer, UserRegistrationSerializer
 
 
 class SystemInboxPublicKeyView(APIView):
@@ -68,10 +65,10 @@ class UserPublicKeyBundleView(APIView):
         # Return the newly saved public key bundle for confirmation
         response_serializer = CaseworkerPublicKeySerializer(user)
         return Response(response_serializer.data, status=status.HTTP_200_OK)
-    
-User = get_user_model()
+
 
 class UserRegistrationView(generics.CreateAPIView):
+    User = get_user_model()
     queryset = User.objects.all()
     serializer_class = UserRegistrationSerializer
-    permission_classes = []      
+    permission_classes = []
