@@ -1,4 +1,3 @@
-// contexts/AuthContext.tsx
 "use client";
 
 import React, {
@@ -16,11 +15,12 @@ interface AuthContextType {
   user: { username: string } | null;
   privateKey: string | null;
   isLoading: boolean;
-  login: (
-    username: string,
-    password: string,
-    privateKey: string
-  ) => Promise<void>;
+  handleLoginSuccess: (data: {
+    access: string;
+    refresh: string;
+    username: string;
+    privateKey: string;
+  }) => void;
   logout: () => void;
 }
 
@@ -49,30 +49,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   }, []);
 
-  const login = async (
-    username: string,
-    password: string,
-    userPrivateKey: string
-  ) => {
-    try {
-      const response = await apiClient.post("/token/", {
-        username,
-        password,
-      });
-      const { access } = response.data;
+  const handleLoginSuccess = (data: {
+    access: string;
+    refresh: string;
+    username: string;
+    privateKey: string;
+  }) => {
+    localStorage.setItem("authToken", data.access);
+    // TODO: Add refresh token handling if needed
+    localStorage.setItem("privateKey", data.privateKey);
+    localStorage.setItem("username", data.username);
 
-      localStorage.setItem("authToken", access);
-      localStorage.setItem("privateKey", userPrivateKey);
-      localStorage.setItem("username", username);
+    setUser({ username: data.username });
+    setPrivateKey(data.privateKey);
 
-      setUser({ username });
-      setPrivateKey(userPrivateKey);
-
-      router.push("/cases");
-    } catch (error) {
-      console.error("Login failed:", error);
-      throw new Error("Login failed. Please check your credentials and private key.");
-    }
+    router.push("/cases");
   };
 
   const logout = () => {
@@ -88,7 +79,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <AuthContext.Provider
-      value={{ isAuthenticated, user, privateKey, isLoading, login, logout }}
+      value={{ isAuthenticated, user, privateKey, isLoading, handleLoginSuccess, logout }}
     >
       {children}
     </AuthContext.Provider>

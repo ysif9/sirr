@@ -1,5 +1,3 @@
-import secrets
-
 import pyotp
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
@@ -8,11 +6,15 @@ from django.db import transaction
 from django.http import Http404
 from django.utils import timezone
 from rest_framework import generics, status
-from rest_framework.exceptions import APIException, NotFound
+from rest_framework.exceptions import APIException, AuthenticationFailed, NotFound
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework_simplejwt.settings import api_settings
+from rest_framework_simplejwt.tokens import RefreshToken, UntypedToken
+from rest_framework_simplejwt.views import TokenObtainPairView
 
 from .models import OnboardingInvitation, User
 from .serializers import (
@@ -120,15 +122,6 @@ def get_valid_onboarding_invitation(token: str) -> OnboardingInvitation:
     return invitation
 
 
-def generate_recovery_codes(count=10, length=10) -> list[str]:
-    """Generates a list of random, dashed recovery codes."""
-    codes = []
-    for _ in range(count):
-        code = secrets.token_hex(length // 2)
-        codes.append(f"{code[:5]}-{code[5:]}")
-    return codes
-
-
 class OnboardingTokenVerifyView(APIView):
     """
     Allows the frontend to verify if an invitation token is valid before
@@ -200,7 +193,7 @@ class OnboardingCompleteStep1View(APIView):
 
         # 4. Generate Provisioning URI
         totp = pyotp.TOTP(totp_secret)
-        provisioning_uri = totp.provisioning_uri(name=user.email, issuer_name="SIRR") # [6, 7]
+        provisioning_uri = totp.provisioning_uri(name=user.email, issuer_name="SIRR")
 
         # 5. Response
         return Response(
@@ -214,8 +207,7 @@ class OnboardingCompleteStep1View(APIView):
 
 class OnboardingCompleteStep2View(APIView):
     """
-    Finalizes onboarding: verifies TOTP, activates the account, generates
-    recovery codes, and logs the user in.
+    Finalizes onboarding: verifies TOTP, activates the account, and logs the user in.
     POST /api/onboarding/complete-step-2/
     """
 
@@ -234,7 +226,7 @@ class OnboardingCompleteStep2View(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        with transaction.atomic(): # [1, 2, 3]
+        with transaction.atomic():
             # 1. Verify token and retrieve user
             invitation = get_valid_onboarding_invitation(token)
             user = invitation.user
@@ -262,17 +254,99 @@ class OnboardingCompleteStep2View(APIView):
             invitation.used_at = timezone.now()
             invitation.save(update_fields=["used_at"])
 
-            # 5. Generate recovery codes
-            recovery_codes = generate_recovery_codes() # [8]
-
-            # 6. Generate auth tokens to log the user in
-            refresh = RefreshToken.for_user(user) # [9]
+            # 5. Generate auth tokens to log the user in
+            refresh = RefreshToken.for_user(user)
 
             return Response(
                 {
                     "access": str(refresh.access_token),
                     "refresh": str(refresh),
-                    "recovery_codes": recovery_codes,
                 },
                 status=status.HTTP_200_OK,
             )
+
+
+# --- Login with 2FA Logic ---
+
+class TFAToken(RefreshToken):
+    """
+    Custom token for the 2FA authentication step. This token is short-lived
+    and has a specific 'token_type' claim to distinguish it from a standard
+    refresh token.
+    """
+    token_type = "tfa"
+
+
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    def validate(self, attrs):
+        # First, validate username and password using the parent class
+        data = super().validate(attrs)
+
+        # If credentials are valid, check if the user is a caseworker
+        if self.user.is_caseworker:
+            # Generate a short-lived token for the 2FA step
+            tfa_token = TFAToken.for_user(self.user)
+            tfa_token.set_exp(lifetime=timezone.timedelta(minutes=5))
+
+            return {"tfa_required": True, "tfa_token": str(tfa_token)}
+
+        # If not a caseworker, return the standard access/refresh tokens
+        return data
+
+
+class CustomTokenObtainPairView(TokenObtainPairView):
+    """
+    Custom login view that handles the 2FA check.
+    If the user is a caseworker, it returns a temporary token instead of the final JWTs.
+    """
+
+    serializer_class = CustomTokenObtainPairSerializer
+
+
+class VerifyTOTPView(APIView):
+    """
+    Validates the TOTP code provided by the user and, if correct,
+    returns the final access and refresh tokens.
+    POST /api/token/verify-totp/
+    """
+
+    permission_classes = [AllowAny]
+    authentication_classes = []  # <-- FIX APPLIED HERE: Prevents default DRF authentication
+
+    def post(self, request, *args, **kwargs):
+        auth_header = request.headers.get("Authorization")
+        if not auth_header or not auth_header.startswith("Bearer "):
+            raise AuthenticationFailed("Authorization header is missing or invalid.")
+
+        tfa_token = auth_header.split(" ")[1]
+        totp_code = request.data.get("totp_code")
+
+        if not totp_code:
+            return Response({"detail": "TOTP code is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            # 1. Decode the temporary TFA token
+            untyped_token = UntypedToken(tfa_token)
+            if untyped_token.get("token_type") != "tfa":
+                raise InvalidToken("Not a valid TFA token.")
+
+            user_id = untyped_token[api_settings.USER_ID_CLAIM]
+            user = User.objects.get(id=user_id)
+
+            # 2. Verify the TOTP code
+            totp = pyotp.TOTP(user.totp_secret)
+            if not totp.verify(totp_code, valid_window=1):
+                return Response({"error": "Incorrect TOTP code, please try again."}, status=status.HTTP_400_BAD_REQUEST)
+
+            # 3. Generate final access and refresh tokens
+            refresh = RefreshToken.for_user(user)
+            return Response(
+                {
+                    "access": str(refresh.access_token),
+                    "refresh": str(refresh),
+                },
+                status=status.HTTP_200_OK,
+            )
+
+        except (TokenError, User.DoesNotExist):
+            raise AuthenticationFailed("Invalid or expired token.")

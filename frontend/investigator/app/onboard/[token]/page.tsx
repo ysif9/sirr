@@ -1,4 +1,3 @@
-// app/onboard/[token]/page.tsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -26,7 +25,6 @@ interface TotpData {
 interface AuthData {
   access: string;
   refresh: string;
-  recovery_codes: string[];
 }
 
 export default function OnboardPage() {
@@ -85,7 +83,7 @@ export default function OnboardPage() {
     localStorage.setItem("privateKey", keyPair.privateKey);
     localStorage.setItem("username", verificationData.username);
     
-    router.push("/cases");
+    router.push("/login");
   };
 
   const renderContent = () => {
@@ -110,7 +108,7 @@ export default function OnboardPage() {
       case "stepB":
         return <StepBEnroll2FA token={token} totpData={totpData!} onComplete={handleStepBSuccess} />;
       case "stepC":
-        return <StepCViewCredentials authData={authData!} privateKey={keyPair!.privateKey} onComplete={handleOnboardingComplete} />;
+        return <StepCViewCredentials privateKey={keyPair!.privateKey} onComplete={handleOnboardingComplete} />;
       default:
         return null;
     }

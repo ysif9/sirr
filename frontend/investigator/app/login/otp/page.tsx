@@ -1,29 +1,65 @@
 "use client"
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useState, useEffect }
+from "react";
 import { useRouter } from "next/navigation";
 import { OTPInput, SlotProps } from "input-otp";
 import { MinusIcon, GalleryVerticalEnd } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import apiClient from "@/lib/api";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
-const MOCK_OTP = "123456";
-
 export default function OtpPage() {
   const router = useRouter();
+  const { handleLoginSuccess } = useAuth();
   const [otp, setOtp] = useState("");
   const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (event: FormEvent) => {
+  useEffect(() => {
+    // Redirect if there's no temporary token, meaning the user didn't complete the first login step.
+    if (!sessionStorage.getItem("tfa_token")) {
+      router.replace('/login');
+    }
+  }, [router]);
+
+
+  const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
     setError("");
+    setIsSubmitting(true);
 
-    if (otp === MOCK_OTP) {
-      console.log("OTP verification successful, redirecting to home...");
-      router.push('/home');
-    } else {
-      setError("Invalid OTP. Please try again.");
+    const tfaToken = sessionStorage.getItem("tfa_token");
+    const username = sessionStorage.getItem("username");
+    const privateKey = sessionStorage.getItem("privateKey");
+
+    if (!tfaToken || !username || !privateKey) {
+        setError("Login session expired. Please log in again.");
+        setIsSubmitting(false);
+        setTimeout(() => router.replace('/login'), 2000);
+        return;
+    }
+
+    try {
+        const response = await apiClient.post('/token/verify-totp/', 
+            { totp_code: otp },
+            { headers: { Authorization: `Bearer ${tfaToken}` } }
+        );
+
+        // On success, finalize the login
+        handleLoginSuccess({ ...response.data, username, privateKey });
+
+        // Clean up temporary session storage
+        sessionStorage.removeItem("tfa_token");
+        sessionStorage.removeItem("username");
+        sessionStorage.removeItem("privateKey");
+
+    } catch (err: any) {
+        setError(err.response?.data?.detail || "Invalid OTP code. Please try again.");
+    } finally {
+        setIsSubmitting(false);
     }
   };
   
@@ -41,9 +77,9 @@ export default function OtpPage() {
               </div>
               <span className="sr-only">Sirr.</span>
             </a>
-            <h1 className="text-xl font-bold">Enter OTP</h1>
+            <h1 className="text-xl font-bold">Two-Factor Authentication</h1>
             <p className="text-muted-foreground text-center text-sm">
-              A 6-digit code has been sent to your email. (Hint: {MOCK_OTP})
+              Enter the 6-digit code from your authenticator app.
             </p>
           </div>
           
@@ -75,8 +111,8 @@ export default function OtpPage() {
           
           {error && <p className="text-destructive text-center text-sm">{error}</p>}
           
-          <Button type="submit" className="w-full">
-            Verify OTP
+          <Button type="submit" className="w-full" disabled={isSubmitting}>
+            {isSubmitting ? "Verifying..." : "Verify Code"}
           </Button>
         </form>
       </div>

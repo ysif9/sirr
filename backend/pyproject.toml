@@ -1,3 +1,4 @@
+# START OF pyproject.toml
 [project]
 name = "sirr-backend"
 version = "0.1.0"
@@ -133,6 +134,7 @@ clean = { cmd = "docker compose -f ../docker-compose.yml down --remove-orphans -
 createsuperuser = { cmd = "docker compose -f ../docker-compose.yml exec sirr_api python manage.py createsuperuser --settings=core.settings", help = "Create a Django superuser inside the API container." }
 create_test_admin = { cmd = "docker compose -f ../docker-compose.yml exec sirr_api python manage.py create_admin_with_keys", help = "Automated creation of an admin with a new keypair." }
 create_test_caseworker = { cmd = "docker compose -f ../docker-compose.yml exec sirr_api python manage.py create_test_caseworker", help = "Automated creation of a caseworker with a new keypair." }
+create_investigator_invitation = { cmd = "docker compose -f ../docker-compose.yml exec sirr_api python manage.py create_investigator_invitation", help = "Creates an inactive investigator and generates an onboarding invitation." }
 
 [tool.poe.tasks.startapp]
 help = "Create a new Django app under apps/<app> using Docker"
