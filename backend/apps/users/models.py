@@ -48,12 +48,12 @@ class OnboardingInvitation(BaseModel):
         related_name="onboarding_invitation",
         help_text=_("The inactive user this invitation is for."),
     )
-    token = models.UUIDField(
+    token = models.CharField(
         _("Invitation Token"),
-        default=uuid.uuid4,
+        max_length=64,
         editable=False,
         unique=True,
-        help_text=_("The single-use token for the onboarding URL."),
+        help_text=_("The single-use, URL-safe token for the onboarding link."),
     )
     expires_at = models.DateTimeField(
         _("Expires At"), help_text=_("The timestamp when this invitation link expires.")
