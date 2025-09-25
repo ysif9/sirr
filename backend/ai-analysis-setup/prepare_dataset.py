@@ -30,7 +30,7 @@ def load_crime_reports_dataset() -> None:
     print("\n Saved 300 train samples and 60 test samples as CSV.")
 
 
-def label_dataset_spam(max_retries: int = 5) -> None:
+def label_dataset(max_retries: int = 5) -> None:
     """Label the dataset as spam or not spam using teacher model,
     retrying on rate limit errors with progress bar."""
 
@@ -38,8 +38,7 @@ def label_dataset_spam(max_retries: int = 5) -> None:
 
     # Load dataset
     data = pd.read_csv("crime_dataset/crime_reports_train_sample.csv")
-    # first 250
-    descriptions = pd.DataFrame(data["crimeaditionalinfo"][:250])
+    descriptions = pd.DataFrame(data["crimeaditionalinfo"])
 
     print("Using teacher model...")
 
@@ -75,16 +74,18 @@ def label_dataset_spam(max_retries: int = 5) -> None:
                         break  # stop retry loop for non-rate-limit error
 
     # Convert results into DataFrame columns
-    descriptions["is_spam_teacher"] = [
+    descriptions["is_spam"] = [
         r.is_spam if r else None for r in results
     ]
-    descriptions["confidence_teacher"] = [
+    descriptions["confidence"] = [
         r.confidence if r else None for r in results
     ]
+    descriptions["urgency"] = [
+        r.urgency if r else None for r in results
+    ]
 
-    descriptions.to_csv("labeled_crime_reports_train_sample.csv", index=False)
+    descriptions.to_csv("labeled_crime_reports.csv", index=False)
     print("\n Saved labeled dataset as CSV.")
 
-
 if __name__ == "__main__":
-    label_dataset_spam(10)
+    label_dataset()
