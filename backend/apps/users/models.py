@@ -10,6 +10,10 @@ from apps.common.models import UUIDModel
 # Create your models here.
 class User(UUIDModel, AbstractUser):
     """Custom user model using UUID as primary key"""
+    email = models.EmailField(
+        _("email address"),
+        unique=True,
+    )
     is_caseworker = models.BooleanField(
         default=False
     )
@@ -17,6 +21,8 @@ class User(UUIDModel, AbstractUser):
         null=True,
         blank=True
     )
+    USERNAME_FIELD = "email"
+    REQUIRED_FIELDS = []
 
     class Meta:
         verbose_name = _("User")

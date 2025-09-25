@@ -16,6 +16,7 @@ dependencies = [
   "redis[hiredis]>=6.4.0",
   "pynacl>=1.6.0",
   "dspy>=3.0.3",
+  "litellm==1.77.1",
   "django-pwnedpasswords-validator>=1.0.1",
   "django-pwned-passwords>=4.1.0",
   "argon2-cffi>=25.1.0",
