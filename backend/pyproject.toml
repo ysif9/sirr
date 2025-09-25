@@ -15,6 +15,7 @@ dependencies = [
   "psycopg[binary]>=3.2.10",
   "redis[hiredis]>=6.4.0",
   "pynacl>=1.6.0",
+  "dspy>=3.0.3",
   "django-pwnedpasswords-validator>=1.0.1",
   "django-pwned-passwords>=4.1.0",
   "argon2-cffi>=25.1.0",
@@ -22,10 +23,12 @@ dependencies = [
 ]
 [dependency-groups]
 dev = [
+  "datasets>=4.1.1",
   "django-diagram>=0.0.1",
   "django-stubs>=5.2.2",
   "djangorestframework-stubs>=3.16.2",
   "mypy>=1.17.1",
+  "pandas>=2.3.2",
   "poethepoet>=0.37.0",
   "ruff>=0.12.12",
 ]
