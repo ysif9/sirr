@@ -1,7 +1,9 @@
 "use client";
-import { Eye, EyeOff, GalleryVerticalEnd, KeyRound, User } from "lucide-react";
+import { Eye, EyeOff, GalleryVerticalEnd, KeyRound } from "lucide-react";
 import { useState, FormEvent } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useRouter } from "next/navigation";
+import apiClient from "@/lib/api";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -19,33 +21,41 @@ export function LoginForm({
   const [privateKey, setPrivateKey] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { login } = useAuth();
+  const { handleLoginSuccess } = useAuth();
+  const router = useRouter();
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
     setError("");
     setIsSubmitting(true);
 
-    if (!username.trim()) {
-      setError("Username is required.");
-      setIsSubmitting(false);
-      return;
-    }
-
-    if (!privateKey.trim()) {
-      setError("Private key is required for authentication.");
+    if (!username.trim() || !privateKey.trim()) {
+      setError("Username and Private Key are required.");
       setIsSubmitting(false);
       return;
     }
 
     try {
-      await login(username, password, privateKey);
-      // Redirect is handled by the login function
-    } catch (err) {
+      const response = await apiClient.post("/token/", {
+        username,
+        password,
+      });
+
+      const { tfa_required, tfa_token, access, refresh } = response.data;
+
+      if (tfa_required) {
+        // 2FA is needed, store temporary token and redirect to OTP page
+        sessionStorage.setItem("tfa_token", tfa_token);
+        sessionStorage.setItem("username", username);
+        sessionStorage.setItem("privateKey", privateKey);
+        router.push("/login/otp");
+      } else {
+        // No 2FA, login directly
+        handleLoginSuccess({ access, refresh, username, privateKey });
+      }
+    } catch (err: any) {
       setError(
-        err instanceof Error
-          ? err.message
-          : "An unknown error occurred."
+        err.response?.data?.detail || "Login failed. Please check your credentials."
       );
     } finally {
       setIsSubmitting(false);
