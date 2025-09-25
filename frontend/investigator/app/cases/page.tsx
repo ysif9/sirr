@@ -1,104 +1,99 @@
 "use client";
 
 import TopNavBar from "@/components/top-nav-bar";
-import "ag-grid-community/styles/ag-theme-quartz.css"; // Core CSS
+import "ag-grid-community/styles/ag-theme-quartz.css";
 import { AgGridReact } from "ag-grid-react";
 import {
   ColDef,
   ModuleRegistry,
   AllCommunityModule,
   GridReadyEvent,
-  ICellRendererParams,
-  RowClickedEvent, // Import RowClickedEvent
+  RowClickedEvent,
+  ValueFormatterParams,
 } from "ag-grid-community";
-import { useState, useCallback } from "react";
-import { useRouter } from "next/navigation"; // Import useRouter
-// NEW: Import mock data and types from external files
-import { mockCasesData, ICaseInfo, Priority } from "@/lib/mock-data";
+import { useState, useCallback, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/contexts/AuthContext";
+import apiClient from "@/lib/api";
+import { Loader2, AlertTriangle } from "lucide-react";
 
-// Register AG Grid modules
 ModuleRegistry.registerModules([AllCommunityModule]);
 
-// Custom Cell Renderer Component for Priority (no changes here)
-const PriorityCellRenderer = (
-  params: ICellRendererParams<ICaseInfo, Priority>
-) => {
-  if (!params.value) return null;
-  const priority = params.value;
-  let colorClass = "";
-  switch (priority) {
-    case "Critical":
-      colorClass = "bg-red-500";
-      break;
-    case "High":
-      colorClass = "bg-orange-400";
-      break;
-    case "Medium":
-      colorClass = "bg-yellow-400";
-      break;
-    case "Low":
-      colorClass = "bg-sky-500";
-      break;
-  }
-  return (
-    <div className="flex items-center gap-2 h-full">
-      <span
-        className={`inline-block h-2.5 w-2.5 rounded-full ${colorClass}`}
-      ></span>
-      <span>{priority}</span>
-    </div>
-  );
-};
-
-// Custom Comparator for Priority Sorting (no changes here)
-const priorityOrder: { [key in Priority]: number } = {
-  Critical: 1,
-  High: 2,
-  Medium: 3,
-  Low: 4,
-};
-const priorityComparator = (valueA: Priority, valueB: Priority) => {
-  const rankA = priorityOrder[valueA] || 5;
-  const rankB = priorityOrder[valueB] || 5;
-  return rankA - rankB;
-};
+// Interface updated to match the new fields from the API
+interface ICaseFromApi {
+  id: string;
+  created_at: string;
+  status: string;
+  score: number;
+  last_access_by_reporter: string | null;
+}
 
 export default function CasesPage() {
-  const router = useRouter(); // Initialize router
-  const [rowData] = useState<ICaseInfo[]>(mockCasesData);
+  const router = useRouter();
+  const { isAuthenticated } = useAuth();
+  const [rowData, setRowData] = useState<ICaseFromApi[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Column Definitions (no changes here)
-  const colDefs: ColDef<ICaseInfo>[] = [
+  useEffect(() => {
+    const fetchCases = async () => {
+      if (!isAuthenticated) {
+        return;
+      }
+      setIsLoading(true);
+      setError(null);
+      try {
+        const response = await apiClient.get("/reports/");
+        setRowData(response.data.results || []);
+      } catch (err) {
+        console.error("Failed to fetch cases:", err);
+        setError("Failed to load case data. Please try again later.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchCases();
+  }, [isAuthenticated]);
+
+  // Column definitions updated to match the requirements
+  const colDefs: ColDef<ICaseFromApi>[] = [
     {
       headerName: "",
       checkboxSelection: true,
       headerCheckboxSelection: true,
       width: 50,
-      pinned: "left",
-      lockPosition: "left",
-      suppressMovable: true,
+      resizable: false,
       filter: false,
     },
     {
-      field: "priority",
-      headerName: "Priority",
-      cellRenderer: PriorityCellRenderer,
-      comparator: priorityComparator,
-      width: 120,
+      field: "created_at",
+      headerName: "Created At",
+      width: 220,
+      valueFormatter: (params: ValueFormatterParams) =>
+        params.value ? new Date(params.value).toLocaleString() : "N/A",
     },
-    { field: "caseId", headerName: "Case ID", width: 140 },
-    { field: "status", headerName: "Status", width: 120 },
-    { field: "crimeType", headerName: "Crime Type", flex: 2, minWidth: 200 },
-    { field: "location", headerName: "Location", flex: 1, minWidth: 150 },
     {
-      field: "submittedAt",
-      headerName: "Submitted At",
-      flex: 1,
-      minWidth: 200,
-      valueFormatter: (params) =>
-        params.value ? new Date(params.value).toLocaleString() : "",
+      field: "status",
+      headerName: "Status",
+      width: 150,
+      // Example of cell styling based on value
+      cellStyle: params => {
+        if (params.value === 'submitted') {
+            return { color: 'white', backgroundColor: '#3b82f6' };
+        }
+        return null;
+      }
     },
-    { field: "assignedTo", headerName: "Assigned To", flex: 1, minWidth: 150 },
+    { field: "score", headerName: "Score", width: 100 },
+    {
+      field: "last_access_by_reporter",
+      headerName: "Last Access",
+      width: 220,
+      valueFormatter: (params: ValueFormatterParams) =>
+        params.value ? new Date(params.value).toLocaleString() : "N/A",
+    },
+    { field: "id", headerName: "Case ID", flex: 1, minWidth: 250 },
   ];
 
   const defaultColDef: ColDef = {
@@ -109,31 +104,52 @@ export default function CasesPage() {
   };
 
   const onGridReady = useCallback((params: GridReadyEvent) => {
-    params.api.setFilterModel({
-      status: {
-        filterType: "text",
-        type: "notEqual",
-        filter: "Closed",
-      },
-    });
     params.api.applyColumnState({
-      state: [
-        { colId: "submittedAt", sort: "desc", sortIndex: 0 },
-        { colId: "priority", sort: "asc", sortIndex: 1 },
-      ],
+      state: [{ colId: "created_at", sort: "desc" }],
       defaultState: { sort: null },
     });
   }, []);
 
-  // --- NEW: ROW CLICK HANDLER ---
   const handleRowClick = useCallback(
-    (event: RowClickedEvent<ICaseInfo>) => {
+    (event: RowClickedEvent<ICaseFromApi>) => {
       if (event.data) {
-        router.push(`/cases/${event.data.caseId}`);
+        router.push(`/cases/${event.data.id}`);
       }
     },
     [router]
   );
+
+  const renderGrid = () => {
+    if (isLoading) {
+      return (
+        <div className="flex flex-col items-center justify-center h-full">
+          <Loader2 className="h-12 w-12 animate-spin text-primary" />
+          <p className="mt-4 text-muted-foreground">Loading cases...</p>
+        </div>
+      );
+    }
+    if (error) {
+      return (
+        <div className="flex flex-col items-center justify-center h-full">
+          <AlertTriangle className="h-12 w-12 text-destructive" />
+          <p className="mt-4 text-destructive-foreground">{error}</p>
+        </div>
+      );
+    }
+    return (
+      <AgGridReact<ICaseFromApi>
+        rowData={rowData}
+        columnDefs={colDefs}
+        defaultColDef={defaultColDef}
+        onGridReady={onGridReady}
+        rowSelection="multiple"
+        onRowClicked={handleRowClick}
+        pagination={true}
+        paginationPageSize={20}
+        paginationPageSizeSelector={[10, 20, 50, 100]}
+      />
+    );
+  };
 
   return (
     <div>
@@ -144,18 +160,7 @@ export default function CasesPage() {
           className="ag-theme-quartz"
           style={{ height: "calc(100vh - 12rem)", width: "100%" }}
         >
-          <AgGridReact<ICaseInfo>
-            rowData={rowData}
-            columnDefs={colDefs}
-            defaultColDef={defaultColDef}
-            onGridReady={onGridReady}
-            rowSelection="multiple"
-            suppressRowClickSelection={true}
-            onRowClicked={handleRowClick} // Add this event handler
-            pagination={true}
-            paginationPageSize={20}
-            paginationPageSizeSelector={[10, 20, 50, 100]}
-          />
+          {renderGrid()}
         </div>
       </main>
     </div>

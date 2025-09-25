@@ -3,8 +3,7 @@
 import React, { useState } from "react"
 import { useForm } from "react-hook-form"
 import { FormDefinition, Field } from "@/lib/crime-forms"
-import { getAdminPublicKey, submitReport } from "@/lib/api"
-import { encryptReportPayload } from "@/lib/crypto-utils"
+import { submitReport } from "@/lib/api"
 import ReportStepper from "@/components/Stepper"
 import RenderField from "./RenderField"
 import { Button } from "../ui/button"
@@ -13,9 +12,14 @@ import SubmissionSuccess from "./SubmissionSuccess"
 
 interface CrimeReportFormProps {
   formDefinition: FormDefinition
+  formIdentifier: {
+    reportTypeKey: string
+    categoryKey: string
+    formKey: string
+  }
 }
 
-const CrimeReportForm: React.FC<CrimeReportFormProps> = ({ formDefinition }) => {
+const CrimeReportForm: React.FC<CrimeReportFormProps> = ({ formDefinition, formIdentifier }) => {
   const [currentStep, setCurrentStep] = useState(1)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submissionData, setSubmissionData] = useState<{ access_key: string } | null>(null)
@@ -30,25 +34,13 @@ const CrimeReportForm: React.FC<CrimeReportFormProps> = ({ formDefinition }) => 
     setSubmissionError(null)
 
     try {
-      // Fetch the single system-wide admin public key
-      const adminKey = await getAdminPublicKey()
-      if (!adminKey) {
-        throw new Error("Could not retrieve the system's public key. Submission is temporarily unavailable.")
-      }
+      const allFormValues = getValues()
+      const attachments = allFormValues.evidence_upload as FileList | null
 
-      const reportData = getValues()
+      const reportData = { ...allFormValues }
+      delete reportData.evidence_upload
 
-      const associated_data = {
-        form_title: formDefinition.title,
-        submitted_at_coarse: new Date().toISOString().substring(0, 10), // e.g., "2025-09-20"
-      }
-
-      // Directly encrypt the payload for the admin.
-      const encryptedPayload = encryptReportPayload(reportData, adminKey)
-      const payload = { ...encryptedPayload, associated_data }
-
-      // Submit the report
-      const result = await submitReport(payload)
+      const result = await submitReport(reportData, attachments, formIdentifier, formDefinition.title)
       setSubmissionData(result)
     } catch (error: any) {
       console.error("Submission Error:", error)
@@ -126,7 +118,7 @@ const CrimeReportForm: React.FC<CrimeReportFormProps> = ({ formDefinition }) => 
           Previous Step
         </Button>
         <Button size="lg" onClick={handleNext} disabled={isSubmitting}>
-          {isSubmitting ? "Encrypting & Submitting..." : isLastStep ? "Submit Secure Report" : "Next Step"}
+          {isSubmitting ? "Submitting..." : isLastStep ? "Submit Report" : "Next Step"}
         </Button>
       </div>
     </Squircle>

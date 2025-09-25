@@ -25,24 +25,51 @@ const RenderField: React.FC<RenderFieldProps> = ({ control, field, watch }) => {
     }
   }
 
+  // Special handling for file uploads to avoid the "uncontrolled to controlled" warning.
+  // File inputs cannot have a controlled `value` prop.
+  if (field.type === "file_upload") {
+    return (
+      <div className="mb-6">
+        <Label htmlFor={field.id} className="block mb-2 text-base font-semibold text-card-foreground">
+          {field.label}
+          {field.validation?.required && <span className="text-red-500 ml-1">*</span>}
+        </Label>
+        <Controller
+          name={field.id}
+          control={control}
+          defaultValue={[]}
+          render={({ field: { onChange, onBlur, name, ref } }) => (
+            <Input
+              id={field.id}
+              type="file"
+              multiple
+              name={name}
+              ref={ref}
+              onBlur={onBlur}
+              onChange={(e) => onChange(e.target.files)} // Pass the FileList to RHF
+            />
+          )}
+        />
+        {field.helperText && <p className="mt-2 text-sm text-muted-foreground">{field.helperText}</p>}
+      </div>
+    )
+  }
+
   const renderInput = (rhfProps: any) => {
     switch (field.type) {
       case "text":
       case "number":
       case "date":
       case "time":
-      case "location": // Render as text for now
-      case "datetime": // Render as text for now
-      case "datetime_range": // Render as text for now
-      case "date_range": // Render as text for now
-        // FIX: Use `value={rhfProps.value ?? ''}` to prevent uncontrolled -> controlled warning
+      case "location":
+      case "datetime":
+      case "datetime_range":
+      case "date_range":
         return <Input {...rhfProps} value={rhfProps.value ?? ""} type={field.type} placeholder={field.placeholder} />
       case "textarea":
-        // FIX: Use `value={rhfProps.value ?? ''}` to prevent uncontrolled -> controlled warning
         return <Textarea {...rhfProps} value={rhfProps.value ?? ""} placeholder={field.placeholder} />
       case "radio_group":
         return (
-          // FIX: Changed `defaultValue` to `value` for a controlled component
           <RadioGroup onValueChange={rhfProps.onChange} value={rhfProps.value} className="flex gap-4">
             {field.options?.map((option: string) => (
               <div key={option} className="flex items-center space-x-2">
@@ -54,7 +81,6 @@ const RenderField: React.FC<RenderFieldProps> = ({ control, field, watch }) => {
         )
       case "select":
         return (
-          // FIX: Changed `defaultValue` to `value` for a controlled component
           <Select onValueChange={rhfProps.onChange} value={rhfProps.value}>
             <SelectTrigger>
               <SelectValue placeholder={`Select ${field.label.toLowerCase()}`} />
@@ -86,8 +112,6 @@ const RenderField: React.FC<RenderFieldProps> = ({ control, field, watch }) => {
             ))}
           </div>
         )
-      case "file_upload":
-        return <Input {...rhfProps} type="file" />
       case "static_text":
         return (
           <p className="text-foreground bg-muted p-4 rounded-md border border-border leading-relaxed">
@@ -130,7 +154,6 @@ const RenderField: React.FC<RenderFieldProps> = ({ control, field, watch }) => {
     )
   }
 
-  // For static_text, we don't need a controller as it's not an input
   if (field.type === "static_text") {
     return (
       <div className="mb-6">

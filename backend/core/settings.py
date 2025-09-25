@@ -105,21 +105,6 @@ DATABASES = {  # noqa: F811
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
 
-AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
-]
-
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 
@@ -195,6 +180,7 @@ SIMPLE_JWT = {
 # CORS settings with enhanced security
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",  # Frontend
+    "http://localhost:3001",
     "http://127.0.0.1:3000",
     "http://localhost:8000",  # Backend
     "http://127.0.0.1:8000",
@@ -223,6 +209,36 @@ CORS_ALLOW_METHODS = [
     "PATCH",
     "DELETE",
     "OPTIONS",
+]
+
+ADMIN_PRIVATE_KEY = os.environ.get("ADMIN_PRIVATE_KEY", None)
+
+AUTH_PASSWORD_VALIDATORS = [
+    {
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
+    },
+    {
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
+        "OPTIONS": {"min_length": 15},  # adjust as needed
+    },
+    {
+        "NAME": "apps.users.validators.ComplexityValidator",
+    },
+]
+
+
+PASSWORD_HASHERS = [
+
+    "django.contrib.auth.hashers.Argon2PasswordHasher",
+
+
+    "django.contrib.auth.hashers.BCryptSHA256PasswordHasher",
+
+
+    "django.contrib.auth.hashers.PBKDF2PasswordHasher",
+
+
+    "django.contrib.auth.hashers.PBKDF2SHA1PasswordHasher",
 ]
 
 LOGGING = {
