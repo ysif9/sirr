@@ -36,7 +36,7 @@ class ReportPriority(models.TextChoices):
     LOW = "low", _("Low")
     MEDIUM = "medium", _("Medium")
     HIGH = "high", _("High")
-    URGENT = "urgent", _("Urgent")
+    CRITICAL = "critical", _("Critical")
 
 
 def attachment_upload_path(instance: "Attachment", filename: str) -> str:
@@ -208,6 +208,8 @@ class AIAnalysis(models.Model):
     model_version = models.CharField(max_length=10, default="v1")
 
     def __str__(self) -> str:
+        if self.report.template:
+            return f"AI Analysis for Report {self.report.template.title}"
         return f"AI Analysis for Report {self.report.id}"
 
     class Meta:

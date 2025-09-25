@@ -54,16 +54,19 @@ class ReportAnalyzerModule(dspy.Module):
 class ReportAnalyzerService:
     """Service for detecting spam in reports."""
 
-    def __init__(self, model_path: str = "optimized_program.json") -> None:
+    def __init__(self) -> None:
         """Initialize the spam detection service."""
         # self._setup_model()
         self.wanted_keys = ["description", "reason_for_check"]
         self.program = ReportAnalyzerModule()
-        self._load_optimized_model(model_path)
+        self._load_optimized_model()
 
 
-    def _load_optimized_model(self, model_path: str) -> None:
+    def _load_optimized_model(self) -> None:
         """Load the optimized model if available."""
+        BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+        model_path = os.path.join(BASE_DIR, "optimized_program.json")
+        logger.info(f"Loading optimized model from {model_path}")
         if os.path.exists(model_path):
             try:
                 self.program.load(model_path)
