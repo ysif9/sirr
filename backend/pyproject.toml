@@ -19,6 +19,7 @@ dependencies = [
   "django-pwned-passwords>=4.1.0",
   "argon2-cffi>=25.1.0",
   "bcrypt>=4.3.0",
+  "pyotp>=2.9.0",
 ]
 [dependency-groups]
 dev = [
