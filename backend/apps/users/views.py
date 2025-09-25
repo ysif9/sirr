@@ -1,4 +1,5 @@
 import pyotp
+from datetime import timedelta # FIX: Import timedelta from datetime
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError as DjangoValidationError
@@ -282,11 +283,17 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         # First, validate username and password using the parent class
         data = super().validate(attrs)
 
+        # FIX: Assert that self.user is not None before accessing its attributes.
+        # super().validate(attrs) is expected to raise an exception if authentication fails,
+        # so self.user will be a User object at this point.
+        assert self.user is not None, "User should be authenticated at this point"
+
         # If credentials are valid, check if the user is a caseworker
         if self.user.is_caseworker:
             # Generate a short-lived token for the 2FA step
             tfa_token = TFAToken.for_user(self.user)
-            tfa_token.set_exp(lifetime=timezone.timedelta(minutes=5))
+            # FIX: Use the directly imported timedelta
+            tfa_token.set_exp(lifetime=timedelta(minutes=5)) 
 
             return {"tfa_required": True, "tfa_token": str(tfa_token)}
 
