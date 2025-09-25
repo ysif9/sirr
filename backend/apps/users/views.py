@@ -8,7 +8,7 @@ from django.db import transaction
 from django.http import Http404
 from django.utils import timezone
 from rest_framework import generics, status
-from rest_framework.exceptions import APIException, NotFound, ValidationError
+from rest_framework.exceptions import APIException, NotFound
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
