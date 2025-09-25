@@ -57,7 +57,7 @@ def label_dataset(max_retries: int = 5) -> None:
             attempt = 0
             while attempt < max_retries:
                 try:
-                    pred = spam_service.detect_spam(text)
+                    pred = spam_service.analyze_report(text)
                     results.append(pred)
                     break
                 except Exception as e:

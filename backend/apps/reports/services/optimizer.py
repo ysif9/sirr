@@ -1,3 +1,6 @@
+"""
+This module contains the ModelOptimizer class, which is responsible for optimizing the report analysis model.
+"""
 import os
 import random
 from datetime import datetime
@@ -11,7 +14,7 @@ from apps.reports.services.analysis_service import ReportAnalyzerModule
 
 def init_dataset() -> tuple[list[Example], list[Example], list[Example]]:
     """Initialize the dataset."""
-    dataset = pd.read_csv("../../../ai-analysis-setup/labeled_crime_reports.csv")
+    dataset = pd.read_csv("../../../sirr-datasets/labeled_crime_reports.csv")
     dspy_dataset = [
         dspy.Example({
             "description": row["description"],
@@ -127,80 +130,3 @@ class ModelOptimizer:
 
         return optimized_program
 
-# def dag_to_dot(parent_program_for_candidate, dominator_program_ids, best_program_idx, full_eval_scores):
-#     dot_lines = [
-#         "digraph G {",
-#         "    node [style=filled, shape=circle, fontsize=50];"
-#     ]
-#     n = len(parent_program_for_candidate)
-#     # Set up nodes with colors and scores in labels
-#     for idx in range(n):
-#         score = full_eval_scores[idx]
-#         label = f"{idx}\\n({score:.2f})"
-#         if idx == best_program_idx:
-#             dot_lines.append(f'    {idx} [label="{label}", fillcolor=cyan, fontcolor=black];')
-#         elif idx in dominator_program_ids:
-#             dot_lines.append(f'    {idx} [label="{label}", fillcolor=orange, fontcolor=black];')
-#         else:
-#             dot_lines.append(f'    {idx} [label="{label}"];')
-#
-#     # Set up edges
-#     for child, parents in enumerate(parent_program_for_candidate):
-#         for parent in parents:
-#             if parent is not None:
-#                 dot_lines.append(f'    {parent} -> {child};')
-#
-#     dot_lines.append("}")
-#     return "\n".join(dot_lines)
-#
-#
-# def run_optimized():
-#     spam_service = ReportAnalyzerService()
-#     optimized_program, evaluate = spam_service.optimized_evaluate()
-#
-#     for name, pred in optimized_program.named_predictors():
-#         print("================================")
-#         print(f"Predictor: {name}")
-#         print("================================")
-#         print("Prompt:")
-#         print(pred.signature.instructions)
-#         print("*********************************")
-#
-#     evaluate(optimized_program)
-#
-#     pareto_front_programs = find_dominator_programs(optimized_program.detailed_results.per_val_instance_best_candidates,
-#                                                     optimized_program.detailed_results.val_aggregate_scores)
-#
-#     print(dag_to_dot(
-#         optimized_program.detailed_results.parents,
-#         pareto_front_programs,
-#         optimized_program.detailed_results.best_idx,
-#         optimized_program.detailed_results.val_aggregate_scores
-#     ))
-#
-# def compare():
-#     dataset = pd.read_csv("../../../ai-analysis-setup/labeled_crime_reports.csv")
-#     full_dataset = [
-#         dspy.Example({
-#             "description": row["description"],
-#             "is_spam": row["is_spam"],
-#             "confidence": row["confidence"],
-#             "urgency": row["urgency"],
-#         }).with_inputs("description")
-#         for _, row in dataset.iterrows()
-#     ]
-#     print("hi")
-#     spam_service = ReportAnalyzerService()
-#     optimized_program, evaluate = spam_service.optimized_evaluate()
-#     normal_spam_service = ReportAnalyzerService()
-#     evaluate = dspy.Evaluate(
-#         devset=full_dataset,
-#         metric=spam_service._metric,
-#         num_threads=4,
-#         display_table=False,
-#         display_progress=True,
-#         provide_traceback=True
-#     )
-#     print("hi2")
-#     evaluate(optimized_program)
-#     evaluate(normal_spam_service.program)
