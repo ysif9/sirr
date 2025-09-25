@@ -64,16 +64,18 @@ def decrypt_report_body(report: Report) -> dict | str:
     except Exception as e:
         return f"An unexpected error occurred during decryption: {e}"
 
-def generate_analysis(report_data: dict, report_object: Report) -> AIAnalysis:
+def generate_analysis(report_data: dict | list | str, report_object: Report) -> AIAnalysis:
     """Generates AI analysis for the given report data."""
     analysis_service = ReportAnalyzerService()
     prediction = analysis_service.analyze_report(report_data)
     with transaction.atomic():
+        #TODO: Remove the ai reasioning for security
         analysis = AIAnalysis.objects.create(
             report=report_object,
             is_spam=(prediction.is_spam == "spam"),
             confidence=int(prediction.confidence * 100),
             spam_reasoning=prediction.spam_reasoning,
+            #TODO: Assign urgency correctly
             urgency=prediction.urgency,
             urgency_reasoning=prediction.urgency_reasoning,
         )
@@ -179,7 +181,7 @@ class ReportAdmin(admin.ModelAdmin):
         """
         decrypted_data = decrypt_report_body(obj)
         #TODO: run ai analysis
-        ai_analysis = generate_analysis(report_data=decrypted_data, report_object=obj)
+        generate_analysis(report_data=decrypted_data, report_object=obj)
 
         if isinstance(decrypted_data, dict):
             # Pretty-print the JSON inside a <pre> tag for readability
@@ -289,3 +291,8 @@ class ReportAssignmentAdmin(admin.ModelAdmin):
     list_display = ('report', 'assignee', 'assigned_at', 'last_access')
     search_fields = ('report__id__startswith', 'assignee__username')
     autocomplete_fields = ['report', 'assignee']
+
+
+@admin.register(AIAnalysis)
+class AIAnalysisAdmin(admin.ModelAdmin):
+    pass

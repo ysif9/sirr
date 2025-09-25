@@ -11,6 +11,8 @@ from dspy import Prediction
 
 logger = logging.getLogger(__name__)
 
+lm = dspy.LM("ollama_chat/gemma3:4b", api_base="http://ollama:11434")
+dspy.configure(lm=lm)
 
 class SpamDetection(dspy.Signature):
     """Read the provided Report and determine whether each one is spam or legitimate."""
@@ -54,15 +56,11 @@ class ReportAnalyzerService:
 
     def __init__(self, model_path: str = "optimized_program.json") -> None:
         """Initialize the spam detection service."""
-        self._setup_model()
-        self.wanted_keys = ["description"]
+        # self._setup_model()
+        self.wanted_keys = ["description", "reason_for_check"]
         self.program = ReportAnalyzerModule()
         self._load_optimized_model(model_path)
 
-    def _setup_model(self) -> None:
-        """Set up the language model."""
-        lm = dspy.LM("ollama_chat/gemma3:4b", api_base="http://localhost:11434")
-        dspy.configure(lm=lm)
 
     def _load_optimized_model(self, model_path: str) -> None:
         """Load the optimized model if available."""
@@ -102,10 +100,12 @@ class ReportAnalyzerService:
         """
         try:
             logger.info(f"Analyzing report: {report_body}")
-            cleaned_report_body = self._remove_unwanted_keys(report_body)
-            yaml_body = yaml.dump(cleaned_report_body)
+            # cleaned_report_body = self._remove_unwanted_keys(report_body)
+            yaml_body = yaml.dump(report_body)
             logger.info(f"Cleaned report: {yaml_body}")
-            return self.program(description=yaml_body)
+            prog = self.program(description=yaml_body)
+            logger.info(dspy.inspect_history(2))
+            return prog
         except Exception as e:
             logger.error(f"Failed to analyze report: {e}")
             return Prediction(
