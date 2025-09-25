@@ -1,5 +1,6 @@
+from datetime import timedelta  # FIX: Import timedelta from datetime
+
 import pyotp
-from datetime import timedelta # FIX: Import timedelta from datetime
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError as DjangoValidationError
