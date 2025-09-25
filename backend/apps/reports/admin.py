@@ -5,12 +5,14 @@ from typing import Any
 
 from django.conf import settings
 from django.contrib import admin, messages
+from django.db import transaction
 from django.utils.html import format_html
 from nacl.exceptions import CryptoError
 from nacl.public import Box, PrivateKey, PublicKey
 from nacl.secret import SecretBox
 
-from apps.reports.models import Report, ReportAssignment
+from apps.reports.models import Report, ReportAssignment, AIAnalysis
+from apps.reports.services.analysis_service import ReportAnalyzerService
 from apps.users.models import User  # Import the User model
 
 
@@ -61,6 +63,21 @@ def decrypt_report_body(report: Report) -> dict | str:
         return "Error: Decryption failed. This might be due to a key mismatch or data corruption."
     except Exception as e:
         return f"An unexpected error occurred during decryption: {e}"
+
+def generate_analysis(report_data: dict, report_object: Report) -> AIAnalysis:
+    """Generates AI analysis for the given report data."""
+    analysis_service = ReportAnalyzerService()
+    prediction = analysis_service.analyze_report(report_data)
+    with transaction.atomic():
+        analysis = AIAnalysis.objects.create(
+            report=report_object,
+            is_spam=(prediction.is_spam == "spam"),
+            confidence=int(prediction.confidence * 100),
+            spam_reasoning=prediction.spam_reasoning,
+            urgency=prediction.urgency,
+            urgency_reasoning=prediction.urgency_reasoning,
+        )
+        return analysis
 
 
 class ReportAssignmentInline(admin.TabularInline):
@@ -161,6 +178,8 @@ class ReportAdmin(admin.ModelAdmin):
         Displays pretty-printed JSON on success or a formatted error on failure.
         """
         decrypted_data = decrypt_report_body(obj)
+        #TODO: run ai analysis
+        ai_analysis = generate_analysis(report_data=decrypted_data, report_object=obj)
 
         if isinstance(decrypted_data, dict):
             # Pretty-print the JSON inside a <pre> tag for readability
