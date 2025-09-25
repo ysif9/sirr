@@ -7,7 +7,7 @@ import pandas as pd
 from datasets import load_dataset
 from tqdm import tqdm
 
-from apps.reports.services.spam_detection_service import SpamDetectionService
+from apps.reports.services.analysis_service import ReportAnalyzerService
 
 
 def load_crime_reports_dataset() -> None:
@@ -31,10 +31,10 @@ def load_crime_reports_dataset() -> None:
 
 
 def label_dataset(max_retries: int = 5) -> None:
-    """Label the dataset as spam or not spam using teacher model,
+    """Label the dataset using teacher model,
     retrying on rate limit errors with progress bar."""
 
-    spam_service = SpamDetectionService()
+    spam_service = ReportAnalyzerService()
 
     # Load dataset
     data = pd.read_csv("crime_dataset/crime_reports_train_sample.csv")
@@ -59,7 +59,7 @@ def label_dataset(max_retries: int = 5) -> None:
                 try:
                     pred = spam_service.detect_spam(text)
                     results.append(pred)
-                    break  # success → break retry loop
+                    break
                 except Exception as e:
                     if "limit" in str(e).lower():
                         attempt += 1
