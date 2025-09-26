@@ -5,33 +5,16 @@ const apiClient = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
+  withCredentials: true, // Send cookies with requests
 });
 
-// Request Interceptor to add the auth token
-apiClient.interceptors.request.use(
-  (config) => {
-    if (typeof window !== "undefined") {
-      const token = localStorage.getItem("authToken");
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
-    }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
-
-// Response Interceptor for error handling (e.g., token refresh)
+// Response Interceptor for handling 401 Unauthorized errors
 apiClient.interceptors.response.use(
   (response) => response,
   async (error) => {
-    // NOTE: Token refresh logic can be added here in the future.
-    // For now, if a 401 occurs, we'll rely on the AuthContext to log the user out.
     if (error.response && error.response.status === 401) {
-       console.error("Authentication Error:", error.response.data);
-       // This could trigger a logout event
+       console.error("Authentication Error: Your session may have expired.", error.response.data);
+       // Dispatch a global event that the AuthContext can listen for to trigger a logout
        window.dispatchEvent(new Event('auth-error'));
     }
     return Promise.reject(error);

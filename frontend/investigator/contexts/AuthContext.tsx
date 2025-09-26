@@ -7,7 +7,7 @@ import React, {
   useEffect,
   ReactNode,
 } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import apiClient from "@/lib/api";
 
 interface AuthContextType {
@@ -16,8 +16,6 @@ interface AuthContextType {
   privateKey: string | null;
   isLoading: boolean;
   handleLoginSuccess: (data: {
-    access: string;
-    refresh: string;
     username: string;
     privateKey: string;
   }) => void;
@@ -31,13 +29,27 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [privateKey, setPrivateKey] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
+  const pathname = usePathname();
+
+  const logout = async () => {
+    try {
+        await apiClient.post('/token/logout/');
+    } catch (error) {
+        console.error("Logout API call failed, proceeding with client-side cleanup.", error);
+    } finally {
+        setUser(null);
+        setPrivateKey(null);
+        localStorage.removeItem("privateKey");
+        localStorage.removeItem("username");
+        router.push("/login");
+    }
+  };
 
   useEffect(() => {
-    const token = localStorage.getItem("authToken");
     const storedKey = localStorage.getItem("privateKey");
     const storedUsername = localStorage.getItem("username");
 
-    if (token && storedKey && storedUsername) {
+    if (storedKey && storedUsername) {
       setUser({ username: storedUsername });
       setPrivateKey(storedKey);
     }
@@ -50,13 +62,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const handleLoginSuccess = (data: {
-    access: string;
-    refresh: string;
     username: string;
     privateKey: string;
   }) => {
-    localStorage.setItem("authToken", data.access);
-    // TODO: Add refresh token handling if needed
     localStorage.setItem("privateKey", data.privateKey);
     localStorage.setItem("username", data.username);
 
@@ -66,16 +74,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     router.push("/cases");
   };
 
-  const logout = () => {
-    setUser(null);
-    setPrivateKey(null);
-    localStorage.removeItem("authToken");
-    localStorage.removeItem("privateKey");
-    localStorage.removeItem("username");
-    router.push("/login");
-  };
-
   const isAuthenticated = !!user && !!privateKey;
+  
+  // This effect handles redirecting unauthenticated users
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated && !pathname.startsWith('/login') && !pathname.startsWith('/onboard')) {
+      router.push('/login');
+    }
+  }, [isLoading, isAuthenticated, pathname, router]);
 
   return (
     <AuthContext.Provider

@@ -1,6 +1,6 @@
 "use client"
 
-import { useRouter } from "next/navigation"
+import { useAuth } from "@/contexts/AuthContext"
 import {
   KeyRoundIcon,
   LogOutIcon,
@@ -24,13 +24,8 @@ import {
 } from "@/components/ui/dropdown-menu"
 
 export default function UserMenu() {
-  const router = useRouter();
+  const { logout } = useAuth();
 
-  const handleLogout = () => {
-    // In a real application, you would clear the session/token here.
-    router.push('/login');
-  };
-  
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -64,7 +59,7 @@ export default function UserMenu() {
         <DropdownMenuSeparator />
         <DropdownMenuItem
           className="text-destructive focus:bg-destructive/10 focus:text-destructive"
-          onClick={handleLogout}
+          onClick={logout}
         >
           <LogOutIcon size={16} className="opacity-60" aria-hidden="true" />
           <span>Logout</span>

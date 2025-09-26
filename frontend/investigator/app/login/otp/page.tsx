@@ -43,13 +43,13 @@ export default function OtpPage() {
     }
 
     try {
-        const response = await apiClient.post('/token/verify-totp/', {
+        await apiClient.post('/token/verify-totp/', {
             tfa_token: tfaToken,
             totp_code: otp,
         });
 
-        // On success, finalize the login
-        handleLoginSuccess({ ...response.data, username, privateKey });
+        // On success, finalize the login. The server has set HttpOnly cookies.
+        handleLoginSuccess({ username, privateKey });
 
         // Clean up temporary session storage
         sessionStorage.removeItem("tfa_token");
