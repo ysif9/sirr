@@ -53,13 +53,18 @@ class UserAdmin(BaseUserAdmin):
         "is_staff",
         "is_caseworker",
         "is_superuser",
+        "is_active",
+        "is_locked",
     )
-    list_filter = ("is_staff", "is_superuser", "is_active", "groups", "is_caseworker")
+    list_filter = ("is_staff", "is_superuser", "is_active", "groups", "is_caseworker", "is_locked")
     search_fields = ("username", "first_name", "last_name", "email")
     ordering = ("username",)
 
+    readonly_fields = ('failed_login_attempts', 'last_login', 'date_joined')
+
     fieldsets = BaseUserAdmin.fieldsets + (  # type: ignore
         (_("Custom Properties"), {"fields": ("is_caseworker", "public_key_bundle")}),
+        (_("Security Status"), {"fields": ("is_locked", "failed_login_attempts")}),
     )
     add_fieldsets = BaseUserAdmin.add_fieldsets + (
         (_("Custom Properties"), {"fields": ("is_caseworker",)}),

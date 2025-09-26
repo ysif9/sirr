@@ -26,6 +26,23 @@ class User(UUIDModel, AbstractUser):
         default=False,
         help_text=_("Indicates if the user has completed the initial onboarding and TOTP setup."),
     )
+    failed_login_attempts = models.PositiveIntegerField(
+        _("Failed Login Attempts"),
+        default=0,
+        help_text=_("Counter for failed login attempts. Resets on successful login."),
+    )
+    is_locked = models.BooleanField(
+        _("Is Locked"),
+        default=False,
+        help_text=_("Designates if the account is locked due to too many failed login attempts."),
+    )
+    last_totp_timestamp = models.BigIntegerField(
+        _("Last TOTP Timestamp"),
+        null=True,
+        blank=True,
+        help_text=_("The Unix timestamp of the last successfully used TOTP code's time window, to prevent replay attacks."),
+    )
+
 
     class Meta:
         verbose_name = _("User")

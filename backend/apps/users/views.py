@@ -1,14 +1,20 @@
-from datetime import timedelta  # FIX: Import timedelta from datetime
+from datetime import timedelta
 
 import pyotp
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
+from django.core.cache import cache
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import transaction
 from django.http import Http404
 from django.utils import timezone
 from rest_framework import generics, status
-from rest_framework.exceptions import APIException, AuthenticationFailed, NotFound
+from rest_framework.exceptions import (
+    APIException,
+    AuthenticationFailed,
+    NotFound,
+    PermissionDenied,
+)
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -278,28 +284,85 @@ class TFAToken(RefreshToken):
     """
     token_type = "tfa"
 
+# --- Brute-Force Mitigation Constants ---
+LOGIN_FAILURE_LIMIT_PER_IP = 5
+LOGIN_FAILURE_LIMIT_PER_USER = 5
+LOGIN_FAILURE_WINDOW = 15 * 60  # 15 minutes in seconds
+ACCOUNT_LOCKOUT_THRESHOLD = 10
+
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
-        # First, validate username and password using the parent class
-        data = super().validate(attrs)
+        """
+        Handles username/password validation with integrated brute-force protection.
+        - Rate limiting per IP and per user.
+        - Account lockout after a high number of failures.
+        - Uses generic error messages to prevent user enumeration.
+        """
+        generic_error = AuthenticationFailed("Invalid username or password.")
+        request = self.context["request"]
+        ip_address = request.META.get("REMOTE_ADDR")
+        username = attrs.get(self.username_field)
 
-        # FIX: Assert that self.user is not None before accessing its attributes.
-        # super().validate(attrs) is expected to raise an exception if authentication fails,
-        # so self.user will be a User object at this point.
-        assert self.user is not None, "User should be authenticated at this point"
+        # 1. IP-based Rate Limiting Check
+        ip_cache_key = f"login_attempts:ip:{ip_address}"
+        ip_attempts = cache.get(ip_cache_key, 0)
+        if ip_attempts >= LOGIN_FAILURE_LIMIT_PER_IP:
+            raise generic_error
 
-        # If credentials are valid, check if the user is a caseworker
-        if self.user.is_caseworker:
-            # Generate a short-lived token for the 2FA step
-            tfa_token = TFAToken.for_user(self.user)
-            # FIX: Use the directly imported timedelta
-            tfa_token.set_exp(lifetime=timedelta(minutes=5)) 
+        user = User.objects.filter(username=username).first()
 
-            return {"tfa_required": True, "tfa_token": str(tfa_token)}
+        if user:
+            # 2. Account Lockout Check
+            if user.is_locked:
+                raise generic_error
 
-        # If not a caseworker, return the standard access/refresh tokens
-        return data
+            # 3. User-based Rate Limiting Check
+            user_cache_key = f"login_attempts:user:{user.username}"
+            user_attempts = cache.get(user_cache_key, 0)
+            if user_attempts >= LOGIN_FAILURE_LIMIT_PER_USER:
+                raise generic_error
+
+        try:
+            data = super().validate(attrs)
+
+            # --- SUCCESSFUL LOGIN ---
+            # self.user is now set by the parent class.
+            if self.user.failed_login_attempts > 0 or self.user.is_locked:
+                self.user.failed_login_attempts = 0
+                self.user.is_locked = False
+                self.user.save(update_fields=["failed_login_attempts", "is_locked"])
+
+            # Clear rate-limiting counters on success
+            cache.delete(ip_cache_key)
+            if user:
+                cache.delete(f"login_attempts:user:{user.username}")
+
+            # Continue with 2FA logic if user is a caseworker
+            if self.user.is_caseworker:
+                tfa_token = TFAToken.for_user(self.user)
+                tfa_token.set_exp(lifetime=timedelta(minutes=5))
+                return {"tfa_required": True, "tfa_token": str(tfa_token)}
+
+            return data
+
+        except AuthenticationFailed:
+            # --- FAILED LOGIN ---
+            # Increment IP-based counter
+            cache.set(ip_cache_key, ip_attempts + 1, LOGIN_FAILURE_WINDOW)
+
+            if user:
+                # Increment user-based counters if the user exists
+                user_cache_key = f"login_attempts:user:{user.username}"
+                user_attempts = cache.get(user_cache_key, 0)
+                cache.set(user_cache_key, user_attempts + 1, LOGIN_FAILURE_WINDOW)
+
+                user.failed_login_attempts += 1
+                if user.failed_login_attempts >= ACCOUNT_LOCKOUT_THRESHOLD:
+                    user.is_locked = True
+                user.save(update_fields=["failed_login_attempts", "is_locked"])
+
+            raise generic_error
 
 
 class CustomTokenObtainPairView(TokenObtainPairView):
@@ -320,16 +383,15 @@ class VerifyTOTPView(APIView):
     """
 
     permission_classes = [AllowAny]
-    # No DRF authentication is needed as we manually handle the TFA token.
     authentication_classes = []
 
     def post(self, request, *args, **kwargs):
         tfa_token = request.data.get("tfa_token")
         totp_code = request.data.get("totp_code")
+        generic_error = Response({"detail": "Incorrect TOTP code, please try again."}, status=status.HTTP_400_BAD_REQUEST)
 
         if not tfa_token:
             raise AuthenticationFailed("TFA token is missing from the request body.")
-
         if not totp_code:
             return Response({"detail": "TOTP code is required."}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -340,25 +402,54 @@ class VerifyTOTPView(APIView):
                 raise InvalidToken("Not a valid TFA token.")
 
             user_id = untyped_token[api_settings.USER_ID_CLAIM]
+            
+            # --- TOTP Rate Limiting ---
+            totp_cache_key = f"totp_attempts:user:{user_id}"
+            totp_attempts = cache.get(totp_cache_key, 0)
+            if totp_attempts >= 5: # Limit to 5 attempts per 5 minutes
+                raise PermissionDenied("Too many failed TOTP attempts. Please try again later.")
+
             user = User.objects.get(id=user_id)
 
-            # 2. Verify the TOTP code
+            # 2. Verify the TOTP code and prevent replay attacks
             if not user.totp_secret:
                 return Response({"detail": "TOTP is not configured for this account."}, status=status.HTTP_400_BAD_REQUEST)
 
             totp = pyotp.TOTP(user.totp_secret)
-            if not totp.verify(totp_code, valid_window=1):
-                return Response({"detail": "Incorrect TOTP code, please try again."}, status=status.HTTP_400_BAD_REQUEST)
+            now = timezone.now()
+            matched_counter = None
 
-            # 3. Generate final access and refresh tokens
-            refresh = RefreshToken.for_user(user)
-            return Response(
-                {
-                    "access": str(refresh.access_token),
-                    "refresh": str(refresh),
-                },
-                status=status.HTTP_200_OK,
-            )
+            # Check current and previous time windows to account for clock skew
+            for time_step in [now, now - timedelta(seconds=30)]:
+                if totp.verify(totp_code, for_time=time_step, valid_window=0):
+                    matched_counter = totp.timecode(time_step)
+                    break
+            
+            if matched_counter is None:
+                cache.set(totp_cache_key, totp_attempts + 1, 5 * 60)
+                return generic_error
+            
+            if user.last_totp_timestamp and matched_counter <= user.last_totp_timestamp:
+                cache.set(totp_cache_key, totp_attempts + 1, 5 * 60)
+                return generic_error # Replay attack detected
+
+            # 3. On success, update timestamp and generate final tokens
+            with transaction.atomic():
+                user.last_totp_timestamp = matched_counter
+                user.save(update_fields=["last_totp_timestamp"])
+
+                cache.delete(totp_cache_key) # Clear failure counter
+
+                refresh = RefreshToken.for_user(user)
+                return Response(
+                    {
+                        "access": str(refresh.access_token),
+                        "refresh": str(refresh),
+                    },
+                    status=status.HTTP_200_OK,
+                )
 
         except (TokenError, User.DoesNotExist):
             raise AuthenticationFailed("Invalid or expired token.")
+        except PermissionDenied as e:
+            return Response({"detail": str(e)}, status=status.HTTP_429_TOO_MANY_REQUESTS)
