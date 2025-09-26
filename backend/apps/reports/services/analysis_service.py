@@ -3,7 +3,7 @@ This module contains the ReportAnalyzerService class, which is responsible for a
 """
 import logging
 import os
-from typing import Literal
+from typing import Literal, Any
 
 import dspy
 import yaml
@@ -54,19 +54,28 @@ class ReportAnalyzerModule(dspy.Module):
 class ReportAnalyzerService:
     """Service for detecting spam in reports."""
 
+    _instance = None
+
+    def __new__(cls, *args: object, **kwargs: object) -> "ReportAnalyzerService":
+        """Ensure only one instance of the service exists."""
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+        return cls._instance
+
     def __init__(self) -> None:
         """Initialize the spam detection service."""
-        # self._setup_model()
-        self.wanted_keys = ["description", "reason_for_check"]
-        self.program = ReportAnalyzerModule()
-        self._load_optimized_model()
+        if not hasattr(self, "_initialized"):
+            self._redundant_keys = ["upload"]
+            self.program = ReportAnalyzerModule()
+            self._load_optimized_model()
+            self._initialized = True
 
 
     def _load_optimized_model(self) -> None:
         """Load the optimized model if available."""
         BASE_DIR = os.path.dirname(os.path.abspath(__file__))
         model_path = os.path.join(BASE_DIR, "optimized_program.json")
-        logger.info(f"Loading optimized model from {model_path}")
+
         if os.path.exists(model_path):
             try:
                 self.program.load(model_path)
@@ -76,18 +85,16 @@ class ReportAnalyzerService:
         else:
             logger.info("No optimized model found. Using base model.")
 
-    def _remove_unwanted_keys(self, data: dict | list | str) -> dict | list | str:
-        """Recursively remove keys not containing any wanted key substring."""
+    def _remove_redundant_keys(self, data: dict | list | str) -> dict | list | str:
+        """Recursively remove keys containing redundant words."""
         if isinstance(data, dict):
-            return {
-                k: self._remove_unwanted_keys(v)
-                for k, v in data.items()
-                if any(wanted_key.lower() in k.lower() for wanted_key in self.wanted_keys)
-            }
+            cleaned = {}
+            for key, value in data.items():
+                if not any(word in key.lower() for word in self._redundant_keys):
+                    cleaned[key] = self._remove_redundant_keys(value)
+            return cleaned
         elif isinstance(data, list):
-            cleaned = [self._remove_unwanted_keys(v) for v in data]
-            # Filter out "empty" results
-            return [x for x in cleaned if x not in ({}, [], None, "")]
+            return [self._remove_redundant_keys(item) for item in data]
         else:
             return data
 
@@ -103,8 +110,8 @@ class ReportAnalyzerService:
         """
         try:
             logger.info(f"Analyzing report: {report_body}")
-            # cleaned_report_body = self._remove_unwanted_keys(report_body)
-            yaml_body = yaml.dump(report_body)
+            cleaned_report_body = self._remove_redundant_keys(report_body)
+            yaml_body = yaml.dump(cleaned_report_body)
             logger.info(f"Cleaned report: {yaml_body}")
             prog = self.program(description=yaml_body)
             logger.info(dspy.inspect_history(2))

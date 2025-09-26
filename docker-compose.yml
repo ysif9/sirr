@@ -81,11 +81,6 @@ services:
             - driver: nvidia
               count: 1
               capabilities: [ gpu ]
-    healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:11434/api/tags" ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
 
   celery_worker:
     container_name: sirr_celery

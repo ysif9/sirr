@@ -36,12 +36,12 @@ def decrypt_report_body(report: Report) -> dict | str:
         # 1. Load the server's admin private key from Django settings.
         admin_b64_key = getattr(settings, "ADMIN_PRIVATE_KEY", None)
         if not admin_b64_key:
-            return "Error: ADMIN_PRIVATE_KEY is not configured on the server."
+            raise ValueError("ADMIN_PRIVATE_KEY is not configured on the server.")
         admin_private_key = PrivateKey(base64.b64decode(admin_b64_key))
 
         # 2. Validate that the report has all necessary cryptographic components.
         if not all([report.key_envelope, report.encrypted_body, report.body_nonce]):
-            return "Error: Report is missing necessary cryptographic data (envelope, body, or nonce)."
+            raise ValueError("Report is missing necessary cryptographic data (envelope, body, or nonce).")
 
         # 3. Unwrap the symmetric report key (K_report) using the asymmetric key envelope.
         envelope = report.key_envelope
@@ -59,10 +59,12 @@ def decrypt_report_body(report: Report) -> dict | str:
 
         return json.loads(decrypted_json)
 
-    except (BinasciiError, KeyError, TypeError, ValueError) as e:
+    except (BinasciiError, KeyError, TypeError) as e:
         return f"Error: Invalid cryptographic data format. The key envelope may be corrupt. Details: {e}"
     except CryptoError:
         return "Error: Decryption failed. This might be due to a key mismatch or data corruption."
+    except ValueError as e:
+        return f"Error: Missing or invalid cryptographic data. Details: {e}"
     except Exception as e:
         return f"An unexpected error occurred during decryption: {e}"
 
@@ -136,6 +138,8 @@ class ReportAdmin(admin.ModelAdmin):
         'associated_data', 'key_envelope', 'display_decrypted_content'
     )
 
+    actions = ['run_analysis']
+
     def get_queryset(self, request):
         """
         Customizes the queryset based on user role:
@@ -166,10 +170,6 @@ class ReportAdmin(admin.ModelAdmin):
         """
         decrypted_data = decrypt_report_body(obj)
 
-        if not hasattr(obj, "analysis"):
-            logger.info(f"Running analysis task for report {obj.id}")
-            generate_analysis_task.delay(decrypted_data, str(obj.id))
-
         if isinstance(decrypted_data, dict):
             # Pretty-print the JSON inside a <pre> tag for readability
             pretty_json = json.dumps(decrypted_data, indent=2)
@@ -177,6 +177,20 @@ class ReportAdmin(admin.ModelAdmin):
         else:
             # Display the error message in a distinct, user-friendly format
             return format_html('<p style="color: red; font-weight: bold;">{}</p>', decrypted_data)
+
+    @admin.action(description="Run AI Analysis")
+    def run_analysis(self, request, queryset):
+        """This action decrypts the selected reports and runs the AI analysis pipeline."""
+        for report in queryset:
+            if not hasattr(report, "analysis"):
+                try:
+                    decrypted_data = decrypt_report_body(report)
+                except Exception as e:
+                    logger.error(f"Failed to decrypt report {report.id}: {e}")
+                    continue
+                logger.info(f"Spawning analysis task for report {report.id}")
+                generate_analysis_task.delay(decrypted_data, str(report.id))
+
 
     def save_formset(self, request, form, formset, change):
         """
