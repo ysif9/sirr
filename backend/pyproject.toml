@@ -17,6 +17,7 @@ dependencies = [
   "redis[hiredis]>=6.4.0",
   "pynacl>=1.6.0",
   "dspy>=3.0.3",
+  "litellm==1.77.1",
   "django-pwnedpasswords-validator>=1.0.1",
   "django-pwned-passwords>=4.1.0",
   "argon2-cffi>=25.1.0",
@@ -129,12 +130,13 @@ django_settings_module = "core.settings"
 [tool.poe.tasks]
 build = { cmd = "docker compose -f ../docker-compose.yml build ", help = "Build/rebuild the docker container." }
 dev = { cmd = "docker compose -f ../docker-compose.yml up", help = "Run the development server." }
+devlm = { cmd = "docker compose -f ../docker-compose.yml --profile lm up", help = "Run the development server with Ollama." }
 makemigrations = { cmd = "docker compose -f ../docker-compose.yml run --rm sirr_api python manage.py makemigrations --settings=core.settings", help = "Generate new database migrations." }
 migrate = { cmd = "docker compose -f ../docker-compose.yml run --rm sirr_api python manage.py migrate --settings=core.settings", help = "Apply database migrations." }
 shell = { cmd = "docker compose -f ../docker-compose.yml exec sirr_api python manage.py shell --settings=core.settings", help = "Open Django interactive shell." }
-down = { cmd = "docker compose -f ../docker-compose.yml down --remove-orphans", help = "Stop and remove containers, networks, images, and volumes." }
+down = { cmd = "docker compose -f ../docker-compose.yml --profile lm down --remove-orphans", help = "Stop and remove containers, networks, images, and volumes." }
 # Only run this if you want to drop the database and start from scratch.
-clean = { cmd = "docker compose -f ../docker-compose.yml down --remove-orphans -v", help = "Docker down and dropping volumes/database" }
+clean = { cmd = "docker compose -f ../docker-compose.yml --profile lm down --remove-orphans -v", help = "Docker down and dropping volumes/database" }
 createsuperuser = { cmd = "docker compose -f ../docker-compose.yml exec sirr_api python manage.py createsuperuser --settings=core.settings", help = "Create a Django superuser inside the API container." }
 create_test_admin = { cmd = "docker compose -f ../docker-compose.yml exec sirr_api python manage.py create_admin_with_keys", help = "Automated creation of an admin with a new keypair." }
 create_test_caseworker = { cmd = "docker compose -f ../docker-compose.yml exec sirr_api python manage.py create_test_caseworker", help = "Automated creation of a caseworker with a new keypair." }

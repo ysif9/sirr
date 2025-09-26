@@ -12,6 +12,10 @@ from apps.common.models import BaseModel, UUIDModel
 # Create your models here.
 class User(UUIDModel, AbstractUser):
     """Custom user model using UUID as primary key"""
+    email = models.EmailField(
+        _("email address"),
+        unique=True,
+    )
 
     is_caseworker = models.BooleanField(default=False)
     public_key_bundle = models.JSONField(null=True, blank=True)
@@ -26,6 +30,8 @@ class User(UUIDModel, AbstractUser):
         default=False,
         help_text=_("Indicates if the user has completed the initial onboarding and TOTP setup."),
     )
+    USERNAME_FIELD = "email"
+    REQUIRED_FIELDS = []
 
     class Meta:
         verbose_name = _("User")
