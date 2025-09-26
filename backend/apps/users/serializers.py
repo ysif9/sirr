@@ -81,7 +81,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = get_user_model()
-        fields = ["id", "username", "email", "password", "password2", "is_caseworker"]
+        fields = ["id", "email", "password", "password2", "is_caseworker"]
         extra_kwargs = {"is_caseworker": {"default": True}}
 
     def validate(self, attrs):
@@ -92,7 +92,6 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         validated_data.pop("password2")
         user = User(
-            username=validated_data["username"],
             email=validated_data.get("email"),
             is_caseworker=validated_data.get("is_caseworker", False),
         )

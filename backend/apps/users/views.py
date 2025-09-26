@@ -332,13 +332,13 @@ ACCOUNT_LOCKOUT_THRESHOLD = 10
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
         """
-        Handles username/password validation with integrated brute-force protection
+        Handles email/password validation with integrated brute-force protection
         and enforces 2FA for all users.
         """
-        generic_error = AuthenticationFailed("Invalid username or password.")
+        generic_error = AuthenticationFailed("Invalid email or password.")
         request = self.context["request"]
         ip_address = request.META.get("REMOTE_ADDR")
-        username = attrs.get(self.username_field)
+        email = attrs.get(self.username_field)  # self.username_field is 'email'
 
         # 1. IP-based Rate Limiting Check
         ip_cache_key = f"login_attempts:ip:{ip_address}"
@@ -346,7 +346,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         if ip_attempts >= LOGIN_FAILURE_LIMIT_PER_IP:
             raise generic_error
 
-        user = User.objects.filter(username=username).first()
+        user = User.objects.filter(email=email).first()
 
         if user:
             # 2. Account Lockout Check
@@ -354,7 +354,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
                 raise generic_error
 
             # 3. User-based Rate Limiting Check
-            user_cache_key = f"login_attempts:user:{user.username}"
+            user_cache_key = f"login_attempts:user:{user.email}"
             user_attempts = cache.get(user_cache_key, 0)
             if user_attempts >= LOGIN_FAILURE_LIMIT_PER_USER:
                 raise generic_error
@@ -372,7 +372,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
             # Clear rate-limiting counters on success
             cache.delete(ip_cache_key)
             if user:
-                cache.delete(f"login_attempts:user:{user.username}")
+                cache.delete(f"login_attempts:user:{user.email}")
 
             # ALWAYS proceed to 2FA step for any valid user.
             # The onboarding/admin creation flows ensure TOTP is set up.
@@ -387,7 +387,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
 
             if user:
                 # Increment user-based counters if the user exists
-                user_cache_key = f"login_attempts:user:{user.username}"
+                user_cache_key = f"login_attempts:user:{user.email}"
                 user_attempts = cache.get(user_cache_key, 0)
                 cache.set(user_cache_key, user_attempts + 1, LOGIN_FAILURE_WINDOW)
 
@@ -401,7 +401,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
 
 class CustomTokenObtainPairView(TokenObtainPairView):
     """
-    Custom login view that handles the first step of authentication (username/password).
+    Custom login view that handles the first step of authentication (email/password).
     On success, it always returns a temporary 2FA token.
     """
 

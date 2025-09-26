@@ -16,7 +16,7 @@ export function LoginForm({
   ...props
 }: React.ComponentProps<"div">) {
   const [showPassword, setShowPassword] = useState(false);
-  const [username, setUsername] = useState("testcaseworker"); // Default to username
+  const [email, setEmail] = useState("testinv@sirr.com"); // Default to email
   const [password, setPassword] = useState("yoursecurepassword");
   const [privateKey, setPrivateKey] = useState("");
   const [error, setError] = useState("");
@@ -29,29 +29,30 @@ export function LoginForm({
     setError("");
     setIsSubmitting(true);
 
-    if (!username.trim() || !privateKey.trim()) {
-      setError("Username and Private Key are required.");
+    if (!email.trim() || !privateKey.trim()) {
+      setError("Email and Private Key are required.");
       setIsSubmitting(false);
       return;
     }
 
     try {
       const response = await apiClient.post("/token/", {
-        username,
+        email,
         password,
       });
 
-      const { tfa_required, tfa_token, access, refresh } = response.data;
+      const { tfa_required, tfa_token } = response.data;
 
       if (tfa_required) {
         // 2FA is needed, store temporary token and redirect to OTP page
         sessionStorage.setItem("tfa_token", tfa_token);
-        sessionStorage.setItem("username", username);
+        sessionStorage.setItem("email", email);
         sessionStorage.setItem("privateKey", privateKey);
         router.push("/login/otp");
       } else {
-        // No 2FA, login directly
-        handleLoginSuccess({ access, refresh, username, privateKey });
+        // This case should ideally not happen if 2FA is always enforced,
+        // but handle it for completeness.
+        handleLoginSuccess({ email, privateKey });
       }
     } catch (err: any) {
       setError(
@@ -77,15 +78,16 @@ export function LoginForm({
           </div>
           <div className="flex flex-col gap-4">
             <div className="grid gap-2">
-              <Label htmlFor="username">Username</Label>
+              <Label htmlFor="email">Email</Label>
               <Input
-                id="username"
-                type="text"
-                placeholder="Enter your username"
+                id="email"
+                type="email"
+                placeholder="Enter your email"
                 required
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 disabled={isSubmitting}
+                autoComplete="email"
               />
             </div>
             <div className="grid gap-2">
@@ -100,6 +102,7 @@ export function LoginForm({
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   disabled={isSubmitting}
+                  autoComplete="current-password"
                 />
                 <Button
                   type="button"

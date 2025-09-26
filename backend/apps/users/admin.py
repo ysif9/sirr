@@ -19,7 +19,7 @@ class OnboardingInvitationAdmin(admin.ModelAdmin):
     """
     list_display = ('user', 'is_used', 'is_expired', 'created_at', 'expires_at', 'used_at')
     list_filter = ('created_at', 'expires_at', 'used_at')
-    search_fields = ('user__username', 'user__email')
+    search_fields = ('user__email',)
     readonly_fields = ('user', 'token', 'created_at', 'updated_at', 'expires_at', 'used_at')
 
     @admin.display(boolean=True, description="Used?")
@@ -46,8 +46,8 @@ class UserAdmin(BaseUserAdmin):
     and add a custom action to invite a new investigator.
     """
     list_display = (
-        "username",
         "email",
+        "username",
         "first_name",
         "last_name",
         "is_staff",
@@ -58,7 +58,7 @@ class UserAdmin(BaseUserAdmin):
     )
     list_filter = ("is_staff", "is_superuser", "is_active", "groups", "is_caseworker", "is_locked")
     search_fields = ("username", "first_name", "last_name", "email")
-    ordering = ("username",)
+    ordering = ("email",)
 
     readonly_fields = ('failed_login_attempts', 'last_login', 'date_joined')
 
@@ -106,7 +106,7 @@ class UserAdmin(BaseUserAdmin):
                     # Success message with embedded HTML and JavaScript for a "Copy" button
                     success_message = format_html(
                         """
-                        <strong>SUCCESS:</strong> Invitation created for {username}.
+                        <strong>SUCCESS:</strong> Invitation created for {email}.
                         <div style="margin-top: 1rem;">
                             <strong>Onboarding Link:</strong>
                             <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.25rem;">
@@ -139,7 +139,7 @@ class UserAdmin(BaseUserAdmin):
                             }});
                         </script>
                         """,
-                        username=form.cleaned_data["username"],
+                        email=form.cleaned_data["email"],
                         onboarding_url=onboarding_url,
                     )
                     self.message_user(request, success_message, messages.SUCCESS)

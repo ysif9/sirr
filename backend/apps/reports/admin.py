@@ -91,7 +91,7 @@ class ReportAssignmentInline(admin.TabularInline):
                 is_caseworker=True,
                 is_active=True,
                 public_key_bundle__isnull=False
-            ).order_by('username')
+            ).order_by('email')
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 
@@ -268,5 +268,5 @@ class ReportAssignmentAdmin(admin.ModelAdmin):
     A standalone admin view for Report Assignments, useful for auditing.
     """
     list_display = ('report', 'assignee', 'assigned_at', 'last_access')
-    search_fields = ('report__id__startswith', 'assignee__username')
+    search_fields = ('report__id__startswith', 'assignee__email')
     autocomplete_fields = ['report', 'assignee']

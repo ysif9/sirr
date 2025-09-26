@@ -12,11 +12,11 @@ import apiClient from "@/lib/api";
 
 interface AuthContextType {
   isAuthenticated: boolean;
-  user: { username: string } | null;
+  user: { email: string } | null;
   privateKey: string | null;
   isLoading: boolean;
   handleLoginSuccess: (data: {
-    username: string;
+    email: string;
     privateKey: string;
   }) => void;
   logout: () => void;
@@ -25,7 +25,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<{ username: string } | null>(null);
+  const [user, setUser] = useState<{ email: string } | null>(null);
   const [privateKey, setPrivateKey] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
@@ -40,19 +40,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setUser(null);
         setPrivateKey(null);
         localStorage.removeItem("privateKey");
-        localStorage.removeItem("username");
+        localStorage.removeItem("email");
         router.push("/login");
     }
   };
 
   useEffect(() => {
     const storedKey = localStorage.getItem("privateKey");
-    const storedUsername = localStorage.getItem("username");
+    const storedEmail = localStorage.getItem("email");
 
     // This check is for session persistence across page reloads.
     // It assumes that if local storage has the user info, a valid cookie exists.
-    if (storedKey && storedUsername) {
-      setUser({ username: storedUsername });
+    if (storedKey && storedEmail) {
+      setUser({ email: storedEmail });
       setPrivateKey(storedKey);
     }
     setIsLoading(false);
@@ -64,15 +64,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const handleLoginSuccess = (data: {
-    username: string;
+    email: string;
     privateKey: string;
   }) => {
     // We only store non-sensitive data needed for the UI and crypto operations.
     // The actual authentication token is now in an HttpOnly cookie.
     localStorage.setItem("privateKey", data.privateKey);
-    localStorage.setItem("username", data.username);
+    localStorage.setItem("email", data.email);
 
-    setUser({ username: data.username });
+    setUser({ email: data.email });
     setPrivateKey(data.privateKey);
 
     router.push("/cases");

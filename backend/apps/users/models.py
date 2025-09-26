@@ -13,6 +13,11 @@ from apps.common.models import BaseModel, UUIDModel
 class User(UUIDModel, AbstractUser):
     """Custom user model using UUID as primary key"""
 
+    # Username is no longer used for login, email is.
+    # We keep the username field from AbstractUser but it will be populated
+    # automatically from the email address and is not exposed to investigators.
+    email = models.EmailField(_("email address"), unique=True)
+
     is_caseworker = models.BooleanField(default=False)
     public_key_bundle = models.JSONField(null=True, blank=True)
     totp_secret = models.CharField(
@@ -43,13 +48,22 @@ class User(UUIDModel, AbstractUser):
         help_text=_("The Unix timestamp of the last successfully used TOTP code's time window, to prevent replay attacks."),
     )
 
+    USERNAME_FIELD = "email"
+    REQUIRED_FIELDS = []  # email is USERNAME_FIELD so it's required by default.
 
     class Meta:
         verbose_name = _("User")
         verbose_name_plural = _("Users")
 
     def __str__(self):
-        return self.username
+        return self.email
+
+    def save(self, *args, **kwargs):
+        # For new users, populate the username field from the email.
+        # This is necessary because AbstractUser requires a unique username.
+        if self._state.adding:
+            self.username = self.email
+        super().save(*args, **kwargs)
 
 
 class OnboardingInvitation(BaseModel):
@@ -86,7 +100,7 @@ class OnboardingInvitation(BaseModel):
         return timezone.now() > self.expires_at
 
     def __str__(self) -> str:
-        return f"Invitation for {self.user.username}"
+        return f"Invitation for {self.user.email}"
 
     class Meta:
         verbose_name = _("Onboarding Invitation")
