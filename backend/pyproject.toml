@@ -22,6 +22,7 @@ dependencies = [
   "argon2-cffi>=25.1.0",
   "bcrypt>=4.3.0",
   "pyotp>=2.9.0",
+  "litellm==1.77.1"
 ]
 [dependency-groups]
 dev = [

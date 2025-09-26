@@ -1,0 +1,36 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_urls static %}
+
+{% block extrastyle %}{{ block.super }}
+  <link rel="stylesheet" type="text/css" href="{% static "admin/css/forms.css" %}">
+{% endblock %}
+
+{% block content %}
+<div id="content-main">
+  <form method="post" novalidate>{% csrf_token %}
+    <div>
+      <fieldset class="module aligned">
+        <h2>{{ title }}</h2>
+        <p>
+          This form will create a new, inactive user account and generate a single-use, secure link
+          for them to complete their onboarding process.
+        </p>
+        {% for field in form %}
+          <div class="form-row">
+            {{ field.errors }}
+            {{ field.label_tag }}
+            {{ field }}
+            {% if field.help_text %}
+              <div class="help">{{ field.help_text|safe }}</div>
+            {% endif %}
+          </div>
+        {% endfor %}
+      </fieldset>
+
+      <div class="submit-row">
+        <input type="submit" value="Create Invitation" class="default">
+      </div>
+    </div>
+  </form>
+</div>
+{% endblock %}
