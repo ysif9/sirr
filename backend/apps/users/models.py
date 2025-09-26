@@ -16,8 +16,6 @@ class User(UUIDModel, AbstractUser):
         _("email address"),
         unique=True,
     )
-    is_caseworker = models.BooleanField(
-        default=False
 
     is_caseworker = models.BooleanField(default=False)
     public_key_bundle = models.JSONField(null=True, blank=True)
