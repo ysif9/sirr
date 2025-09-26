@@ -314,20 +314,21 @@ class CustomTokenObtainPairView(TokenObtainPairView):
 class VerifyTOTPView(APIView):
     """
     Validates the TOTP code provided by the user and, if correct,
-    returns the final access and refresh tokens.
+    returns the final access and refresh tokens. This view expects the
+    temporary TFA token in the request body, aligning with the onboarding flow.
     POST /api/token/verify-totp/
     """
 
     permission_classes = [AllowAny]
-    authentication_classes = []  # <-- FIX APPLIED HERE: Prevents default DRF authentication
+    # No DRF authentication is needed as we manually handle the TFA token.
+    authentication_classes = []
 
     def post(self, request, *args, **kwargs):
-        auth_header = request.headers.get("Authorization")
-        if not auth_header or not auth_header.startswith("Bearer "):
-            raise AuthenticationFailed("Authorization header is missing or invalid.")
-
-        tfa_token = auth_header.split(" ")[1]
+        tfa_token = request.data.get("tfa_token")
         totp_code = request.data.get("totp_code")
+
+        if not tfa_token:
+            raise AuthenticationFailed("TFA token is missing from the request body.")
 
         if not totp_code:
             return Response({"detail": "TOTP code is required."}, status=status.HTTP_400_BAD_REQUEST)
@@ -342,9 +343,12 @@ class VerifyTOTPView(APIView):
             user = User.objects.get(id=user_id)
 
             # 2. Verify the TOTP code
+            if not user.totp_secret:
+                return Response({"detail": "TOTP is not configured for this account."}, status=status.HTTP_400_BAD_REQUEST)
+
             totp = pyotp.TOTP(user.totp_secret)
             if not totp.verify(totp_code, valid_window=1):
-                return Response({"error": "Incorrect TOTP code, please try again."}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"detail": "Incorrect TOTP code, please try again."}, status=status.HTTP_400_BAD_REQUEST)
 
             # 3. Generate final access and refresh tokens
             refresh = RefreshToken.for_user(user)

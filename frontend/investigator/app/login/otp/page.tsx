@@ -43,10 +43,10 @@ export default function OtpPage() {
     }
 
     try {
-        const response = await apiClient.post('/token/verify-totp/', 
-            { totp_code: otp },
-            { headers: { Authorization: `Bearer ${tfaToken}` } }
-        );
+        const response = await apiClient.post('/token/verify-totp/', {
+            tfa_token: tfaToken,
+            totp_code: otp,
+        });
 
         // On success, finalize the login
         handleLoginSuccess({ ...response.data, username, privateKey });
