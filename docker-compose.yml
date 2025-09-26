@@ -70,6 +70,7 @@ services:
 
   ollama:
     image: ollama/ollama:latest
+    profiles: [lm]
     ports:
       - "11435:11434"
     volumes:
