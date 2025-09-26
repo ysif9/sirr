@@ -6,6 +6,7 @@ import {
   LogOutIcon,
   SettingsIcon,
 } from "lucide-react"
+import Link from "next/link";
 
 import {
   Avatar,
@@ -24,7 +25,22 @@ import {
 } from "@/components/ui/dropdown-menu"
 
 export default function UserMenu() {
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
+  
+  const displayName = [user?.firstName, user?.lastName].filter(Boolean).join(' ');
+
+  const getAvatarFallback = () => {
+    if (user?.firstName && user?.lastName) {
+      return `${user.firstName.charAt(0)}${user.lastName.charAt(0)}`;
+    }
+    if (user?.firstName) {
+      return user.firstName.charAt(0);
+    }
+    if (user?.email) {
+      return user.email.charAt(0).toUpperCase();
+    }
+    return "U";
+  }
 
   return (
     <DropdownMenu>
@@ -32,24 +48,28 @@ export default function UserMenu() {
         <Button variant="ghost" className="h-auto p-0 hover:bg-transparent">
           <Avatar>
             <AvatarImage src="./avatar.jpg" alt="Profile image" />
-            <AvatarFallback>AD</AvatarFallback>
+            <AvatarFallback>{getAvatarFallback()}</AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="max-w-64" align="end">
         <DropdownMenuLabel className="flex min-w-0 flex-col">
           <span className="text-foreground truncate text-sm font-medium">
-            Admin User
+            {displayName || user?.email || "User"}
           </span>
-          <span className="text-muted-foreground truncate text-xs font-normal">
-            admin@sirr.gov
-          </span>
+          {displayName && (
+            <span className="text-muted-foreground truncate text-xs font-normal">
+              {user?.email}
+            </span>
+          )}
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <DropdownMenuItem>
-            <KeyRoundIcon size={16} className="opacity-60" aria-hidden="true" />
-            <span>Password Settings</span>
+          <DropdownMenuItem asChild>
+            <Link href="/settings/password">
+              <KeyRoundIcon size={16} className="opacity-60" aria-hidden="true" />
+              <span>Password Settings</span>
+            </Link>
           </DropdownMenuItem>
           <DropdownMenuItem>
             <SettingsIcon size={16} className="opacity-60" aria-hidden="true" />

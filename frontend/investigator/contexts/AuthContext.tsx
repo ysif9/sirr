@@ -10,9 +10,15 @@ import React, {
 import { useRouter, usePathname } from "next/navigation";
 import apiClient from "@/lib/api";
 
+interface User {
+  email: string;
+  firstName: string | null;
+  lastName: string | null;
+}
+
 interface AuthContextType {
   isAuthenticated: boolean;
-  user: { email: string } | null;
+  user: User | null;
   privateKey: string | null;
   isLoading: boolean;
   handleLoginSuccess: (data: {
@@ -25,11 +31,13 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<{ email: string } | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [privateKey, setPrivateKey] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
   const pathname = usePathname();
+
+  const isAuthenticated = !!user && !!privateKey;
 
   const logout = async () => {
     try {
@@ -46,39 +54,52 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   useEffect(() => {
-    const storedKey = localStorage.getItem("privateKey");
-    const storedEmail = localStorage.getItem("email");
+    const bootstrapAuth = async () => {
+        const storedKey = localStorage.getItem("privateKey");
+        const storedEmail = localStorage.getItem("email");
 
-    // This check is for session persistence across page reloads.
-    // It assumes that if local storage has the user info, a valid cookie exists.
-    if (storedKey && storedEmail) {
-      setUser({ email: storedEmail });
-      setPrivateKey(storedKey);
-    }
-    setIsLoading(false);
-    
+        if (storedKey && storedEmail) {
+            setPrivateKey(storedKey); // Assume authenticated for now
+            try {
+                const response = await apiClient.get('/users/me/');
+                const { email, first_name, last_name } = response.data;
+                setUser({ email, firstName: first_name, lastName: last_name });
+            } catch (error) {
+                console.error("Session invalid, logging out.", error);
+                await logout();
+            }
+        }
+        setIsLoading(false);
+    };
+
+    bootstrapAuth();
+
     const handleAuthError = () => logout();
     window.addEventListener('auth-error', handleAuthError);
     return () => window.removeEventListener('auth-error', handleAuthError);
 
   }, []);
 
-  const handleLoginSuccess = (data: {
+  const handleLoginSuccess = async (data: {
     email: string;
     privateKey: string;
   }) => {
-    // We only store non-sensitive data needed for the UI and crypto operations.
-    // The actual authentication token is now in an HttpOnly cookie.
     localStorage.setItem("privateKey", data.privateKey);
     localStorage.setItem("email", data.email);
-
-    setUser({ email: data.email });
     setPrivateKey(data.privateKey);
 
-    router.push("/cases");
-  };
+    try {
+        const response = await apiClient.get('/users/me/');
+        const { email, first_name, last_name } = response.data;
+        setUser({ email, firstName: first_name, lastName: last_name });
+    } catch (error) {
+        console.error("Failed to fetch user data after login", error);
+        // Set partial data to still allow navigation
+        setUser({ email: data.email, firstName: null, lastName: null });
+    }
 
-  const isAuthenticated = !!user && !!privateKey;
+    router.push("/home");
+  };
   
   // This effect handles redirecting unauthenticated users from protected pages.
   useEffect(() => {

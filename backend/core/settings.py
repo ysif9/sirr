@@ -45,6 +45,7 @@ THIRD_PARTY_APPS = [
     "rest_framework_simplejwt.token_blacklist",
     "corsheaders",
     "django_filters",
+    "pwned_passwords_django",
 ]
 
 # Local apps
@@ -170,7 +171,7 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.SessionAuthentication',
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 5,
+    'PAGE_SIZE': 20,
 }
 
 SIMPLE_JWT = {
@@ -229,25 +230,18 @@ AUTH_PASSWORD_VALIDATORS = [
     },
     {
         "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
-        "OPTIONS": {"min_length": 15},  # adjust as needed
+        "OPTIONS": {"min_length": 15},
     },
     {
-        "NAME": "apps.users.validators.ComplexityValidator",
+        "NAME": "pwned_passwords_django.validators.PwnedPasswordsValidator",
     },
 ]
 
 
 PASSWORD_HASHERS = [
-
     "django.contrib.auth.hashers.Argon2PasswordHasher",
-
-
     "django.contrib.auth.hashers.BCryptSHA256PasswordHasher",
-
-
     "django.contrib.auth.hashers.PBKDF2PasswordHasher",
-
-
     "django.contrib.auth.hashers.PBKDF2SHA1PasswordHasher",
 ]
 

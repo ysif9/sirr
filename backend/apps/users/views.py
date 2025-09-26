@@ -28,6 +28,8 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from .models import OnboardingInvitation, User
 from .serializers import (
     CaseworkerPublicKeySerializer,
+    CurrentUserSerializer,
+    SetPasswordSerializer,
     UserPublicKeyBundleSerializer,
     UserRegistrationSerializer,
 )
@@ -70,6 +72,31 @@ def unset_auth_cookies(response: Response) -> Response:
         path=settings.SIMPLE_JWT["AUTH_COOKIE_PATH"],
     )
     return response
+
+
+class CurrentUserView(generics.RetrieveAPIView):
+    """
+    Provides the currently authenticated user's details.
+    """
+    permission_classes = [IsAuthenticated]
+    serializer_class = CurrentUserSerializer
+
+    def get_object(self):
+        return self.request.user
+
+
+class SetPasswordView(generics.GenericAPIView):
+    """
+    Allows an authenticated user to change their own password.
+    """
+    permission_classes = [IsAuthenticated]
+    serializer_class = SetPasswordSerializer
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({"detail": "Password updated successfully."}, status=status.HTTP_200_OK)
 
 
 class SystemInboxPublicKeyView(APIView):
