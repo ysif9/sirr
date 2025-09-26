@@ -178,6 +178,7 @@ class OnboardingTokenVerifyView(APIView):
     """
 
     permission_classes = [AllowAny]
+    authentication_classes = []
 
     def get(self, request, token, *args, **kwargs):
         """
@@ -202,6 +203,7 @@ class OnboardingCompleteStep1View(APIView):
     """
 
     permission_classes = [AllowAny]
+    authentication_classes = []
 
     def post(self, request, *args, **kwargs):
         """
@@ -260,6 +262,7 @@ class OnboardingCompleteStep2View(APIView):
     """
 
     permission_classes = [AllowAny]
+    authentication_classes = []
 
     def post(self, request, *args, **kwargs):
         """

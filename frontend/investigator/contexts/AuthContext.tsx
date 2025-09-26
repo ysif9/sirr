@@ -49,6 +49,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const storedKey = localStorage.getItem("privateKey");
     const storedUsername = localStorage.getItem("username");
 
+    // This check is for session persistence across page reloads.
+    // It assumes that if local storage has the user info, a valid cookie exists.
     if (storedKey && storedUsername) {
       setUser({ username: storedUsername });
       setPrivateKey(storedKey);
@@ -65,6 +67,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     username: string;
     privateKey: string;
   }) => {
+    // We only store non-sensitive data needed for the UI and crypto operations.
+    // The actual authentication token is now in an HttpOnly cookie.
     localStorage.setItem("privateKey", data.privateKey);
     localStorage.setItem("username", data.username);
 
@@ -76,7 +80,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const isAuthenticated = !!user && !!privateKey;
   
-  // This effect handles redirecting unauthenticated users
+  // This effect handles redirecting unauthenticated users from protected pages.
   useEffect(() => {
     if (!isLoading && !isAuthenticated && !pathname.startsWith('/login') && !pathname.startsWith('/onboard')) {
       router.push('/login');
