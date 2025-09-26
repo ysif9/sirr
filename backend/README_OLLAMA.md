@@ -10,13 +10,13 @@
     - Download the `OllamaSetup.exe` file
 
 2. **Install Ollama:**
-   ```cmd
+   ```bash
    # Run the downloaded installer as Administrator
    # Follow the installation wizard (default settings are recommended)
    ```
 
 3. **Verify Installation:**
-   ```cmd
+   ```bash
    # Open Command Prompt or PowerShell and run:
    ollama --version
    ```
@@ -31,7 +31,7 @@
 
 This project specifically uses the **Gemma 3 4B** model. Download and set it up:
 
-```cmd
+```bash
 # Pull the Gemma 3 4B model (this may take several minutes)
 ollama pull gemma3:4b
 
@@ -41,7 +41,7 @@ ollama list
 
 ### Test Model
 
-```cmd
+```bash
 # Test the model is working correctly
 ollama run gemma3:4b
 ```
@@ -53,7 +53,7 @@ You should receive a response from the model. Press `Ctrl+D` or type `/bye` to e
 ### Environment Variables
 
 1. **Copy the environment template:**
-   ```cmd
+   ```bash
    cp .env.example .env
    ```
 
