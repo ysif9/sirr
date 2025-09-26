@@ -6,13 +6,6 @@ from django.db import transaction
 from apps.reports.models import AIAnalysis
 from apps.reports.services.analysis_service import ReportAnalyzerService
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s %(levelname)s %(name)s %(message)s",
-    handlers=[
-        logging.StreamHandler()
-    ],
-)
 logger = logging.getLogger(__name__)
 
 
