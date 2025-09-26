@@ -114,7 +114,7 @@ class ReportAnalyzerService:
             yaml_body = yaml.dump(cleaned_report_body)
             logger.info(f"Cleaned report: {yaml_body}")
             prog = self.program(description=yaml_body)
-            logger.info(dspy.inspect_history(2))
+            logger.debug(dspy.inspect_history(2))
             return prog
         except Exception as e:
             logger.error(f"Failed to analyze report: {e}")
