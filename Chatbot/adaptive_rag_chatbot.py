@@ -39,8 +39,7 @@ if not os.getenv("GOOGLE_API_KEY"):
 if not os.getenv("TAVILY_API_KEY"):
     print("Warning: TAVILY_API_KEY environment variable not set.")
     print("Web search functionality will be limited or fail. Please set it for full functionality.")
-    # For a demo, you might comment out the web search path in the graph if you don't have it.
-    # exit() # Or exit if web search is mandatory
+
 
 # --- LLMs and Embeddings ---
 print("Initializing Embedding Model: intfloat/multilingual-e5-large...")
@@ -48,12 +47,12 @@ embeddings = HuggingFaceEmbeddings(model_name="intfloat/multilingual-e5-large",
                                    encode_kwargs={"normalize_embeddings": True})
 print("Embedding Model initialized.")
 
-print("Initializing Generative LLM (Gemini 2.5 Pro)...")
-llm_gen = ChatGoogleGenerativeAI(model="models/gemini-2.5-pro", temperature=0.3, max_output_tokens=1000)
+print("Initializing Generative LLM (Gemini 2.0 Flash)...")
+llm_gen = ChatGoogleGenerativeAI(model="models/gemini-2.0-flash", temperature=0.3, max_output_tokens=1000)
 print("Generative LLM initialized.")
 
 print("Initializing Grader LLM (Gemini 2.5 Pro) with lower temperature for more deterministic output...")
-llm_grader = ChatGoogleGenerativeAI(model="models/gemini-2.5-pro", temperature=0,
+llm_grader = ChatGoogleGenerativeAI(model="models/gemini-2.0-flash", temperature=0,
                                     max_output_tokens=100)  # Lower max_tokens for graders
 print("Grader LLM initialized.")
 
@@ -73,7 +72,7 @@ except Exception as e:
     exit()
 
 # --- Web Search Tool ---
-web_search_tool = TavilySearchResults(max_results=3)  # Limit results for conciseness
+web_search_tool = TavilySearchResults(max_results=2)
 
 
 # --- Graph State ---
