@@ -12,9 +12,14 @@ import SubmissionSuccess from "./SubmissionSuccess"
 
 interface CrimeReportFormProps {
   formDefinition: FormDefinition
+  formIdentifier: {
+    reportTypeKey: string
+    categoryKey: string
+    formKey: string
+  }
 }
 
-const CrimeReportForm: React.FC<CrimeReportFormProps> = ({ formDefinition }) => {
+const CrimeReportForm: React.FC<CrimeReportFormProps> = ({ formDefinition, formIdentifier }) => {
   const [currentStep, setCurrentStep] = useState(1)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submissionData, setSubmissionData] = useState<{ access_key: string } | null>(null)
@@ -32,13 +37,10 @@ const CrimeReportForm: React.FC<CrimeReportFormProps> = ({ formDefinition }) => 
       const allFormValues = getValues()
       const attachments = allFormValues.evidence_upload as FileList | null
 
-      // Create a copy of the form values and remove the file upload field.
-      // The FileList is handled separately and is not JSON-serializable.
       const reportData = { ...allFormValues }
       delete reportData.evidence_upload
 
-      // Call the updated submitReport function, passing the clean reportData and attachments.
-      const result = await submitReport(reportData, attachments)
+      const result = await submitReport(reportData, attachments, formIdentifier, formDefinition.title)
       setSubmissionData(result)
     } catch (error: any) {
       console.error("Submission Error:", error)

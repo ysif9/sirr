@@ -1,5 +1,3 @@
-// FILE: app/report/[...slug]/page.tsx
-
 "use client"
 
 import { useParams, useRouter } from "next/navigation"
@@ -38,6 +36,12 @@ export default function ReportFormPage() {
     return <div className="text-white text-center pt-40">Report form not found.</div>
   }
 
+  const formIdentifier = {
+    reportTypeKey: reportType,
+    categoryKey: category,
+    formKey: subcrime,
+  }
+
   return (
     // FIX: Added the gradient background classes to this div to match the app's theme
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex flex-col animate-fadeIn">
@@ -67,7 +71,7 @@ export default function ReportFormPage() {
               Please fill out the form below. All information is submitted anonymously.
             </p>
           </div>
-          <CrimeReportForm formDefinition={formDef} />
+          <CrimeReportForm formDefinition={formDef} formIdentifier={formIdentifier} />
         </div>
       </main>
     </div>
