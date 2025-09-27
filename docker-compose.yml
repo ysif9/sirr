@@ -41,6 +41,9 @@ services:
       - DJANGO_SUPERUSER_PASSWORD=${DJANGO_SUPERUSER_PASSWORD:-admin}
       # Admin private key for development
       - ADMIN_PRIVATE_KEY=${ADMIN_PRIVATE_KEY}
+      - OLLAMA_HOST=http://ollama:11434
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     command: >
       sh -c "
         echo 'Waiting for postgres...'
@@ -64,6 +67,21 @@ services:
       - db
       - redis
     restart: always
+
+  ollama:
+    image: ollama/ollama:latest
+    profiles: [lm]
+    ports:
+      - "11435:11434"
+    volumes:
+      - ${OLLAMA_PATH:-/usr/share/ollama/.ollama}:/root/.ollama
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [ gpu ]
 
   celery_worker:
     container_name: sirr_celery

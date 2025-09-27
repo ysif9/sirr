@@ -36,7 +36,7 @@ class ReportPriority(models.TextChoices):
     LOW = "low", _("Low")
     MEDIUM = "medium", _("Medium")
     HIGH = "high", _("High")
-    URGENT = "urgent", _("Urgent")
+    CRITICAL = "critical", _("Critical")
 
 
 def attachment_upload_path(instance: "Attachment", filename: str) -> str:
@@ -89,7 +89,7 @@ class Report(BaseModel):
     template = models.ForeignKey(ReportTemplate, on_delete=models.SET_NULL, related_name="reports", null=True,
                                  blank=True)
     access_key = models.CharField(max_length=255, unique=True)
-    
+
     encrypted_body = models.BinaryField(help_text=_("The raw ciphertext of the report."), null=True, blank=True)
     key_envelope = models.JSONField(
         help_text=_("The encrypted report key (K_report) and the reporter's ephemeral public key."),
@@ -100,7 +100,7 @@ class Report(BaseModel):
         default=dict,
         help_text=_("Non-secret, integrity-protected metadata (e.g., report type, coarse timestamp).")
     )
-    
+
     status = models.CharField(max_length=50, choices=ReportStatus.choices, default=ReportStatus.SUBMITTED)
     score = models.IntegerField(default=0)
     priority = models.CharField(max_length=50, choices=ReportPriority.choices, default=ReportPriority.MEDIUM)
@@ -161,7 +161,7 @@ class Attachment(BaseModel):
     )
     description = models.TextField(blank=True)
     checksum = models.CharField(
-        max_length=64, 
+        max_length=64,
         blank=True,
         help_text=_("The SHA-256 hash of the encrypted file content (ciphertext)."),
         null=True
@@ -199,13 +199,17 @@ class AIAnalysis(models.Model):
     data for audit and improvement purposes.
     """
     report = models.OneToOneField(Report, on_delete=models.CASCADE, primary_key=True, related_name="analysis")
-    is_spam = models.BooleanField(default=False)
+    is_spam = models.BooleanField(default=False, help_text=_("Whether the report is spam."))
     confidence = models.PositiveSmallIntegerField(default=0, validators=[MinValueValidator(0), MaxValueValidator(100)])
-    analyzed_at = models.DateTimeField(auto_now_add=True, )
-    model_version = models.CharField(max_length=50, default="v1")
-    analysis_data = models.JSONField(default=dict, blank=True)
+    analyzed_at = models.DateTimeField(auto_now_add=True)
+    spam_reasoning = models.TextField(blank=True, help_text=_("The reasoning behind the spam prediction."))
+    urgency = models.CharField(max_length=50, choices=ReportPriority.choices, default=ReportPriority.MEDIUM, help_text=_("The urgency of the report for criminal investigation."))
+    urgency_reasoning = models.TextField(blank=True, help_text=_("The reasoning behind the urgency prediction."))
+    model_version = models.CharField(max_length=10, default="v1")
 
     def __str__(self) -> str:
+        if self.report.template:
+            return f"AI Analysis for Report {self.report.template.title}"
         return f"AI Analysis for Report {self.report.id}"
 
     class Meta:

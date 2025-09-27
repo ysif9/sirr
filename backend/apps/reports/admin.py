@@ -1,5 +1,6 @@
 import base64
 import json
+import logging
 from binascii import Error as BinasciiError
 from typing import Any
 
@@ -10,8 +11,11 @@ from nacl.exceptions import CryptoError
 from nacl.public import Box, PrivateKey, PublicKey
 from nacl.secret import SecretBox
 
-from apps.reports.models import Report, ReportAssignment
+from apps.reports.models import AIAnalysis, Report, ReportAssignment
+from apps.reports.tasks import generate_analysis_task
 from apps.users.models import User  # Import the User model
+
+logger = logging.getLogger(__name__)
 
 
 def decrypt_report_body(report: Report) -> dict | str:
@@ -32,12 +36,12 @@ def decrypt_report_body(report: Report) -> dict | str:
         # 1. Load the server's admin private key from Django settings.
         admin_b64_key = getattr(settings, "ADMIN_PRIVATE_KEY", None)
         if not admin_b64_key:
-            return "Error: ADMIN_PRIVATE_KEY is not configured on the server."
+            raise ValueError("ADMIN_PRIVATE_KEY is not configured on the server.")
         admin_private_key = PrivateKey(base64.b64decode(admin_b64_key))
 
         # 2. Validate that the report has all necessary cryptographic components.
         if not all([report.key_envelope, report.encrypted_body, report.body_nonce]):
-            return "Error: Report is missing necessary cryptographic data (envelope, body, or nonce)."
+            raise ValueError("Report is missing necessary cryptographic data (envelope, body, or nonce).")
 
         # 3. Unwrap the symmetric report key (K_report) using the asymmetric key envelope.
         envelope = report.key_envelope
@@ -55,10 +59,12 @@ def decrypt_report_body(report: Report) -> dict | str:
 
         return json.loads(decrypted_json)
 
-    except (BinasciiError, KeyError, TypeError, ValueError) as e:
+    except (BinasciiError, KeyError, TypeError) as e:
         return f"Error: Invalid cryptographic data format. The key envelope may be corrupt. Details: {e}"
     except CryptoError:
         return "Error: Decryption failed. This might be due to a key mismatch or data corruption."
+    except ValueError as e:
+        return f"Error: Missing or invalid cryptographic data. Details: {e}"
     except Exception as e:
         return f"An unexpected error occurred during decryption: {e}"
 
@@ -132,6 +138,8 @@ class ReportAdmin(admin.ModelAdmin):
         'associated_data', 'key_envelope', 'display_decrypted_content'
     )
 
+    actions = ['run_analysis']
+
     def get_queryset(self, request):
         """
         Customizes the queryset based on user role:
@@ -169,6 +177,20 @@ class ReportAdmin(admin.ModelAdmin):
         else:
             # Display the error message in a distinct, user-friendly format
             return format_html('<p style="color: red; font-weight: bold;">{}</p>', decrypted_data)
+
+    @admin.action(description="Run AI Analysis")
+    def run_analysis(self, request, queryset):
+        """This action decrypts the selected reports and runs the AI analysis pipeline."""
+        for report in queryset:
+            if not hasattr(report, "analysis"):
+                try:
+                    decrypted_data = decrypt_report_body(report)
+                except Exception as e:
+                    logger.error(f"Failed to decrypt report {report.id}: {e}")
+                    continue
+                logger.info(f"Spawning analysis task for report {report.id}")
+                generate_analysis_task.delay(decrypted_data, str(report.id))
+
 
     def save_formset(self, request, form, formset, change):
         """
@@ -241,7 +263,8 @@ class ReportAdmin(admin.ModelAdmin):
                 encrypted_bundle = admin_to_caseworker_box.encrypt(key_bundle_json)
 
                 new_key_envelope = {
-                    "sender_ephemeral_public_key": base64.b64encode(bytes(admin_ephemeral_private_key.public_key)).decode("utf-8"),
+                    "sender_ephemeral_public_key": base64.b64encode(
+                        bytes(admin_ephemeral_private_key.public_key)).decode("utf-8"),
                     "wrapped_key_bundle": base64.b64encode(encrypted_bundle).decode("utf-8"),
                     "scheme": "x25519-xchacha20poly1305",
                 }
@@ -270,3 +293,8 @@ class ReportAssignmentAdmin(admin.ModelAdmin):
     list_display = ('report', 'assignee', 'assigned_at', 'last_access')
     search_fields = ('report__id__startswith', 'assignee__email')
     autocomplete_fields = ['report', 'assignee']
+
+
+@admin.register(AIAnalysis)
+class AIAnalysisAdmin(admin.ModelAdmin):
+    pass

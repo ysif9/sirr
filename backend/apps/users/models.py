@@ -12,11 +12,10 @@ from apps.common.models import BaseModel, UUIDModel
 # Create your models here.
 class User(UUIDModel, AbstractUser):
     """Custom user model using UUID as primary key"""
-
-    # Username is no longer used for login, email is.
-    # We keep the username field from AbstractUser but it will be populated
-    # automatically from the email address and is not exposed to investigators.
-    email = models.EmailField(_("email address"), unique=True)
+    email = models.EmailField(
+        _("email address"),
+        unique=True,
+    )
 
     is_caseworker = models.BooleanField(default=False)
     public_key_bundle = models.JSONField(null=True, blank=True)
