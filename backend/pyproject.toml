@@ -15,6 +15,23 @@ dependencies = [
   "psycopg[binary]>=3.2.10",
   "redis[hiredis]>=6.4.0",
   "pynacl>=1.6.0",
+  # --- NEW RAG-RELATED PACKAGES START ---
+  "langchain",
+  "langchain-core",
+  "langchain-community",
+  "langchain-google-genai",
+  "langgraph",
+  "python-dotenv",
+  "sentence-transformers",
+  "tavily-python", # For direct Tavily client.
+  # If you want the LangChain Tavily wrapper, install `langchain-tavily` instead/additionally:
+  # "langchain-tavily",
+  "pydantic>=1.10,<2.0", # Explicitly pin to Pydantic v1 range for existing code.
+  "docx2txt", # For Docx2txtLoader
+  "scikit-learn", # For RAPTOR clustering (if re-enabled)
+  "numpy", # Dependency for scikit-learn
+
+  # --- NEW RAG-RELATED PACKAGES END ---
 ]
 [dependency-groups]
 dev = [

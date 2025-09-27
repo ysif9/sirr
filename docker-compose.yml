@@ -1,6 +1,18 @@
 
 services:
   db:
+    container_name: sirr_db
+    image: postgres:17.5-alpine3.20
+    volumes:
+      - postgres_data_dev:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB_NAME:-sirr_dev}
+      - POSTGRES_USER=${POSTGRES_DB_USER:-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_DB_PASSWORD:-postgres}
+    ports:
+      - "${POSTGRES_HOST_PORT:-5432}:5432"
+    restart: always
+  vector_db:
     container_name: vector_db
     image: pgvector/pgvector:pg17
     volumes:
@@ -11,6 +23,114 @@ services:
       - POSTGRES_PASSWORD=${POSTGRES_DB_PASSWORD:-postgres}
     ports:
       - "${VECTOR_HOST_PORT:-5434}:5432"  # Host:Container
+    restart: always
+
+  redis:
+    container_name: sirr_redis
+    image: redis:8.2-alpine
+    volumes:
+      - redis_data_dev:/data
+    ports:
+      - "${REDIS_HOST_PORT:-6379}:6379"
+    restart: always
+
+  sirr_api:
+    container_name: sirr_api
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    volumes:
+      - ./backend:/usr/src/app
+    environment:
+      - DJANGO_SETTINGS_MODULE=core.settings
+      - POSTGRES_DB_NAME=${POSTGRES_DB_NAME:-sirr_dev}
+      - POSTGRES_DB_USER=${POSTGRES_DB_USER:-postgres}
+      - POSTGRES_DB_PASSWORD=${POSTGRES_DB_PASSWORD:-postgres}
+      - POSTGRES_DB_HOST=${POSTGRES_DB_HOST:-db}
+      - POSTGRES_DB_PORT=${POSTGRES_DB_PORT:-5432}
+      # Default superuser credentials for development
+      - DJANGO_SUPERUSER_EMAIL=${DJANGO_SUPERUSER_EMAIL:-admin@sirr.com}
+      - DJANGO_SUPERUSER_USERNAME=${DJANGO_SUPERUSER_USER:-admin}
+      - DJANGO_SUPERUSER_PASSWORD=${DJANGO_SUPERUSER_PASSWORD:-admin}
+      # Admin private key for development
+      - ADMIN_PRIVATE_KEY=${ADMIN_PRIVATE_KEY}
+      - OLLAMA_HOST=http://ollama:11434
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    command: >
+      sh -c "
+        echo 'Waiting for postgres...'
+        while ! nc -z db 5432; do
+          sleep 1
+        done
+        echo 'PostgreSQL started'
+        echo 'Waiting for redis...'
+        while ! nc -z redis 6379; do
+          sleep 1
+        done
+        echo 'Redis started'
+        python manage.py migrate --settings=core.settings
+        # Attempt to create superuser (safe to ignore if exists)
+        python manage.py createsuperuser --noinput --settings=core.settings || true
+        python manage.py runserver 0.0.0.0:8000 --settings=core.settings
+      "
+    ports:
+      - "${DJANGO_HOST_PORT:-8000}:8000"
+    depends_on:
+      - db
+      - redis
+    restart: always
+
+  ollama:
+    image: ollama/ollama:latest
+    profiles: [lm]
+    ports:
+      - "11435:11434"
+    volumes:
+      - ${OLLAMA_PATH:-/usr/share/ollama/.ollama}:/root/.ollama
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [ gpu ]
+
+  celery_worker:
+    container_name: sirr_celery
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    command: >
+      sh -c "
+        set -e
+
+        echo 'Waiting for postgres...'
+        while ! nc -z $POSTGRES_DB_HOST $POSTGRES_DB_PORT; do
+          sleep 1
+        done
+        echo 'PostgreSQL started'
+
+        echo 'Waiting for redis...'
+        while ! nc -z redis 6379; do
+          sleep 1
+        done
+        echo 'Redis started'
+
+        exec celery -A core worker -l INFO --uid=nobody --gid=nogroup
+      "
+    environment:
+      - DJANGO_SETTINGS_MODULE=core.settings
+      - POSTGRES_DB_NAME=${POSTGRES_DB_NAME:-sirr_dev}
+      - POSTGRES_DB_USER=${POSTGRES_DB_USER:-postgres}
+      - POSTGRES_DB_PASSWORD=${POSTGRES_DB_PASSWORD:-postgres}
+      - POSTGRES_DB_HOST=${POSTGRES_DB_HOST:-db}
+      - POSTGRES_DB_PORT=${POSTGRES_DB_PORT:-5432}
+    volumes:
+      - ./backend:/usr/src/app
+    depends_on:
+      - db
+      - redis
     restart: always
 
 volumes:
