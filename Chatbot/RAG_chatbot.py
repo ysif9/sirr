@@ -1,6 +1,8 @@
 import asyncio
 from pprint import pprint
-
+from langchain_community.vectorstores import PGVector
+import os
+import psycopg2
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.vectorstores import Chroma
 from langgraph.graph import END, StateGraph, START
@@ -16,9 +18,7 @@ from langchain_core.prompts import PromptTemplate
 from langchain_core.output_parsers import JsonOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.pydantic_v1 import BaseModel, Field
-from langchain_openai import ChatOpenAI
 from dotenv import load_dotenv
-from langchain.docstore.document import Document
 import os
 load_dotenv()
 
@@ -44,21 +44,33 @@ embeddings = HuggingFaceEmbeddings(model_name="intfloat/multilingual-e5-large",
                                    encode_kwargs={"normalize_embeddings": True})
 print("Embedding Model initialized.")
 # --- Vector Store ---
-print(f"Loading ChromaDB from {PERSIST_DIRECTORY}...")
+print(f"Loading data from pgvector ")
+
+
+# Load DB config (make sure these match your setup)
+PG_USER = os.getenv("POSTGRES_DB_USER", "law_user")
+PG_PASSWORD = os.getenv("POSTGRES_DB_PASSWORD", "your_secure_password")
+PG_HOST = os.getenv("PG_HOST", "localhost")
+PG_PORT = os.getenv("VECTOR_HOST_PORT", "5435")
+PG_DBNAME = os.getenv("VECTOR_DB_NAME", "vector_dev")
+COLLECTION_NAME = "egyptian_law_articles"
+
+CONNECTION_STRING = f"postgresql+psycopg2://{PG_USER}:{PG_PASSWORD}@{PG_HOST}:{PG_PORT}/{PG_DBNAME}"
+
 try:
-    vectorstore = Chroma(
-        persist_directory=PERSIST_DIRECTORY,
+    vectorstore = PGVector(
+        collection_name=COLLECTION_NAME,
+        connection_string=CONNECTION_STRING,
         embedding_function=embeddings,
-        collection_name=COLLECTION_NAME
     )
     retriever = vectorstore.as_retriever(k=6)
-    print("ChromaDB loaded and retriever created successfully.")
+    print("PGVector retriever created successfully from PostgreSQL.")
 except Exception as e:
-    print(f"Error loading ChromaDB: {e}")
-    print("Please ensure `data_loading.py` has been run at least once to create the ChromaDB.")
+    print(f"Error loading PGVector retriever: {e}")
+    print("Please ensure your database, collection, and vector embeddings exist.")
     exit()
 
-llm = ChatGoogleGenerativeAI(model="models/gemini-2.0-flash-001", temperature=0)
+llm = ChatGoogleGenerativeAI(model="models/gemini-2.0-flash", temperature=0)
 
 
 # Data model
@@ -86,10 +98,8 @@ grade_prompt = ChatPromptTemplate.from_messages(
 )
 
 relevance_grader = grade_prompt | structured_llm_grader
-#question = ("ما هي عقوبة سرقة الاثار")
 
 
-#print(relevance_grader.invoke({"question": question}))
 
 structured_llm_grader = llm.with_structured_output(GradeDocuments)
 
@@ -105,11 +115,6 @@ grade_prompt = ChatPromptTemplate.from_messages(
 )
 
 retrieval_grader = grade_prompt | structured_llm_grader
-#question = "agent memory"
-#docs = retriever.get_relevant_documents(question)
-#doc_txt = docs[1].page_content
-#print(retrieval_grader.invoke({"question": question, "document": doc_txt}))
-
 
 # Prompt
 prompt = PromptTemplate(
@@ -125,7 +130,6 @@ prompt = PromptTemplate(
 )
 
 hallucination_grader = prompt | llm | JsonOutputParser()
-#hallucination_grader.invoke({"documents": docs, "generation": generation})
 
 # Prompt
 prompt = PromptTemplate(
@@ -141,7 +145,6 @@ prompt = PromptTemplate(
 )
 
 answer_grader = prompt | llm | JsonOutputParser()
-#answer_grader.invoke({"question": question, "generation": generation})
 
 
 legal_prompt = ChatPromptTemplate.from_messages(
@@ -153,7 +156,7 @@ legal_prompt = ChatPromptTemplate.from_messages(
     ]
 )
 
-# --- LLM Setup ---
+
 llm = ChatGoogleGenerativeAI(model="models/gemini-2.0-flash", temperature=0)
 
 # --- Format documents ---
@@ -170,12 +173,6 @@ rag_chain = (
     | llm
     | StrOutputParser()
 )
-# for doc in docs:
-#     print(doc.metadata)
-
-# generation = rag_chain
-#.invoke({"context": docs, "question": question})
-# print(generation)
 
 # Prompt
 system = """You are a question rewriter that transforms user questions into optimized queries for web search.
@@ -200,7 +197,6 @@ re_write_prompt = ChatPromptTemplate.from_messages(
 )
 
 question_rewriter = re_write_prompt | llm | StrOutputParser()
-#question_rewriter.invoke({"question": question})
 
 web_search_tool = TavilySearchResults(k=2)
 
@@ -550,6 +546,7 @@ async def run_chatbot():
 
         except Exception as e:
             print(f"\n--- An error occurred during chatbot interaction: {e} ---")
+    return final_generation
 
 if __name__ == "__main__":
     asyncio.run(run_chatbot())

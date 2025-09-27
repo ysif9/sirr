@@ -1,10 +1,20 @@
 import re
-import os
+
 from typing import List, Dict
+
+from dotenv import load_dotenv
 from langchain.docstore.document import Document
 from langchain_community.document_loaders import Docx2txtLoader, DirectoryLoader
 from langchain_community.embeddings import HuggingFaceEmbeddings
-from langchain_community.vectorstores import Chroma  # Import ChromaDB
+
+
+from langchain_community.vectorstores import PGVector
+
+
+import os
+from psycopg2 import sql
+import psycopg2
+load_dotenv()
 
 
 # --- Your EgyptianLawSplitter Class (No Changes Needed Here) ---
@@ -65,15 +75,16 @@ class EgyptianLawSplitter:
         return article_chunks
 
 
+
 # --- 1. Load documents ---
-directory_path = "Data/"  # Ensure this path is correct relative to your script
+directory_path = "Data/"
 
 loader = DirectoryLoader(directory_path, glob="**/*.docx", loader_cls=Docx2txtLoader)
 raw_documents = loader.load()
 
 split_documents = []
 
-# --- 2. Split documents using EgyptianLawSplitter ---
+# --- 2. Split documents ---
 splitter_instance = EgyptianLawSplitter()
 
 for doc in raw_documents:
@@ -101,72 +112,91 @@ for doc in raw_documents:
 
 # --- 3. Initialize Embedding Model ---
 print("Initializing embedding model: intfloat/multilingual-e5-large...")
-# You might keep normalize_embeddings=True for E5 models
+
 embeddings = HuggingFaceEmbeddings(model_name="intfloat/multilingual-e5-large",
                                    encode_kwargs={"normalize_embeddings": True})
 print("Embedding model initialized.")
 
-# --- 4. Configure ChromaDB ---
-# This is the directory where ChromaDB will store its persistent files
-# Create this directory if it doesn't exist
-persist_directory = "./chroma_db"
-if not os.path.exists(persist_directory):
-    os.makedirs(persist_directory)
-    print(f"Created ChromaDB persistence directory: {persist_directory}")
 
-# --- 5. Create ChromaDB store and add documents ---
-print(f"\nInserting {len(split_documents)} chunks into ChromaDB store. This may take a while...")
+# --- 4. Create pgvector db store and add documents ---
+print(f"\nInserting {len(split_documents)} chunks into pgvector store. This may take a while...")
 
 try:
-    # If you want to clear the existing ChromaDB data each time you run:
-    # from chromadb.api import API
-    # import chromadb.utils.embedding_functions as ef
-    # from chromadb import PersistentClient
-    # client = PersistentClient(path=persist_directory)
-    # try:
-    #     client.delete_collection(name="egyptian_law_articles")
-    #     print("Cleared existing ChromaDB collection.")
-    # except Exception:
-    #     pass # Collection might not exist yet
 
-    # Create a new ChromaDB instance or load an existing one
-    vectorstore = Chroma.from_documents(
-        documents=split_documents,  # Your list of LangChain Document objects
-        embedding=embeddings,  # The embedding model
-        persist_directory=persist_directory,
-        collection_name="egyptian_law_articles"  # Name of your collection
+    # Configuration
+    PG_ADMIN_DB = os.getenv("PG_ADMIN_DB", "postgres")  # admin db to connect initially
+    PG_USER = os.getenv("POSTGRES_DB_USER", "law_user")
+    PG_PASSWORD = os.getenv("POSTGRES_DB_PASSWORD", "your_secure_password")
+    PG_HOST = os.getenv("PG_HOST", "localhost")
+    PG_PORT = os.getenv("VECTOR_HOST_PORT", "5435")
+    PG_DBNAME = os.getenv("VECTOR_DB_NAME", "egyptian_law_db")
+    COLLECTION_NAME = "egyptian_law_articles"
+
+    CONNECTION_STRING = f"postgresql+psycopg2://{PG_USER}:{PG_PASSWORD}@{PG_HOST}:{PG_PORT}/{PG_DBNAME}"
+
+
+    def create_database_if_not_exists():
+        try:
+            admin_conn = psycopg2.connect(
+                dbname=PG_ADMIN_DB,
+                user=PG_USER,
+                password=PG_PASSWORD,
+                host=PG_HOST,
+                port=PG_PORT
+            )
+            admin_conn.autocommit = True
+            admin_cur = admin_conn.cursor()
+
+            # Check if database exists
+            admin_cur.execute("SELECT 1 FROM pg_database WHERE datname = %s", (PG_DBNAME,))
+            exists = admin_cur.fetchone()
+
+            if exists:
+                print(f"Database '{PG_DBNAME}' already exists.")
+            else:
+                admin_cur.execute(sql.SQL("CREATE DATABASE {}").format(sql.Identifier(PG_DBNAME)))
+                print(f"Database '{PG_DBNAME}' created successfully.")
+
+            admin_cur.close()
+            admin_conn.close()
+        except Exception as e:
+            print(f"Error while creating database: {e}")
+            raise
+
+
+
+
+    create_database_if_not_exists()
+
+
+    vectorstore = PGVector.from_documents(
+        documents=split_documents,
+        embedding=embeddings,
+        collection_name=COLLECTION_NAME,
+        connection_string=CONNECTION_STRING,
     )
-    # This call saves the embeddings to disk
-    vectorstore.persist()
-    print(f"Successfully created ChromaDB store and inserted {len(split_documents)} chunks.")
 
-    # --- Optional: Test Retrieval ---
+    print(f"Successfully inserted {len(split_documents)} chunks into pgvector collection '{COLLECTION_NAME}'.")
+
+    print(f"Successfully created pgvector collection and inserted {len(split_documents)} chunks.")
+
+
     print("\n--- Testing vector store retrieval ---")
-    query = "ما هي شروط اكتساب الجنسية المصرية؟"  # Example query in Arabic
+    query = "ما هي شروط اكتساب الجنسية المصرية؟"
     retrieved_docs = vectorstore.similarity_search(query, k=3)
 
     print(f"Query: '{query}'")
     for i, doc in enumerate(retrieved_docs):
         print(
             f"Retrieved Document {i + 1} (Source: {doc.metadata.get('source', 'N/A')}, Article: {doc.metadata.get('article_number', 'N/A')}):")
-        print(doc.page_content[:500])  # Print first 500 characters of the retrieved content
+        print(doc.page_content[:500])
         print("-" * 20)
 
 except Exception as e:
     print(f"An error occurred during ChromaDB operation: {e}")
     print("Please ensure you have chromadb installed and sufficient disk space.")
 
-# --- 6. Print results (Optional, for debugging chunks) ---
+
 print(f"\nTotal raw documents loaded: {len(raw_documents)}")
 print(f"Total final chunks created: {len(split_documents)}")
 
-# Inspect the last 20 chunks (or adjust range)
-print("\n--- Inspecting a sample of created chunks ---")
-sample_start = max(0, len(split_documents) - 50)  # Inspect the last 50 chunks
-for i, chunk_doc in enumerate(split_documents[sample_start:], sample_start + 1):
-    print(f"\n--- Chunk {i} ---")
-    print(f"Source: {chunk_doc.metadata.get('source')}")
-    print(f"Article Number: {chunk_doc.metadata.get('article_number', 'N/A')}")
-    print(f"Metadata: {chunk_doc.metadata}")
-    print(chunk_doc.page_content[:1000])  # Print first 1000 chars
-    print("-" * 70)
