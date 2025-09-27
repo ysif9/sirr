@@ -364,14 +364,20 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         """
         generic_error = AuthenticationFailed("Invalid email or password.")
         request = self.context["request"]
-        ip_address = request.META.get("REMOTE_ADDR")
+        # Use X-Forwarded-For header if available, fall back to REMOTE_ADDR for robustness
+        ip_address = request.META.get("HTTP_X_FORWARDED_FOR", request.META.get("REMOTE_ADDR"))
+        if ip_address:
+            # Take the first IP if there's a list from proxy chaining
+            ip_address = ip_address.split(",")[0].strip()
+
         email = attrs.get(self.username_field)  # self.username_field is 'email'
 
         # 1. IP-based Rate Limiting Check
-        ip_cache_key = f"login_attempts:ip:{ip_address}"
-        ip_attempts = cache.get(ip_cache_key, 0)
-        if ip_attempts >= LOGIN_FAILURE_LIMIT_PER_IP:
-            raise generic_error
+        if ip_address:
+            ip_cache_key = f"login_attempts:ip:{ip_address}"
+            ip_attempts = cache.get(ip_cache_key, 0)
+            if ip_attempts >= LOGIN_FAILURE_LIMIT_PER_IP:
+                raise generic_error
 
         user = User.objects.filter(email=email).first()
 
@@ -397,7 +403,8 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
                 self.user.save(update_fields=["failed_login_attempts", "is_locked"])
 
             # Clear rate-limiting counters on success
-            cache.delete(ip_cache_key)
+            if ip_address:
+                cache.delete(f"login_attempts:ip:{ip_address}")
             if user:
                 cache.delete(f"login_attempts:user:{user.email}")
 
@@ -410,18 +417,29 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         except AuthenticationFailed:
             # --- FAILED LOGIN ---
             # Increment IP-based counter
-            cache.set(ip_cache_key, ip_attempts + 1, LOGIN_FAILURE_WINDOW)
+            if ip_address:
+                ip_cache_key = f"login_attempts:ip:{ip_address}"
+                ip_attempts = cache.get(ip_cache_key, 0)
+                cache.set(ip_cache_key, ip_attempts + 1, LOGIN_FAILURE_WINDOW)
 
             if user:
-                # Increment user-based counters if the user exists
+                # Increment user-based temporary counter
                 user_cache_key = f"login_attempts:user:{user.email}"
                 user_attempts = cache.get(user_cache_key, 0)
                 cache.set(user_cache_key, user_attempts + 1, LOGIN_FAILURE_WINDOW)
 
-                user.failed_login_attempts += 1
-                if user.failed_login_attempts >= ACCOUNT_LOCKOUT_THRESHOLD:
-                    user.is_locked = True
-                user.save(update_fields=["failed_login_attempts", "is_locked"])
+                # Atomically update the persistent failure counter and lock account if threshold is met
+                with transaction.atomic():
+                    # Re-fetch and lock the user row to prevent race conditions
+                    user_to_update = User.objects.select_for_update().get(pk=user.pk)
+                    user_to_update.failed_login_attempts += 1
+
+                    update_fields = ["failed_login_attempts"]
+                    if user_to_update.failed_login_attempts >= ACCOUNT_LOCKOUT_THRESHOLD:
+                        user_to_update.is_locked = True
+                        update_fields.append("is_locked")
+
+                    user_to_update.save(update_fields=update_fields)
 
             raise generic_error
 
