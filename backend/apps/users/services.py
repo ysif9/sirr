@@ -9,7 +9,7 @@ from apps.users.models import OnboardingInvitation, User
 
 @transaction.atomic
 def create_investigator_invitation(
-    *, username: str, email: str, first_name: str = "", last_name: str = ""
+    *, email: str, first_name: str = "", last_name: str = ""
 ) -> str:
     """
     Creates an inactive investigator user and a secure, single-use onboarding invitation.
@@ -18,7 +18,6 @@ def create_investigator_invitation(
     are created successfully, or neither is.
 
     Args:
-        username: The username for the new investigator.
         email: The email address for the new investigator.
         first_name: Optional first name.
         last_name: Optional last name.
@@ -27,14 +26,14 @@ def create_investigator_invitation(
         The full, single-use onboarding URL for the new investigator.
 
     Raises:
-        ValueError: If a user with the given username or email already exists.
+        ValueError: If a user with the given email already exists.
     """
-    if User.objects.filter(username=username).exists() or User.objects.filter(email=email).exists():
-        raise ValueError(f"A user with username '{username}' or email '{email}' already exists.")
+    if User.objects.filter(email=email).exists():
+        raise ValueError(f"A user with email '{email}' already exists.")
 
     # 1. Create an inactive user with an unusable password.
+    # The username will be automatically populated from the email via the model's save() method.
     user = User.objects.create(
-        username=username,
         email=email,
         first_name=first_name,
         last_name=last_name,

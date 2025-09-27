@@ -30,15 +30,39 @@ class User(UUIDModel, AbstractUser):
         default=False,
         help_text=_("Indicates if the user has completed the initial onboarding and TOTP setup."),
     )
+    failed_login_attempts = models.PositiveIntegerField(
+        _("Failed Login Attempts"),
+        default=0,
+        help_text=_("Counter for failed login attempts. Resets on successful login."),
+    )
+    is_locked = models.BooleanField(
+        _("Is Locked"),
+        default=False,
+        help_text=_("Designates if the account is locked due to too many failed login attempts."),
+    )
+    last_totp_timestamp = models.BigIntegerField(
+        _("Last TOTP Timestamp"),
+        null=True,
+        blank=True,
+        help_text=_("The Unix timestamp of the last successfully used TOTP code's time window, to prevent replay attacks."),
+    )
+
     USERNAME_FIELD = "email"
-    REQUIRED_FIELDS = []
+    REQUIRED_FIELDS = []  # email is USERNAME_FIELD so it's required by default.
 
     class Meta:
         verbose_name = _("User")
         verbose_name_plural = _("Users")
 
     def __str__(self):
-        return self.username
+        return self.email
+
+    def save(self, *args, **kwargs):
+        # For new users, populate the username field from the email.
+        # This is necessary because AbstractUser requires a unique username.
+        if self._state.adding:
+            self.username = self.email
+        super().save(*args, **kwargs)
 
 
 class OnboardingInvitation(BaseModel):
@@ -75,7 +99,7 @@ class OnboardingInvitation(BaseModel):
         return timezone.now() > self.expires_at
 
     def __str__(self) -> str:
-        return f"Invitation for {self.user.username}"
+        return f"Invitation for {self.user.email}"
 
     class Meta:
         verbose_name = _("Onboarding Invitation")
