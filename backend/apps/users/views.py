@@ -42,22 +42,22 @@ def set_auth_cookies(response: Response, access_token: str, refresh_token: str) 
     refresh_token_lifetime = settings.SIMPLE_JWT["REFRESH_TOKEN_LIFETIME"]
 
     response.set_cookie(
-        key=settings.SIMPLE_JWT["AUTH_COOKIE"],
+        key=settings.SIMPLE_JWT["AUTH_COOKIE"],  # type: ignore
         value=access_token,
-        max_age=access_token_lifetime.total_seconds(),
-        secure=settings.SIMPLE_JWT["AUTH_COOKIE_SECURE"],
-        httponly=settings.SIMPLE_JWT["AUTH_COOKIE_HTTP_ONLY"],
-        samesite=settings.SIMPLE_JWT["AUTH_COOKIE_SAMESITE"],
-        path=settings.SIMPLE_JWT["AUTH_COOKIE_PATH"],
+        max_age=access_token_lifetime.total_seconds(),  # type: ignore
+        secure=settings.SIMPLE_JWT["AUTH_COOKIE_SECURE"],  # type: ignore
+        httponly=settings.SIMPLE_JWT["AUTH_COOKIE_HTTP_ONLY"],  # type: ignore
+        samesite=settings.SIMPLE_JWT["AUTH_COOKIE_SAMESITE"],  # type: ignore
+        path=settings.SIMPLE_JWT["AUTH_COOKIE_PATH"],  # type: ignore
     )
     response.set_cookie(
-        key=settings.SIMPLE_JWT["AUTH_COOKIE_REFRESH"],
+        key=settings.SIMPLE_JWT["AUTH_COOKIE_REFRESH"],  # type: ignore
         value=refresh_token,
-        max_age=refresh_token_lifetime.total_seconds(),
-        secure=settings.SIMPLE_JWT["AUTH_COOKIE_SECURE"],
-        httponly=settings.SIMPLE_JWT["AUTH_COOKIE_HTTP_ONLY"],
-        samesite=settings.SIMPLE_JWT["AUTH_COOKIE_SAMESITE"],
-        path=settings.SIMPLE_JWT["AUTH_COOKIE_PATH"],
+        max_age=refresh_token_lifetime.total_seconds(),  # type: ignore
+        secure=settings.SIMPLE_JWT["AUTH_COOKIE_SECURE"],  # type: ignore
+        httponly=settings.SIMPLE_JWT["AUTH_COOKIE_HTTP_ONLY"],  # type: ignore
+        samesite=settings.SIMPLE_JWT["AUTH_COOKIE_SAMESITE"],  # type: ignore
+        path=settings.SIMPLE_JWT["AUTH_COOKIE_PATH"],  # type: ignore
     )
     return response
 
@@ -65,11 +65,11 @@ def set_auth_cookies(response: Response, access_token: str, refresh_token: str) 
 def unset_auth_cookies(response: Response) -> Response:
     """Removes authentication cookies from the response."""
     response.delete_cookie(
-        settings.SIMPLE_JWT["AUTH_COOKIE"], path=settings.SIMPLE_JWT["AUTH_COOKIE_PATH"]
+        settings.SIMPLE_JWT["AUTH_COOKIE"], path=settings.SIMPLE_JWT["AUTH_COOKIE_PATH"]  # type: ignore
     )
     response.delete_cookie(
-        settings.SIMPLE_JWT["AUTH_COOKIE_REFRESH"],
-        path=settings.SIMPLE_JWT["AUTH_COOKIE_PATH"],
+        settings.SIMPLE_JWT["AUTH_COOKIE_REFRESH"],  # type: ignore
+        path=settings.SIMPLE_JWT["AUTH_COOKIE_PATH"],  # type: ignore
     )
     return response
 
@@ -397,10 +397,10 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
             super().validate(attrs)
 
             # --- SUCCESSFUL PASSWORD LOGIN ---
-            if self.user.failed_login_attempts > 0 or self.user.is_locked:
-                self.user.failed_login_attempts = 0
-                self.user.is_locked = False
-                self.user.save(update_fields=["failed_login_attempts", "is_locked"])
+            if self.user.failed_login_attempts > 0 or self.user.is_locked:  # type: ignore
+                self.user.failed_login_attempts = 0  # type: ignore
+                self.user.is_locked = False  # type: ignore
+                self.user.save(update_fields=["failed_login_attempts", "is_locked"])  # type: ignore
 
             # Clear rate-limiting counters on success
             if ip_address:
@@ -410,7 +410,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
 
             # ALWAYS proceed to 2FA step for any valid user.
             # The onboarding/admin creation flows ensure TOTP is set up.
-            tfa_token = TFAToken.for_user(self.user)
+            tfa_token = TFAToken.for_user(self.user)  # type: ignore
             tfa_token.set_exp(lifetime=timedelta(minutes=5))
             return {"tfa_required": True, "tfa_token": str(tfa_token)}
 
@@ -488,7 +488,7 @@ class VerifyTOTPView(APIView):
                 raise InvalidToken("Not a valid TFA token.")
 
             user_id = untyped_token[api_settings.USER_ID_CLAIM]
-            
+
             totp_cache_key = f"totp_attempts:user:{user_id}"
             totp_attempts = cache.get(totp_cache_key, 0)
             if totp_attempts >= 5:
@@ -507,11 +507,11 @@ class VerifyTOTPView(APIView):
                 if totp.verify(totp_code, for_time=time_step, valid_window=0):
                     matched_counter = totp.timecode(time_step)
                     break
-            
+
             if matched_counter is None:
                 cache.set(totp_cache_key, totp_attempts + 1, 5 * 60)
                 return generic_error
-            
+
             if user.last_totp_timestamp and matched_counter <= user.last_totp_timestamp:
                 cache.set(totp_cache_key, totp_attempts + 1, 5 * 60)
                 return generic_error
@@ -588,6 +588,6 @@ class LogoutView(APIView):
                 token.blacklist()
             except TokenError:
                 pass  # Token is already invalid, expired, or blacklisted.
-        
+
         unset_auth_cookies(response)
         return response
