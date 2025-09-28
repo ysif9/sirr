@@ -1,64 +1,67 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { RiShining2Line } from "@remixicon/react"; // We don't need RiRobot2Line anymore
+import { RiShining2Line } from "@remixicon/react";
 import { ChatMessage } from "@/components/chatbot/chat-message";
 import { useRef, useEffect, useState, KeyboardEvent, FormEvent } from "react";
 import { SendHorizonalIcon } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { sendChatMessage, sendStreamingChatMessage, RAG_API_CONFIG } from "@/lib/rag-api";
+import ReactMarkdown from "react-markdown";
 
 type Message = {
-  id: number;
+  id: string;
   text: string;
-  sender: "user" | "chatbot";
+  sender: "user" | "assistant";
+  timestamp: Date;
+  processingTime?: number;
+  sources?: any[];
+  isStreaming?: boolean;
 };
+
+type ChatSession = {
+  sessionId: string;
+  messages: Message[];
+};
+
+
 
 const initialMessages: Message[] = [
   {
-    id: 1,
-    text: "Hey, can you tell me more about AI Agents?",
-    sender: "user",
-  },
-  {
-    id: 2,
-    text: "AI agents are software that perceive their environment and act autonomously to achieve goals. For example, an agent might schedule meetings by resolving conflicts and contacting participants, all without constant supervision.",
-    sender: "chatbot",
-  },
-  {
-    id: 3,
-    text: "All clear, thank you!",
-    sender: "user",
-  },
-  {
-    id: 4, text: "That's fascinating. How do they differ from traditional programs?", sender: "user"
-  },
-  {
-    id: 5, text: "Traditional programs follow a fixed set of instructions. AI agents, on the other hand, can learn and adapt their behavior based on new information and experiences, making them more flexible and intelligent.", sender: "chatbot"
-  },
-  {
-    id: 6, text: "Can you give me another example?", sender: "user"
-  },
-  {
-    id: 7, text: "Certainly. A Roomba vacuum cleaner is a simple AI agent. It perceives its environment (the room, obstacles, dirt) and acts autonomously (moves around, cleans) to achieve its goal (a clean floor). More complex agents manage stock portfolios or even drive cars.", sender: "chatbot"
-  },
-  {
-    id: 8, text: "Wow, the applications seem endless. Thanks for the clear explanation!", sender: "user"
+    id: 'welcome-1',
+    text: "مرحباً بك في نظام الاستشارات القانونية المصرية. كيف يمكنني مساعدتك اليوم؟",
+    sender: "assistant",
+    timestamp: new Date(),
   },
 ];
 
 export default function Chat() {
-  const [messages, setMessages] = useState<Message[]>(initialMessages);
-  const [reporterInput, setReporterInput] = useState("");
-  const [chatbotInput, setChatbotInput] = useState("");
+  const [session, setSession] = useState<ChatSession>({
+    sessionId: '',
+    messages: initialMessages
+  });
+  const [userInput, setUserInput] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [useStreaming, setUseStreaming] = useState(true);
+  const [currentStreamingMessage, setCurrentStreamingMessage] = useState<Message | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [isScrolled, setIsScrolled] = useState(false);
-  const [isTyping, setIsTyping] = useState(false);
+
+  // Initialize session ID on component mount
+  useEffect(() => {
+    if (!session.sessionId) {
+      const newSessionId = `session-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      setSession(prev => ({ ...prev, sessionId: newSessionId }));
+    }
+  }, [session.sessionId]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, isTyping]);
+  }, [session.messages, isTyping]);
 
   useEffect(() => {
     const scrollContainer = scrollContainerRef.current;
@@ -78,44 +81,193 @@ export default function Chat() {
     };
   }, []);
 
-  const handleSendMessage = (text: string, sender: "user" | "chatbot") => {
-    if (text.trim() === "") return;
-    
-    setIsTyping(false);
+  // Send message to RAG service with streaming support
+  const sendMessage = async (message: string) => {
+    if (!message.trim() || isLoading) return;
 
-    const newMessage: Message = {
-      id: Date.now(),
-      text,
-      sender,
+    setIsLoading(true);
+    setError(null);
+    setUserInput("");
+
+    // Add user message to chat
+    const userMessage: Message = {
+      id: `user-${Date.now()}`,
+      text: message.trim(),
+      sender: "user",
+      timestamp: new Date(),
     };
-    setMessages((prevMessages) => [...prevMessages, newMessage]);
 
-    if (sender === "user") {
-      setReporterInput("");
+    setSession(prev => ({
+      ...prev,
+      messages: [...prev.messages, userMessage]
+    }));
+
+    if (useStreaming) {
+      await sendStreamingMessage(message.trim());
     } else {
-      setChatbotInput("");
+      await sendRegularMessage(message.trim());
     }
   };
 
-  const handleKeyPress = (
-    e: KeyboardEvent<HTMLTextAreaElement>,
-    sender: "user" | "chatbot",
-  ) => {
+  // Regular (non-streaming) message sending
+  const sendRegularMessage = async (message: string) => {
+    setIsTyping(true);
+
+    try {
+      const data = await sendChatMessage({
+        message: message,
+        sessionId: session.sessionId,
+      });
+
+      // Add assistant response to chat
+      const assistantMessage: Message = {
+        id: `assistant-${Date.now()}`,
+        text: data.response,
+        sender: "assistant",
+        timestamp: new Date(),
+        processingTime: data.processingTime_ms,
+        sources: data.sources,
+      };
+
+      setSession(prev => ({
+        sessionId: data.sessionId || prev.sessionId,
+        messages: [...prev.messages, assistantMessage]
+      }));
+
+    } catch (error) {
+      console.error('Error sending message:', error);
+      handleMessageError();
+    } finally {
+      setIsLoading(false);
+      setIsTyping(false);
+    }
+  };
+
+  // Streaming message sending
+  const sendStreamingMessage = async (message: string) => {
+    setIsTyping(true);
+
+    // Create a placeholder message for streaming
+    const streamingMessageId = `assistant-${Date.now()}`;
+    const streamingMessage: Message = {
+      id: streamingMessageId,
+      text: '',
+      sender: "assistant",
+      timestamp: new Date(),
+      isStreaming: true,
+    };
+
+    setCurrentStreamingMessage(streamingMessage);
+    setSession(prev => ({
+      ...prev,
+      messages: [...prev.messages, streamingMessage]
+    }));
+
+    try {
+      let finalResponse = '';
+      let processingTime = 0;
+      let finalSessionId = session.sessionId;
+
+      for await (const chunk of sendStreamingChatMessage({
+        message: message,
+        sessionId: session.sessionId,
+      })) {
+        if (chunk.response) {
+          finalResponse = chunk.response;
+
+          // Update the streaming message
+          setSession(prev => ({
+            ...prev,
+            messages: prev.messages.map(msg =>
+              msg.id === streamingMessageId
+                ? { ...msg, text: finalResponse }
+                : msg
+            )
+          }));
+        }
+
+        if (chunk.processingTime_ms) {
+          processingTime = chunk.processingTime_ms;
+        }
+
+        if (chunk.sessionId) {
+          finalSessionId = chunk.sessionId;
+        }
+
+        // Handle processing steps for better UX
+        if (chunk.processingSteps) {
+          // Could show processing steps in UI if desired
+          console.log('Processing steps:', chunk.processingSteps);
+        }
+      }
+
+      // Finalize the message
+      setSession(prev => ({
+        sessionId: finalSessionId,
+        messages: prev.messages.map(msg =>
+          msg.id === streamingMessageId
+            ? {
+                ...msg,
+                text: finalResponse,
+                isStreaming: false,
+                processingTime: processingTime
+              }
+            : msg
+        )
+      }));
+
+    } catch (error) {
+      console.error('Error sending streaming message:', error);
+
+      // Remove the streaming message and add error message
+      setSession(prev => ({
+        ...prev,
+        messages: prev.messages.filter(msg => msg.id !== streamingMessageId)
+      }));
+
+      handleMessageError();
+    } finally {
+      setIsLoading(false);
+      setIsTyping(false);
+      setCurrentStreamingMessage(null);
+    }
+  };
+
+  // Handle message errors
+  const handleMessageError = () => {
+    setError('عذراً، حدث خطأ في الاتصال. يرجى المحاولة مرة أخرى.');
+
+    const errorMessage: Message = {
+      id: `error-${Date.now()}`,
+      text: 'عذراً، حدث خطأ في الاتصال. يرجى المحاولة مرة أخرى.',
+      sender: "assistant",
+      timestamp: new Date(),
+    };
+
+    setSession(prev => ({
+      ...prev,
+      messages: [...prev.messages, errorMessage]
+    }));
+  };
+
+  const handleKeyPress = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      if (sender === "user") {
-        handleSendMessage(reporterInput, "user");
-      } else {
-        handleSendMessage(chatbotInput, "chatbot");
-      }
+      sendMessage(userInput);
     }
   };
 
-  const handleDemoTyping = () => {
-    setIsTyping(true);
-    setTimeout(() => {
-      setIsTyping(false);
-    }, 3000);
+  const handleSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    sendMessage(userInput);
+  };
+
+  const clearChat = () => {
+    setSession({
+      sessionId: `session-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      messages: initialMessages
+    });
+    setError(null);
   };
 
   return (
@@ -132,45 +284,92 @@ export default function Chat() {
                 size={14}
                 aria-hidden="true"
               />
-              Today
+              الاستشارات القانونية
             </div>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={handleDemoTyping}
-              disabled={isTyping}
-            >
-              Demo Typing
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={clearChat}
+                disabled={isLoading}
+              >
+                محادثة جديدة
+              </Button>
+              <Button
+                size="sm"
+                variant={useStreaming ? "default" : "outline"}
+                onClick={() => setUseStreaming(!useStreaming)}
+                disabled={isLoading}
+              >
+                {useStreaming ? "البث المباشر" : "الرد العادي"}
+              </Button>
+            </div>
           </div>
 
+          {error && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+              {error}
+            </div>
+          )}
+
           <div className="space-y-6">
-            {messages.map((message) => (
+            {session.messages.map((message) => (
               <ChatMessage
                 key={message.id}
                 isUser={message.sender === "user"}
               >
-                <p
-                  className="whitespace-pre-wrap"
-                  style={{ wordBreak: "break-word" }}
-                >
-                  {message.text}
-                </p>
+                <div>
+                  <div className="relative">
+                    <div
+                      className="whitespace-pre-wrap prose prose-sm max-w-none"
+                      style={{ wordBreak: "break-word", direction: "rtl" }}
+                    >
+                      <ReactMarkdown
+                        components={{
+                          // Custom components for better RTL styling
+                          p: ({ children }) => <p className="mb-2 last:mb-0 text-right" dir="rtl">{children}</p>,
+                          strong: ({ children }) => <strong className="font-bold text-foreground">{children}</strong>,
+                          em: ({ children }) => <em className="italic">{children}</em>,
+                          ul: ({ children }) => <ul className="mb-2 text-right" dir="rtl" style={{ listStyleType: 'disc', paddingRight: '1.5rem', paddingLeft: '0' }}>{children}</ul>,
+                          ol: ({ children }) => <ol className="mb-2 text-right" dir="rtl" style={{ listStyleType: 'decimal', paddingRight: '1.5rem', paddingLeft: '0' }}>{children}</ol>,
+                          li: ({ children }) => <li className="mb-1 text-right" dir="rtl">{children}</li>,
+                        }}
+                      >
+                        {message.text}
+                      </ReactMarkdown>
+                      {message.isStreaming && (
+                        <span className="inline-block w-2 h-4 bg-current animate-pulse ml-1" />
+                      )}
+                    </div>
+                    {message.isStreaming && (
+                      <div className="mt-1 text-xs text-muted-foreground animate-pulse">
+                        جاري الكتابة...
+                      </div>
+                    )}
+                  </div>
+                  {message.processingTime && message.sender === "assistant" && !message.isStreaming && (
+                    <div className="mt-2 text-xs text-muted-foreground">
+                      وقت المعالجة: {Math.round(message.processingTime / 1000)} ثانية
+                    </div>
+                  )}
+                  {message.sources && message.sources.length > 0 && (
+                    <div className="mt-2 text-xs text-muted-foreground">
+                      المصادر: {message.sources.length} وثيقة
+                    </div>
+                  )}
+                </div>
               </ChatMessage>
             ))}
-            
-            {/* CORRECTED: Replicates ChatMessage layout with the correct avatar */}
+
             {isTyping && (
               <div className="flex items-end gap-3 animate-pop-in">
-                {/* Avatar from your ChatMessage component */}
                 <img
                   className="rounded-full border border-black/[0.08] shadow-sm"
                   src="https://raw.githubusercontent.com/origin-space/origin-images/refs/heads/main/exp2/user-01_i5l7tp.png"
-                  alt="Bart logo"
+                  alt="Legal Assistant"
                   width={40}
                   height={40}
                 />
-                {/* Typing indicator */}
                 <div className="typing-indicator">
                   <div className="typing-circle"></div>
                   <div className="typing-circle"></div>
@@ -186,7 +385,7 @@ export default function Chat() {
           <div ref={messagesEndRef} aria-hidden="true" className="h-4" />
         </div>
       </div>
-      
+
       <div
         aria-hidden="true"
         className={`pointer-events-none absolute left-0 right-0 top-0 h-24 bg-gradient-to-b from-background to-transparent transition-opacity duration-300 ease-in-out ${
@@ -196,66 +395,38 @@ export default function Chat() {
 
       {/* Input Area */}
       <div className="absolute bottom-0 left-0 right-0 bg-background/80 backdrop-blur-sm">
-        <div className="mx-auto grid max-w-4xl gap-4 border-t border-border p-4 md:grid-cols-2">
-          {/* Reporter (User) Input */}
+        <div className="mx-auto max-w-4xl border-t border-border p-4">
           <form
             className="flex w-full flex-col gap-2"
-            onSubmit={(e: FormEvent) => {
-              e.preventDefault();
-              handleSendMessage(reporterInput, "user");
-            }}
+            onSubmit={handleSubmit}
           >
-            <Label htmlFor="reporter-input">Reporter (User)</Label>
+            <Label htmlFor="user-input">اسأل سؤالاً قانونياً</Label>
             <div className="flex items-center gap-2">
               <Textarea
-                id="reporter-input"
-                placeholder="Type user message..."
+                id="user-input"
+                placeholder="اكتب سؤالك القانوني هنا..."
                 className="flex-1 resize-none bg-muted focus-visible:ring-1 focus-visible:ring-ring"
                 rows={2}
-                value={reporterInput}
-                onChange={(e) => setReporterInput(e.target.value)}
-                onKeyDown={(e) => handleKeyPress(e, "user")}
+                value={userInput}
+                onChange={(e) => setUserInput(e.target.value)}
+                onKeyDown={handleKeyPress}
+                disabled={isLoading}
+                dir="rtl"
               />
               <Button
                 type="submit"
                 size="icon"
-                aria-label="Send as Reporter"
-                disabled={!reporterInput.trim()}
+                aria-label="إرسال السؤال"
+                disabled={!userInput.trim() || isLoading}
               >
                 <SendHorizonalIcon className="h-5 w-5" />
               </Button>
             </div>
-          </form>
-
-          {/* Chatbot (AI) Input */}
-          <form
-            className="flex w-full flex-col gap-2"
-            onSubmit={(e: FormEvent) => {
-              e.preventDefault();
-              handleSendMessage(chatbotInput, "chatbot");
-            }}
-          >
-            <Label htmlFor="chatbot-input">Chatbot (AI)</Label>
-            <div className="flex items-center gap-2">
-              <Textarea
-                id="chatbot-input"
-                placeholder="Type AI response..."
-                className="flex-1 resize-none bg-muted focus-visible:ring-1 focus-visible:ring-ring"
-                rows={2}
-                value={chatbotInput}
-                onChange={(e) => setChatbotInput(e.target.value)}
-                onKeyDown={(e) => handleKeyPress(e, "chatbot")}
-              />
-              <Button
-                type="submit"
-                size="icon"
-                variant="secondary"
-                aria-label="Send as Chatbot"
-                disabled={!chatbotInput.trim()}
-              >
-                <SendHorizonalIcon className="h-5 w-5" />
-              </Button>
-            </div>
+            {isLoading && (
+              <div className="text-xs text-muted-foreground text-center">
+                جاري معالجة سؤالك...
+              </div>
+            )}
           </form>
         </div>
       </div>
