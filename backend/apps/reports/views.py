@@ -6,7 +6,8 @@ from typing import Any
 
 from django.conf import settings
 from django.db import transaction
-from django.db.models import Prefetch
+from django.db.models import Count, Max, Prefetch
+from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
 from nacl.exceptions import CryptoError
 from nacl.public import Box, PrivateKey, PublicKey
@@ -17,7 +18,16 @@ from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 
 from .filters import ReportFilter
-from .models import AIAnalysis, Attachment, Report, ReportAssignment, ReportCategory, ReportRedaction, ReportTemplate
+from .models import (
+    AIAnalysis,
+    Attachment,
+    Report,
+    ReportAssignment,
+    ReportCategory,
+    ReportRedaction,
+    ReportStatus,
+    ReportTemplate,
+)
 from .serializers import (
     AIAnalysisSerializer,
     AttachmentSerializer,
@@ -70,8 +80,9 @@ class ReportViewSet(viewsets.ModelViewSet):
     queryset = Report.objects.all()
     serializer_class = ReportSerializer
     filterset_class = ReportFilter
-    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
-    ordering_fields = ["created_at", "updated_at", "score", "priority"]
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter, filters.SearchFilter]
+    ordering_fields = ["created_at", "updated_at", "priority", "last_access_date"]
+    search_fields = ["id", "label"]
 
     def get_serializer_class(self):
         """
@@ -83,9 +94,9 @@ class ReportViewSet(viewsets.ModelViewSet):
         user = self.request.user
         is_caseworker_only = user.is_authenticated and user.is_caseworker and not user.is_superuser
 
-        # If the user is a caseworker (but not an admin), always use the serializer
-        # that provides the correct key envelope for them.
         if is_caseworker_only:
+            if self.action == "list":
+                return ReportListSerializer
             return CaseworkerReportSerializer
 
         # Default behavior for admins and other user types
@@ -96,22 +107,35 @@ class ReportViewSet(viewsets.ModelViewSet):
         if self.action == "assign":
             return ReportAssignmentSerializer
 
-        # For 'retrieve', 'update', etc., for an admin
         return super().get_serializer_class()
 
     def get_queryset(self):
-        """Filter reports based on assignments."""
-        queryset = Report.objects.prefetch_related(
-            Prefetch("assignments", queryset=ReportAssignment.objects.select_related("assignee"))
+        """
+        Annotates the queryset with required fields for the list view and filters
+        reports based on the user's role and assignments.
+        """
+        user = self.request.user
+
+        # Base queryset with annotations for all users
+        base_qs = Report.objects.annotate(
+            last_access_date=Max('assignments__last_access'),
+            attachment_count=Count('attachments', distinct=True)
         )
-        if self.request.user.is_superuser:
-            return queryset
 
-        if self.request.user.is_authenticated:
-            queryset = queryset.filter(assignments__assignee=self.request.user)
-            return queryset
+        if not user.is_authenticated:
+            return base_qs.none()
 
-        return queryset.none()
+        prefetch_assignments = Prefetch(
+            "assignments", queryset=ReportAssignment.objects.select_related("assignee")
+        )
+
+        if user.is_superuser:
+            return base_qs.prefetch_related(prefetch_assignments)
+
+        if user.is_caseworker:
+            return base_qs.filter(assignments__assignee=user).prefetch_related(prefetch_assignments)
+
+        return base_qs.none()
 
     def get_permissions(self):
         """Customize permissions based on action."""
@@ -130,11 +154,6 @@ class ReportViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         """
         Creates a new, end-to-end encrypted report from a multipart/form-data request.
-
-        This endpoint expects:
-        - `payload`: A JSON string with cryptographic metadata for the report and its attachments.
-        - File uploads: Encrypted file blobs, with form field names matching the `id`
-          specified in the attachment metadata within the payload.
         """
         payload_str = request.data.get("payload")
         if not payload_str:
@@ -152,13 +171,11 @@ class ReportViewSet(viewsets.ModelViewSet):
         attachments_metadata = validated_data.pop("attachments", [])
 
         with transaction.atomic():
-            # Create the main Report record with its encrypted body
             report = Report.objects.create(
                 access_key=secrets.token_hex(16),
                 **validated_data,
             )
 
-            # Create Attachment records for each uploaded file
             for meta in attachments_metadata:
                 attachment_id = meta.pop("id")
                 uploaded_file = request.FILES.get(attachment_id)
@@ -168,7 +185,7 @@ class ReportViewSet(viewsets.ModelViewSet):
                 Attachment.objects.create(
                     report=report,
                     file=uploaded_file,
-                    **meta,  # Unpack nonce, key_envelope, checksum
+                    **meta,
                 )
 
         response_serializer = ReportCreationResponseSerializer(report)
@@ -179,14 +196,35 @@ class ReportViewSet(viewsets.ModelViewSet):
             headers=headers
         )
 
+    def retrieve(self, request, *args, **kwargs):
+        """
+        Retrieves a report and updates its status and access time if it's the first access.
+        """
+        report = self.get_object()
+        user = request.user
+
+        if user.is_authenticated and (user.is_caseworker or user.is_superuser):
+            with transaction.atomic():
+                if user.is_caseworker:
+                    assignment = ReportAssignment.objects.filter(report=report, assignee=user).first()
+                    if assignment:
+                        assignment.last_access = timezone.now()
+                        assignment.save(update_fields=['last_access'])
+
+                if report.status == ReportStatus.NEW:
+                    report.status = ReportStatus.OPENED
+                    report.save(update_fields=['status'])
+
+        serializer = self.get_serializer(report)
+        return Response(serializer.data)
+
+
     @action(detail=True, methods=["post"], url_path="assign")
     def assign(self, request, pk=None):
         """
         Assigns a report to a caseworker, re-encrypting the report and attachment keys for them.
         """
         report = self.get_object()
-
-        # --- Step A (Validation) ---
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         assignee = serializer.validated_data["assignee"]
@@ -206,7 +244,6 @@ class ReportViewSet(viewsets.ModelViewSet):
             raise ValidationError("Server configuration error: Could not load the admin private key.")
 
         with transaction.atomic():
-            # --- Step B (Decryption of All Keys) ---
             try:
                 report_envelope = report.key_envelope
                 reporter_ephem_pk_b64 = report_envelope["reporter_ephemeral_public_key"]
@@ -234,7 +271,6 @@ class ReportViewSet(viewsets.ModelViewSet):
             except (BinasciiError, CryptoError):
                 raise ValidationError("Failed to decrypt original report keys. The key envelope may be corrupt.")
 
-            # --- Step C (Key Bundling & Re-Encryption) ---
             try:
                 caseworker_pk_b64 = assignee.public_key_bundle["identity_key_x25519"]
                 caseworker_pk = PublicKey(base64.b64decode(caseworker_pk_b64))
@@ -251,7 +287,6 @@ class ReportViewSet(viewsets.ModelViewSet):
             except (KeyError, BinasciiError, CryptoError):
                 raise ValidationError("Failed to re-encrypt keys for caseworker. Their public key may be invalid.")
 
-            # --- Step D (Database Transaction) ---
             assignment, _ = ReportAssignment.objects.update_or_create(
                 report=report,
                 assignee=assignee,

@@ -6,6 +6,7 @@ import { useLanguage } from "../contexts/LanguageContext"
 import FollowUpModal from "./FollowUpModal"
 import BlurText from "./BlurText"
 import { Squircle } from "@squircle-js/react"
+import Link from "next/link" // <-- Import the Link component
 
 interface HeroProps {
   onNavigate: (page: string) => void
@@ -53,6 +54,22 @@ const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
                 {t("followUpOnReport")}
               </Squircle>
             </button>
+
+            {/* === New Chatbot Button START === */}
+            <Link
+              href="/legal-aid-chat"
+              className="group w-full sm:w-auto transition-all duration-300 ease-out transform hover:scale-[1.02] hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
+            >
+              <Squircle
+                cornerRadius={12}
+                cornerSmoothing={1}
+                className="border border-sky-400/30 group-hover:bg-sky-400/10 group-hover:border-sky-400/40 text-sky-300 font-semibold py-4 px-10 text-lg group-hover:shadow-lg group-hover:shadow-sky-400/5 transition-all duration-300 ease-out"
+              >
+                Legal Aid Chatbot
+              </Squircle>
+            </Link>
+            {/* === New Chatbot Button END === */}
+            
           </div>
           <div className="mt-6 pt-8 max-w-2xl mx-auto text-xs text-gray-400">
             <p>
@@ -70,4 +87,3 @@ const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
 }
 
 export default Hero
-

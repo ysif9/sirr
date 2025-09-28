@@ -20,7 +20,13 @@ dependencies = [
   "argon2-cffi>=25.1.0",
   "bcrypt>=4.3.0",
   "pyotp>=2.9.0",
-  "litellm==1.77.1"
+  "litellm==1.77.1",
+  "dotenv>=0.9.9",
+  "langchain>=0.3.27",
+  "langchain-community>=0.3.30",
+  "langchain-google-genai>=2.1.12",
+  "docx2txt>=0.9",
+  "pgvector>=0.4.1",
 ]
 [dependency-groups]
 dev = [
@@ -135,6 +141,8 @@ down = { cmd = "docker compose -f ../docker-compose.yml --profile lm down --remo
 # Only run this if you want to drop the database and start from scratch.
 clean = { cmd = "docker compose -f ../docker-compose.yml --profile lm down --remove-orphans -v", help = "Docker down and dropping volumes/database" }
 createsuperuser = { cmd = "docker compose -f ../docker-compose.yml exec sirr_api python manage.py createsuperuser --settings=core.settings", help = "Create a Django superuser inside the API container." }
+# Vector embeddings initialization tasks
+loadvectors = { cmd = "uv run chatbot/data_loading.py", help = "Load vector embeddings into the database." }
 create_test_admin = { cmd = "docker compose -f ../docker-compose.yml exec sirr_api python manage.py create_admin_with_keys", help = "Automated creation of an admin with a new keypair." }
 create_test_caseworker = { cmd = "docker compose -f ../docker-compose.yml exec sirr_api python manage.py create_test_caseworker", help = "Automated creation of a caseworker with a new keypair." }
 create_investigator_invitation = { cmd = "docker compose -f ../docker-compose.yml exec sirr_api python manage.py create_investigator_invitation", help = "Creates an inactive investigator and generates an onboarding invitation." }

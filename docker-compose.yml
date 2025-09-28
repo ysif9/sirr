@@ -1,3 +1,4 @@
+
 services:
   db:
     container_name: sirr_db
@@ -10,6 +11,18 @@ services:
       - POSTGRES_PASSWORD=${POSTGRES_DB_PASSWORD:-postgres}
     ports:
       - "${POSTGRES_HOST_PORT:-5432}:5432"
+    restart: always
+  vector_db:
+    container_name: vector_db
+    image: pgvector/pgvector:pg17
+    volumes:
+      - vector_data_dev:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=${VECTOR_DB_NAME:-vector_dev}
+      - POSTGRES_USER=${POSTGRES_DB_USER:-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_DB_PASSWORD:-postgres}
+    ports:
+      - "${VECTOR_HOST_PORT:-5434}:5432"  # Host:Container
     restart: always
 
   redis:
@@ -122,4 +135,5 @@ services:
 
 volumes:
   postgres_data_dev:
+  vector_data_dev:
   redis_data_dev:
