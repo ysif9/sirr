@@ -47,7 +47,6 @@ class EgyptianLawSplitter:
         article_chunks = []  # type: ignore
 
         leading_text_buffer = []  # type: ignore
-        last_match_end = 0
 
         for i, match in enumerate(matches):
             current_article_start = match.start()
@@ -65,7 +64,6 @@ class EgyptianLawSplitter:
                     leading_text_buffer.clear()  # Clear buffer as it's been used
                 article_chunks.append(chunk_content)
 
-            last_match_end = next_article_start
 
         # --- Final handling of leading_text_buffer if no articles were found or it remains un-prepended ---
         if not article_chunks and leading_text_buffer:
