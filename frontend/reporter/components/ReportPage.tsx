@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation"
 import { useLanguage } from "../contexts/LanguageContext"
 import { CategoryCard } from "./CategoryCard"
 import { ArrowLeftIcon } from "./icons/ArrowLeftIcon"
-import { Squircle } from "@squircle-js/react"
 import { getReportTypes, getCategoriesForReportType, getFormsForCategory, FormDefinition } from "@/lib/crime-forms"
 
 const reportTypes = getReportTypes()
@@ -125,14 +124,12 @@ const ReportPage: React.FC<{ onNavigate: (page: string) => void }> = ({ onNaviga
       <header className="pt-24 pb-4 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto flex items-center">
           <button onClick={handleBack} className="group mr-2 focus:outline-none" aria-label={t("backButton")}>
-            <Squircle
-              cornerRadius={10}
-              cornerSmoothing={1}
-              className="flex items-center gap-2 text-gray-400 group-hover:text-white transition-colors p-2 group-hover:bg-gray-500 group-hover:bg-opacity-20"
+            <div
+              className="flex items-center gap-2 text-gray-400 group-hover:text-white transition-colors p-2 group-hover:bg-gray-500 group-hover:bg-opacity-20 rounded-lg"
             >
               <ArrowLeftIcon className="w-5 h-5" />
               <span>{t("backButton")}</span>
-            </Squircle>
+            </div>
           </button>
         </div>
       </header>

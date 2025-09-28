@@ -5,7 +5,6 @@ import { useEffect, useState } from "react"
 import { getFormDefinition, FormDefinition } from "@/lib/crime-forms"
 import CrimeReportForm from "@/components/report/CrimeReportForm"
 import { ArrowLeftIcon } from "@/components/icons/ArrowLeftIcon"
-import { Squircle } from "@squircle-js/react"
 import { useLanguage } from "@/contexts/LanguageContext"
 
 export default function ReportFormPage() {
@@ -52,14 +51,12 @@ export default function ReportFormPage() {
             className="group mr-2 focus:outline-none"
             aria-label={t("backButton")}
           >
-            <Squircle
-              cornerRadius={10}
-              cornerSmoothing={1}
-              className="flex items-center gap-2 text-gray-400 group-hover:text-white transition-colors p-2 group-hover:bg-gray-500 group-hover:bg-opacity-20"
+            <div
+              className="flex items-center gap-2 text-gray-400 group-hover:text-white transition-colors p-2 group-hover:bg-gray-500 group-hover:bg-opacity-20 rounded-lg"
             >
               <ArrowLeftIcon className="w-5 h-5" />
               <span>{t("backButton")}</span>
-            </Squircle>
+            </div>
           </button>
         </div>
       </header>
