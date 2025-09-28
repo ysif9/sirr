@@ -1,6 +1,5 @@
 import os
 import re
-import warnings
 from pathlib import Path
 from typing import List
 
@@ -13,13 +12,6 @@ from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from psycopg import sql
 
 load_dotenv()
-
-# Issue deprecation warning
-warnings.warn(
-    "This data_loading.py script is deprecated. Use 'python scripts/init_vector_embeddings.py' or 'poe init-vectors' instead.",
-    DeprecationWarning,
-    stacklevel=2
-)
 
 
 # --- Your EgyptianLawSplitter Class (No Changes Needed Here) ---
@@ -64,7 +56,6 @@ class EgyptianLawSplitter:
                     leading_text_buffer.clear()  # Clear buffer as it's been used
                 article_chunks.append(chunk_content)
 
-
         # --- Final handling of leading_text_buffer if no articles were found or it remains un-prepended ---
         if not article_chunks and leading_text_buffer:
             # If no articles were found at all, and there's leading text, make it one chunk
@@ -76,7 +67,6 @@ class EgyptianLawSplitter:
             leading_text_buffer.clear()
 
         return article_chunks
-
 
 
 # --- 1. Load documents ---
@@ -128,7 +118,6 @@ embeddings = GoogleGenerativeAIEmbeddings(
 )
 print("Google Gemini embedding model initialized.")
 
-
 # --- 4. Create pgvector db store and add documents ---
 print(f"\nInserting {len(split_documents)} chunks into pgvector store. This may take a while...")
 
@@ -175,10 +164,7 @@ try:
             raise
 
 
-
-
     create_database_if_not_exists()
-
 
     vectorstore = PGVector.from_documents(
         documents=split_documents,
@@ -190,7 +176,6 @@ try:
     print(f"Successfully inserted {len(split_documents)} chunks into pgvector collection '{COLLECTION_NAME}'.")
 
     print(f"Successfully created pgvector collection and inserted {len(split_documents)} chunks.")
-
 
     print("\n--- Testing vector store retrieval ---")
     query = "ما هي شروط اكتساب الجنسية المصرية؟"
@@ -207,7 +192,5 @@ except Exception as e:
     print(f"An error occurred during pgvector operation: {e}")
     print("Please ensure you have pgvector installed and sufficient disk space.")
 
-
 print(f"\nTotal raw documents loaded: {len(raw_documents)}")
 print(f"Total final chunks created: {len(split_documents)}")
-
