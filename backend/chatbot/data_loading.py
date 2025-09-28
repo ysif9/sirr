@@ -1,6 +1,7 @@
 import os
 import re
 import warnings
+from pathlib import Path
 from typing import List
 
 import psycopg
@@ -81,7 +82,8 @@ class EgyptianLawSplitter:
 
 
 # --- 1. Load documents ---
-directory_path = "./Data/"
+BASE_DIR = Path(__file__).resolve().parent
+directory_path = BASE_DIR / "Data"
 
 loader = DirectoryLoader(directory_path, glob="**/*.docx", loader_cls=Docx2txtLoader)  # type: ignore
 raw_documents = loader.load()
