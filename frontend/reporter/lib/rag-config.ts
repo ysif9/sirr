@@ -20,9 +20,9 @@ export function getRAGConfig(): RAGConfig {
     tavilyApiKey: process.env.TAVILY_API_KEY || '',
     vectorStore: {
       host: 'localhost',
-      port: 5432,
-      database: 'sirr_dev',
-      username: 'postgres',
+      port: parseInt(process.env.VECTOR_HOST_PORT || '5434'),
+      database: process.env.VECTOR_DB_NAME || 'vector_dev',
+      username: process.env.POSTGRES_DB_USER || 'postgres',
       password: process.env.POSTGRES_DB_PASSWORD || '',
       collectionName: 'egyptian_law_articles',
     },

@@ -16,7 +16,7 @@ services:
     container_name: vector_db
     image: pgvector/pgvector:pg17
     volumes:
-      - postgres_data_dev:/var/lib/postgresql/data
+      - vector_data_dev:/var/lib/postgresql/data
     environment:
       - POSTGRES_DB=${VECTOR_DB_NAME:-vector_dev}
       - POSTGRES_USER=${POSTGRES_DB_USER:-postgres}
@@ -135,4 +135,5 @@ services:
 
 volumes:
   postgres_data_dev:
+  vector_data_dev:
   redis_data_dev:

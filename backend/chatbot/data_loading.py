@@ -1,20 +1,24 @@
+import os
 import re
+import warnings
+from typing import List
 
-from typing import List, Dict
-
+import psycopg
 from dotenv import load_dotenv
 from langchain.docstore.document import Document
-from langchain_community.document_loaders import Docx2txtLoader, DirectoryLoader
-from langchain_community.embeddings import HuggingFaceEmbeddings
-
-
+from langchain_community.document_loaders import DirectoryLoader, Docx2txtLoader
 from langchain_community.vectorstores import PGVector
+from langchain_google_genai import GoogleGenerativeAIEmbeddings
+from psycopg import sql
 
-
-import os
-from psycopg2 import sql
-import psycopg2
 load_dotenv()
+
+# Issue deprecation warning
+warnings.warn(
+    "This data_loading.py script is deprecated. Use 'python scripts/init_vector_embeddings.py' or 'poe init-vectors' instead.",
+    DeprecationWarning,
+    stacklevel=2
+)
 
 
 # --- Your EgyptianLawSplitter Class (No Changes Needed Here) ---
@@ -39,9 +43,9 @@ class EgyptianLawSplitter:
 
     def split_text(self, text: str) -> List[str]:
         matches = list(self.article_pattern.finditer(text))
-        article_chunks = []
+        article_chunks = []  # type: ignore
 
-        leading_text_buffer = []
+        leading_text_buffer = []  # type: ignore
         last_match_end = 0
 
         for i, match in enumerate(matches):
@@ -77,9 +81,9 @@ class EgyptianLawSplitter:
 
 
 # --- 1. Load documents ---
-directory_path = "Data/"
+directory_path = "./Data/"
 
-loader = DirectoryLoader(directory_path, glob="**/*.docx", loader_cls=Docx2txtLoader)
+loader = DirectoryLoader(directory_path, glob="**/*.docx", loader_cls=Docx2txtLoader)  # type: ignore
 raw_documents = loader.load()
 
 split_documents = []
@@ -111,11 +115,18 @@ for doc in raw_documents:
         ))
 
 # --- 3. Initialize Embedding Model ---
-print("Initializing embedding model: intfloat/multilingual-e5-large...")
+print("Initializing Google Gemini embedding model...")
 
-embeddings = HuggingFaceEmbeddings(model_name="intfloat/multilingual-e5-large",
-                                   encode_kwargs={"normalize_embeddings": True})
-print("Embedding model initialized.")
+# Get Google API key from environment
+google_api_key = os.getenv("GOOGLE_API_KEY")
+if not google_api_key:
+    raise ValueError("GOOGLE_API_KEY environment variable is required")
+
+embeddings = GoogleGenerativeAIEmbeddings(
+    model="gemini-embedding-001",
+    google_api_key=google_api_key  # type: ignore
+)
+print("Google Gemini embedding model initialized.")
 
 
 # --- 4. Create pgvector db store and add documents ---
@@ -132,12 +143,12 @@ try:
     PG_DBNAME = os.getenv("VECTOR_DB_NAME", "egyptian_law_db")
     COLLECTION_NAME = "egyptian_law_articles"
 
-    CONNECTION_STRING = f"postgresql+psycopg2://{PG_USER}:{PG_PASSWORD}@{PG_HOST}:{PG_PORT}/{PG_DBNAME}"
+    CONNECTION_STRING = f"postgresql+psycopg://{PG_USER}:{PG_PASSWORD}@{PG_HOST}:{PG_PORT}/{PG_DBNAME}"
 
 
     def create_database_if_not_exists():
         try:
-            admin_conn = psycopg2.connect(
+            admin_conn = psycopg.connect(
                 dbname=PG_ADMIN_DB,
                 user=PG_USER,
                 password=PG_PASSWORD,
@@ -193,8 +204,8 @@ try:
         print("-" * 20)
 
 except Exception as e:
-    print(f"An error occurred during ChromaDB operation: {e}")
-    print("Please ensure you have chromadb installed and sufficient disk space.")
+    print(f"An error occurred during pgvector operation: {e}")
+    print("Please ensure you have pgvector installed and sufficient disk space.")
 
 
 print(f"\nTotal raw documents loaded: {len(raw_documents)}")

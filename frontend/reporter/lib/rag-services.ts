@@ -4,8 +4,9 @@
 
 import { ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings } from '@langchain/google-genai';
 import { TaskType } from '@google/generative-ai';
+import { PGVectorStore } from '@langchain/community/vectorstores/pgvector';
 import axios from 'axios';
-import { Document, SearchResult, GradeResult, RAGConfig, LLMError, WebSearchError, PROMPT_TEMPLATES } from './rag-types';
+import { Document, SearchResult, GradeResult, RAGConfig, LLMError, WebSearchError, VectorStoreError, PROMPT_TEMPLATES } from './rag-types';
 
 /**
  * LLM Service using Google Gemini
@@ -171,138 +172,133 @@ export class WebSearchService {
 }
 
 /**
- * Google Gemini embeddings-based vector store
+ * PostgreSQL PGVector-based vector store using Google Gemini embeddings
  */
-export class GeminiVectorStore {
-  private documents: Document[] = [];
+export class PostgreSQLVectorStore {
   private embeddings: GoogleGenerativeAIEmbeddings;
-  private documentEmbeddings: number[][] = [];
+  private vectorStore: PGVectorStore | null = null;
+  private isInitialized: boolean = false;
 
   constructor(private config: RAGConfig) {
     this.embeddings = new GoogleGenerativeAIEmbeddings({
-      model: "text-embedding-004",
+      model: "gemini-embedding-001",
       taskType: TaskType.RETRIEVAL_DOCUMENT,
       apiKey: config.googleApiKey,
     });
 
-    // Initialize with some sample Egyptian legal documents
-    this.documents = [
-      {
-        pageContent: "حقوق المستأجر في القانون المصري تشمل الحق في الانتفاع بالعين المؤجرة والحق في الحماية من الطرد التعسفي. يحق للمستأجر استخدام العين المؤجرة للغرض المتفق عليه في العقد.",
-        metadata: { source: "قانون الإيجار المصري", title: "حقوق المستأجر", type: "legal_article" }
-      },
-      {
-        pageContent: "التزامات المؤجر تشمل تسليم العين المؤجرة في حالة صالحة للانتفاع والقيام بالصيانة اللازمة. كما يلتزم المؤجر بعدم التدخل في انتفاع المستأجر بالعين المؤجرة.",
-        metadata: { source: "قانون الإيجار المصري", title: "التزامات المؤجر", type: "legal_article" }
-      },
-      {
-        pageContent: "عقد العمل في القانون المصري يحدد حقوق والتزامات كل من العامل وصاحب العمل. يحق للعامل الحصول على أجر عادل وإجازات سنوية وحماية من الفصل التعسفي.",
-        metadata: { source: "قانون العمل المصري", title: "عقد العمل", type: "legal_article" }
-      },
-      {
-        pageContent: "الزواج في القانون المصري يتطلب توافر شروط معينة منها الأهلية والرضا وعدم وجود موانع شرعية أو قانونية. يجب توثيق عقد الزواج لدى المأذون المختص.",
-        metadata: { source: "قانون الأحوال الشخصية", title: "الزواج", type: "legal_article" }
-      },
-      {
-        pageContent: "الطلاق في القانون المصري له أنواع مختلفة منها الطلاق الرجعي والطلاق البائن. للمطلقة حقوق مالية تشمل النفقة والمتعة ونفقة العدة.",
-        metadata: { source: "قانون الأحوال الشخصية", title: "الطلاق", type: "legal_article" }
-      }
-    ];
-
-    // Initialize embeddings for documents
-    this.initializeEmbeddings();
+    // Initialize connection to PostgreSQL
+    this.initializeVectorStore();
   }
 
-  private async initializeEmbeddings(): Promise<void> {
+  private async initializeVectorStore(): Promise<void> {
     try {
-      const documentTexts = this.documents.map(doc => doc.pageContent);
-      this.documentEmbeddings = await this.embeddings.embedDocuments(documentTexts);
-      console.log('Document embeddings initialized successfully');
+      console.log('Initializing PostgreSQL vector store connection...');
+
+      const connectionString = `postgresql://${this.config.vectorStore.username}:${this.config.vectorStore.password}@${this.config.vectorStore.host}:${this.config.vectorStore.port}/${this.config.vectorStore.database}`;
+
+      this.vectorStore = new PGVectorStore(this.embeddings, {
+        postgresConnectionOptions: {
+          connectionString,
+        },
+        tableName: "langchain_pg_embedding",
+        collectionName: this.config.vectorStore.collectionName,
+        collectionTableName: "langchain_pg_collection",
+        columns: {
+          idColumnName: "id",
+          vectorColumnName: "embedding",
+          contentColumnName: "document",
+          metadataColumnName: "metadata",
+        },
+      });
+
+      this.isInitialized = true;
+      console.log('PostgreSQL vector store initialized successfully');
     } catch (error) {
-      console.error('Error initializing document embeddings:', error);
-      // Fallback to empty embeddings array
-      this.documentEmbeddings = [];
+      console.error('Error initializing PostgreSQL vector store:', error);
+      this.isInitialized = false;
     }
-  }
-
-  private cosineSimilarity(a: number[], b: number[]): number {
-    if (a.length !== b.length) return 0;
-
-    let dotProduct = 0;
-    let normA = 0;
-    let normB = 0;
-
-    for (let i = 0; i < a.length; i++) {
-      dotProduct += a[i] * b[i];
-      normA += a[i] * a[i];
-      normB += b[i] * b[i];
-    }
-
-    return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
   }
 
   async similaritySearch(query: string, k: number = 6): Promise<Document[]> {
     try {
-      // If embeddings are not initialized yet, wait for them
-      if (this.documentEmbeddings.length === 0) {
-        await this.initializeEmbeddings();
+      // Check if vector store is initialized
+      if (!this.isInitialized || !this.vectorStore) {
+        console.warn('Vector store not initialized, attempting to reinitialize...');
+        await this.initializeVectorStore();
+
+        if (!this.isInitialized || !this.vectorStore) {
+          throw new VectorStoreError('Failed to initialize PostgreSQL vector store');
+        }
       }
 
-      // If still no embeddings, fallback to keyword search
-      if (this.documentEmbeddings.length === 0) {
-        return this.fallbackKeywordSearch(query, k);
-      }
+      console.log(`Performing similarity search for query: "${query}" with k=${k}`);
 
-      // Generate query embedding
-      const queryEmbedding = await this.embeddings.embedQuery(query);
+      // Perform similarity search using PGVector
+      const results = await this.vectorStore.similaritySearch(query, k);
 
-      // Calculate similarities
-      const scoredDocs = this.documents.map((doc, index) => {
-        const similarity = this.cosineSimilarity(queryEmbedding, this.documentEmbeddings[index]);
-        return { doc, score: similarity };
+      console.log(`Retrieved ${results.length} documents from PostgreSQL vector store`);
+
+      // Filter by score threshold if available
+      const filteredResults = results.filter(doc => {
+        const score = doc.metadata?.score || 1.0;
+        return score >= this.config.retriever.scoreThreshold;
       });
 
-      // Filter by score threshold and return top k
-      return scoredDocs
-        .filter(item => item.score >= this.config.retriever.scoreThreshold)
-        .sort((a, b) => b.score - a.score)
-        .slice(0, k)
-        .map(item => ({
-          ...item.doc,
-          metadata: { ...item.doc.metadata, score: item.score }
-        }));
+      console.log(`Filtered to ${filteredResults.length} documents above threshold ${this.config.retriever.scoreThreshold}`);
+
+      return filteredResults;
     } catch (error) {
-      console.error('Error in similarity search:', error);
-      // Fallback to keyword search
-      return this.fallbackKeywordSearch(query, k);
+      console.error('Error in PostgreSQL similarity search:', error);
+
+      // Fallback to sample documents for development/testing
+      return this.fallbackSampleDocuments(query, k);
     }
   }
 
-  private fallbackKeywordSearch(query: string, k: number): Document[] {
-    console.log('Using fallback keyword search');
-    const queryWords = query.toLowerCase().split(' ');
+  private fallbackSampleDocuments(query: string, k: number): Document[] {
+    console.log('Using fallback sample documents due to database connection issues');
 
-    const scoredDocs = this.documents.map(doc => {
+    // Sample Egyptian legal documents for fallback
+    const sampleDocuments: Document[] = [
+      {
+        pageContent: "حقوق المستأجر في القانون المصري تشمل الحق في الانتفاع بالعين المؤجرة والحق في الحماية من الطرد التعسفي. يحق للمستأجر استخدام العين المؤجرة للغرض المتفق عليه في العقد.",
+        metadata: { source: "قانون الإيجار المصري", title: "حقوق المستأجر", type: "legal_article", score: 0.8 }
+      },
+      {
+        pageContent: "التزامات المؤجر تشمل تسليم العين المؤجرة في حالة صالحة للانتفاع والقيام بالصيانة اللازمة. كما يلتزم المؤجر بعدم التدخل في انتفاع المستأجر بالعين المؤجرة.",
+        metadata: { source: "قانون الإيجار المصري", title: "التزامات المؤجر", type: "legal_article", score: 0.7 }
+      },
+      {
+        pageContent: "عقد العمل في القانون المصري يحدد حقوق والتزامات كل من العامل وصاحب العمل. يحق للعامل الحصول على أجر عادل وإجازات سنوية وحماية من الفصل التعسفي.",
+        metadata: { source: "قانون العمل المصري", title: "عقد العمل", type: "legal_article", score: 0.6 }
+      }
+    ];
+
+    // Simple keyword matching for fallback
+    const queryWords = query.toLowerCase().split(' ');
+    const scoredDocs = sampleDocuments.map(doc => {
       const content = doc.pageContent.toLowerCase();
-      let score = 0;
+      let matchScore = 0;
 
       queryWords.forEach(word => {
         if (content.includes(word)) {
-          score += 1;
+          matchScore += 1;
         }
       });
 
-      return { doc, score };
+      return {
+        ...doc,
+        metadata: {
+          ...doc.metadata,
+          score: matchScore > 0 ? doc.metadata.score : 0.1
+        }
+      };
     });
 
     return scoredDocs
-      .filter(item => item.score > 0)
-      .sort((a, b) => b.score - a.score)
-      .slice(0, k)
-      .map(item => ({
-        ...item.doc,
-        metadata: { ...item.doc.metadata, score: item.score }
-      }));
+      .filter(doc => (doc.metadata.score || 0) >= 0.1)
+      .sort((a, b) => (b.metadata.score || 0) - (a.metadata.score || 0))
+      .slice(0, k);
   }
 }
 
@@ -312,12 +308,12 @@ export class GeminiVectorStore {
 export class RAGWorkflowService {
   private llmService: LLMService;
   private webSearchService: WebSearchService;
-  private vectorStore: GeminiVectorStore;
+  private vectorStore: PostgreSQLVectorStore;
 
   constructor(config: RAGConfig) {
     this.llmService = new LLMService(config);
     this.webSearchService = new WebSearchService(config);
-    this.vectorStore = new GeminiVectorStore(config);
+    this.vectorStore = new PostgreSQLVectorStore(config);
   }
 
   async processQuery(question: string): Promise<string> {
