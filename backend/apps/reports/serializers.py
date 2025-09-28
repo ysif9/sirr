@@ -1,6 +1,7 @@
 import base64
 from binascii import Error as BinasciiError
 
+from django.db.models import Max
 from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
@@ -118,26 +119,18 @@ class EncryptedReportCreationSerializer(serializers.Serializer):
 
 
 class ReportSerializer(serializers.ModelSerializer):
-    # This class definition should already exist
     class Meta:
         model = Report
         fields = [
-            "id",
-            "template",
-            "access_key",
-            "encrypted_body", # This field is important
-            "key_envelope",
-            "body_nonce",     # This field is important
-            "associated_data",
-            "status",
-            "score",
-            "priority",
-            "last_access_by_reporter",
-            "expires_at",
-            "created_at", # Ensure created_at is here
+            "id", "template", "access_key", "encrypted_body", "key_envelope",
+            "body_nonce", "associated_data", "status", "score", "priority",
+            "last_access_by_reporter", "expires_at", "created_at",
+            "important", "label",
         ]
-        read_only_fields = ["id", "access_key", "score", "last_access_by_reporter", "expires_at", "created_at",
-                            "updated_at"]
+        read_only_fields = [
+            "id", "access_key", "score", "last_access_by_reporter",
+            "expires_at", "created_at", "updated_at",
+        ]
 
 
 class CaseworkerReportSerializer(ReportSerializer):
@@ -151,6 +144,7 @@ class CaseworkerReportSerializer(ReportSerializer):
     class Meta(ReportSerializer.Meta):
         # Explicitly inherit fields and add 'attachments' for the detail view.
         fields = ReportSerializer.Meta.fields + ["attachments"]
+        read_only_fields = ReportSerializer.Meta.read_only_fields
 
     def get_key_envelope(self, obj: Report) -> dict | None:
         """
@@ -172,15 +166,20 @@ class ReportListSerializer(serializers.ModelSerializer):
     Serializer for the list view of reports, providing the fields
     required by the investigator portal's main table.
     """
+    # These fields are added via annotations in the viewset's get_queryset
+    last_access_date = serializers.DateTimeField(read_only=True)
+    attachment_count = serializers.IntegerField(read_only=True)
+
     class Meta:
         model = Report
         fields = [
             "id",
-            "created_at",
+            "important",
+            "label",
             "status",
-            "score",
-            "last_access_by_reporter",
-            "priority", # Included for potential sorting/filtering
+            "created_at",  # Submission Date
+            "last_access_date",
+            "attachment_count",
         ]
 
 

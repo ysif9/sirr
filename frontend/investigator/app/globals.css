@@ -120,3 +120,8 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Custom styles for AG-Grid placeholder text */
+.ag-cell.italic {
+  font-style: italic;
+}
