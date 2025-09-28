@@ -18,12 +18,13 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
-from rest_framework_simplejwt.views import TokenRefreshView
 
 from apps.common.views import HealthView
 from apps.users.views import (
     CaseworkerPublicKeysView,
+    CookieTokenRefreshView,
     CustomTokenObtainPairView,
+    LogoutView,
     SystemInboxPublicKeyView,
     VerifyTOTPView,
 )
@@ -32,8 +33,9 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/health/", HealthView.as_view(), name="health"),
     path("api/token/", CustomTokenObtainPairView.as_view(), name="token_obtain_pair"),
-    path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
+    path("api/token/refresh/", CookieTokenRefreshView.as_view(), name="token_refresh"),
     path("api/token/verify-totp/", VerifyTOTPView.as_view(), name="token_verify_totp"),
+    path("api/token/logout/", LogoutView.as_view(), name="token_logout"),
     path("api/system/public-key/", SystemInboxPublicKeyView.as_view(), name="system-public-key"),
     path("api/recipients/public-keys/", CaseworkerPublicKeysView.as_view(), name="caseworker-public-keys"),
     path("api/users/", include("apps.users.urls")),

@@ -3,6 +3,7 @@ from binascii import Error as BinasciiError
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
@@ -11,6 +12,52 @@ from .models import User
 # Define expected byte lengths for cryptographic keys
 X25519_PUBLIC_KEY_BYTES = 32
 KYBER1024_PUBLIC_KEY_BYTES = 1568
+
+
+class CurrentUserSerializer(serializers.ModelSerializer):
+    """
+    Serializer for the currently authenticated user's details.
+    """
+    class Meta:
+        model = User
+        fields = ["id", "email", "first_name", "last_name"]
+
+
+class SetPasswordSerializer(serializers.Serializer):
+    """
+    Serializer for changing a user's password. It validates the current
+    password, ensures the new password and confirmation match, and runs
+    it through Django's configured password validators.
+    """
+    current_password = serializers.CharField(style={"input_type": "password"}, trim_whitespace=False, write_only=True)
+    new_password = serializers.CharField(style={"input_type": "password"}, trim_whitespace=False, write_only=True)
+    new_password_confirm = serializers.CharField(style={"input_type": "password"}, trim_whitespace=False, write_only=True)
+
+    def validate_current_password(self, value):
+        user = self.context['request'].user
+        if not user.check_password(value):
+            raise serializers.ValidationError("Your current password is not correct.")
+        return value
+
+    def validate(self, attrs):
+        if attrs['new_password'] != attrs['new_password_confirm']:
+            raise serializers.ValidationError({"new_password_confirm": "The new passwords do not match."})
+
+        try:
+            # Use Django's built-in password validation.
+            validate_password(attrs['new_password'], self.context['request'].user)
+        except DjangoValidationError as e:
+            # Raise a single validation error with a list of messages
+            raise serializers.ValidationError({"new_password": list(e.messages)})
+
+        return attrs
+
+    def save(self, **kwargs):
+        password = self.validated_data['new_password']
+        user = self.context['request'].user
+        user.set_password(password)
+        user.save(update_fields=["password"])
+        return user
 
 
 class CaseworkerPublicKeySerializer(serializers.ModelSerializer):
@@ -81,7 +128,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = get_user_model()
-        fields = ["id", "username", "email", "password", "password2", "is_caseworker"]
+        fields = ["id", "email", "password", "password2", "is_caseworker"]
         extra_kwargs = {"is_caseworker": {"default": True}}
 
     def validate(self, attrs):
@@ -92,7 +139,6 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         validated_data.pop("password2")
         user = User(
-            username=validated_data["username"],
             email=validated_data.get("email"),
             is_caseworker=validated_data.get("is_caseworker", False),
         )

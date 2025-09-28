@@ -44,8 +44,10 @@ DJANGO_DEFAULT_APPS = [
 # Third-party apps
 THIRD_PARTY_APPS = [
     "rest_framework",
+    "rest_framework_simplejwt.token_blacklist",
     "corsheaders",
     "django_filters",
+    "pwned_passwords_django",
 ]
 
 # Local apps
@@ -167,16 +169,24 @@ AUTH_USER_MODEL = "users.User"
 # REST Framework Configuration
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'apps.users.auth.CookieJWTAuthentication',
         'rest_framework.authentication.SessionAuthentication',
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 5,
+    'PAGE_SIZE': 20,
 }
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
-    'REFRESH_TOKEN_LIFETIME': timedelta(minutes=60),
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),
+    "REFRESH_TOKEN_LIFETIME": timedelta(hours=8),
+    "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": True,
+    "AUTH_COOKIE": "access_token",
+    "AUTH_COOKIE_REFRESH": "refresh_token",
+    "AUTH_COOKIE_SECURE": not DEBUG,
+    "AUTH_COOKIE_HTTP_ONLY": True,
+    "AUTH_COOKIE_PATH": "/",
+    "AUTH_COOKIE_SAMESITE": "Strict",
 }
 
 # CORS settings with enhanced security
@@ -187,6 +197,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:8000",  # Backend
     "http://127.0.0.1:8000",
 ]
+CORS_ALLOW_CREDENTIALS = True
 
 CORS_ALLOW_HEADERS = [
     "authorization",
@@ -221,21 +232,17 @@ AUTH_PASSWORD_VALIDATORS = [
     },
     {
         "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
-        "OPTIONS": {"min_length": 15},  # adjust as needed
+        "OPTIONS": {"min_length": 15},
     },
     {
-        "NAME": "apps.users.validators.ComplexityValidator",
+        "NAME": "pwned_passwords_django.validators.PwnedPasswordsValidator",
     },
 ]
 
 PASSWORD_HASHERS = [
-
     "django.contrib.auth.hashers.Argon2PasswordHasher",
-
     "django.contrib.auth.hashers.BCryptSHA256PasswordHasher",
-
     "django.contrib.auth.hashers.PBKDF2PasswordHasher",
-
     "django.contrib.auth.hashers.PBKDF2SHA1PasswordHasher",
 ]
 

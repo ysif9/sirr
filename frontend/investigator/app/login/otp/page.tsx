@@ -32,10 +32,10 @@ export default function OtpPage() {
     setIsSubmitting(true);
 
     const tfaToken = sessionStorage.getItem("tfa_token");
-    const username = sessionStorage.getItem("username");
+    const email = sessionStorage.getItem("email");
     const privateKey = sessionStorage.getItem("privateKey");
 
-    if (!tfaToken || !username || !privateKey) {
+    if (!tfaToken || !email || !privateKey) {
         setError("Login session expired. Please log in again.");
         setIsSubmitting(false);
         setTimeout(() => router.replace('/login'), 2000);
@@ -43,17 +43,17 @@ export default function OtpPage() {
     }
 
     try {
-        const response = await apiClient.post('/token/verify-totp/', 
-            { totp_code: otp },
-            { headers: { Authorization: `Bearer ${tfaToken}` } }
-        );
+        await apiClient.post('/token/verify-totp/', {
+            tfa_token: tfaToken,
+            totp_code: otp,
+        });
 
-        // On success, finalize the login
-        handleLoginSuccess({ ...response.data, username, privateKey });
+        // On success, finalize the login. The server has set HttpOnly cookies.
+        handleLoginSuccess({ email, privateKey });
 
         // Clean up temporary session storage
         sessionStorage.removeItem("tfa_token");
-        sessionStorage.removeItem("username");
+        sessionStorage.removeItem("email");
         sessionStorage.removeItem("privateKey");
 
     } catch (err: any) {

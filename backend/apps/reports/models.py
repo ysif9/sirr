@@ -24,10 +24,8 @@ from apps.common.models import BaseModel
 
 class ReportStatus(models.TextChoices):
     """Report status choices."""
-    SUBMITTED = "submitted", _("Submitted")
-    UNDER_REVIEW = "under review", _("Under Review")
-    APPROVED = "approved", _("Approved")
-    REJECTED = "rejected", _("Rejected")
+    NEW = "new", _("New")
+    OPENED = "opened", _("Opened")
     CLOSED = "closed", _("Closed")
 
 
@@ -90,6 +88,10 @@ class Report(BaseModel):
                                  blank=True)
     access_key = models.CharField(max_length=255, unique=True)
 
+    important = models.BooleanField(default=False)
+    label = models.CharField(max_length=255, blank=True, default="")
+
+
     encrypted_body = models.BinaryField(help_text=_("The raw ciphertext of the report."), null=True, blank=True)
     key_envelope = models.JSONField(
         help_text=_("The encrypted report key (K_report) and the reporter's ephemeral public key."),
@@ -101,7 +103,7 @@ class Report(BaseModel):
         help_text=_("Non-secret, integrity-protected metadata (e.g., report type, coarse timestamp).")
     )
 
-    status = models.CharField(max_length=50, choices=ReportStatus.choices, default=ReportStatus.SUBMITTED)
+    status = models.CharField(max_length=50, choices=ReportStatus.choices, default=ReportStatus.NEW)
     score = models.IntegerField(default=0)
     priority = models.CharField(max_length=50, choices=ReportPriority.choices, default=ReportPriority.MEDIUM)
     last_access_by_reporter = models.DateTimeField(null=True, blank=True)
