@@ -8,6 +8,12 @@ import { getRAGConfig, validateConfig } from '@/lib/rag-config';
 import { RAGWorkflowService } from '@/lib/rag-services';
 import { ChatRequest, ChatResponse } from '@/lib/rag-types';
 
+// Error messages for internationalization
+const errorMessages = {
+  en: 'Sorry, an error occurred while processing your message. Please try again.',
+  ar: 'عذراً، حدث خطأ في معالجة رسالتك. يرجى المحاولة مرة أخرى.',
+};
+
 // Initialize RAG service
 let ragService: RAGWorkflowService | null = null;
 
@@ -28,9 +34,16 @@ function initializeRAGService() {
 }
 
 export async function POST(request: NextRequest) {
+  let body: ChatRequest | null = null;
   try {
     // Parse request body
-    const body: ChatRequest = await request.json();
+    body = await request.json();
+
+    // FIX: Add a guard clause to ensure body is not null before destructuring.
+    if (!body) {
+      return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
+    }
+
     const { message, sessionId, userId } = body;
 
     // Validate input
@@ -82,9 +95,13 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('Chat API error:', error);
+    
+    // Determine locale, default to 'en'
+    const locale = body?.locale === 'ar' ? 'ar' : 'en';
+    const responseMessage = errorMessages[locale];
 
     const errorResponse: ChatResponse = {
-      response: 'عذراً، حدث خطأ في معالجة رسالتك. يرجى المحاولة مرة أخرى.',
+      response: responseMessage,
       sessionId: 'error',
       processingTime_ms: 0,
       metadata: {

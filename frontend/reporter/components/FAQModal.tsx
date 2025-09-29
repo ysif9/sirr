@@ -1,7 +1,7 @@
 "use client"
 
 import React from "react"
-import { useLanguage } from "../contexts/LanguageContext"
+import { useTranslations } from "next-intl"
 import { Squircle } from "@squircle-js/react"
 import { XMarkIcon } from "./icons/XMarkIcon"
 import { ChevronDownIcon } from "./icons/ChevronDownIcon"
@@ -11,20 +11,22 @@ interface FAQModalProps {
 }
 
 const FAQModal: React.FC<FAQModalProps> = ({ onClose }) => {
-  const { t } = useLanguage()
+  const t = useTranslations("FAQModal")
   const [openItems, setOpenItems] = React.useState<number[]>([])
 
   const toggleItem = (index: number) => {
     setOpenItems((prev) => (prev.includes(index) ? prev.filter((i) => i !== index) : [...prev, index]))
   }
 
+  // NOTE: next-intl t() returns a string by default. When accessing nested objects
+  // we treat them as namespaces (e.g., t('q1.question')).
   const faqs = [
-    { question: t("faq1Question"), answer: t("faq1Answer") },
-    { question: t("faq2Question"), answer: t("faq2Answer") },
-    { question: t("faq3Question"), answer: t("faq3Answer") },
-    { question: t("faq4Question"), answer: t("faq4Answer") },
-    { question: t("faq5Question"), answer: t("faq5Answer") },
-    { question: t("faq6Question"), answer: t("faq6Answer") },
+    { question: t("q1.question"), answer: t("q1.answer") },
+    { question: t("q2.question"), answer: t("q2.answer") },
+    { question: t("q3.question"), answer: t("q3.answer") },
+    { question: t("q4.question"), answer: t("q4.answer") },
+    { question: t("q5.question"), answer: t("q5.answer") },
+    { question: t("q6.question"), answer: t("q6.answer") },
   ]
 
   return (
@@ -36,7 +38,7 @@ const FAQModal: React.FC<FAQModalProps> = ({ onClose }) => {
           className="bg-slate-800 border border-white/10 shadow-2xl flex flex-col max-h-[80vh]"
         >
           <div className="flex items-center justify-between p-6 border-b border-white/10">
-            <h2 className="text-xl font-bold text-white">{t("faqTitle")}</h2>
+            <h2 className="text-xl font-bold text-white">{t("title")}</h2>
             <button
               onClick={onClose}
               className="text-gray-400 hover:text-white transition-colors p-1"
@@ -82,7 +84,7 @@ const FAQModal: React.FC<FAQModalProps> = ({ onClose }) => {
                 cornerSmoothing={1}
                 className="w-full py-3 px-4 bg-white text-slate-900 font-semibold hover:bg-gray-200 transition-colors"
               >
-                {t("faqClose")}
+                {t("close")}
               </Squircle>
             </button>
           </div>

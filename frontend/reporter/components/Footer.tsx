@@ -1,9 +1,11 @@
+//START OF components\Footer.tsx
 "use client"
 
 import type React from "react"
-import { useLanguage } from "../contexts/LanguageContext"
+import { useTranslations, useLocale } from "next-intl"; // FIX: Correct import path
 import { GlobeIcon } from "./icons/GlobeIcon"
 import { Squircle } from "@squircle-js/react"
+import { useRouter } from "next/navigation"
 
 interface FooterProps {
   onNavigate: (page: string) => void
@@ -11,16 +13,21 @@ interface FooterProps {
 }
 
 const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenFaq }) => {
-  const { t, language, setLanguage } = useLanguage()
+  const t = useTranslations("Footer")
+  const locale = useLocale()
+  const router = useRouter()
 
   const toggleLanguage = () => {
-    setLanguage(language === "en" ? "ar" : "en")
+    const newLocale = locale === "en" ? "ar" : "en";
+    
+    // Perform navigation to change the locale
+    router.push(`/${newLocale}`);
   }
 
   const links = [
-    { text: t("footerAccessibility"), action: () => onNavigate("accessibility") },
-    { text: t("footerTermsPrivacy"), action: () => onNavigate("terms") },
-    { text: t("faqLink"), action: onOpenFaq },
+    { text: t("accessibility") as string, action: () => onNavigate("accessibility") },
+    { text: t("termsPrivacy") as string, action: () => onNavigate("terms") },
+    { text: t("faqLink") as string, action: onOpenFaq },
   ]
 
   return (
@@ -49,7 +56,7 @@ const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenFaq }) => {
               className="flex items-center gap-2 text-gray-400 p-2 group-hover:text-white transition-all duration-300 ease-out group-hover:bg-white/5 group-hover:shadow-md group-hover:shadow-white/5"
             >
               <GlobeIcon className="w-5 h-5 transition-transform duration-300 group-hover:rotate-6" />
-              <span className="text-sm font-medium">{language === "en" ? "English" : "العربية"}</span>
+              <span className="text-sm font-medium">{locale === "en" ? "English" : "العربية"}</span>
             </Squircle>
           </button>
         </div>
@@ -59,3 +66,4 @@ const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenFaq }) => {
 }
 
 export default Footer
+//END OF components\Footer.tsx

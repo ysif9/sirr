@@ -1,7 +1,8 @@
+//START OF components\InfoPage.tsx
 "use client"
 
 import type React from "react"
-import { useLanguage } from "../contexts/LanguageContext"
+import { useTranslations, useMessages } from "next-intl"; // FIX: Correct import path
 import { ArrowLeftIcon } from "./icons/ArrowLeftIcon"
 import { Squircle } from "@squircle-js/react"
 
@@ -11,13 +12,13 @@ interface InfoPageProps {
 }
 
 const InfoPage: React.FC<InfoPageProps> = ({ pageKey, onNavigate }) => {
-  const { t } = useLanguage()
+  const tReport = useTranslations("ReportPage")
+  const messages = useMessages() as any; // Cast to any to simplify navigation
 
-  const titleKey = `${pageKey}Title` as any
-  const contentKey = `${pageKey}Content` as any
-
-  const title = t(titleKey)
-  const content = t(contentKey)
+  const capitalizedPageKey = pageKey.charAt(0).toUpperCase() + pageKey.slice(1);
+  
+  const title = messages.InfoPages[capitalizedPageKey].title as string;
+  const content = messages.InfoPages[capitalizedPageKey].content as string[];
 
   const renderParagraph = (text: string, index: number) => {
     const parts = text.split("**")
@@ -40,11 +41,10 @@ const InfoPage: React.FC<InfoPageProps> = ({ pageKey, onNavigate }) => {
     <div className="min-h-screen flex flex-col animate-fadeIn">
       <header className="pt-24 pb-4 px-4 sm:px-6 lg:px-8">
         <div className="max-w-3xl mx-auto flex items-center">
-          {/* FIX: The 'as' prop is deprecated. Replaced Squircle with a button wrapping a Squircle for semantic correctness and to resolve type errors. */}
           <button
             onClick={() => onNavigate("landing")}
             className="group mr-2 focus:outline-none"
-            aria-label={t("backButton")}
+            aria-label={tReport("backButton")}
           >
             <Squircle
               cornerRadius={10}
@@ -52,7 +52,7 @@ const InfoPage: React.FC<InfoPageProps> = ({ pageKey, onNavigate }) => {
               className="flex items-center gap-2 text-gray-400 group-hover:text-white transition-colors p-2 group-hover:bg-gray-500 group-hover:bg-opacity-20"
             >
               <ArrowLeftIcon className="w-5 h-5" />
-              <span>{t("backButton")}</span>
+              <span>{tReport("backButton")}</span>
             </Squircle>
           </button>
         </div>
@@ -83,3 +83,4 @@ const InfoPage: React.FC<InfoPageProps> = ({ pageKey, onNavigate }) => {
 }
 
 export default InfoPage
+//END OF components\InfoPage.tsx

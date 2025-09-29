@@ -5,14 +5,14 @@ import { useEffect, useState } from "react"
 import { getFormDefinition, FormDefinition } from "@/lib/crime-forms"
 import CrimeReportForm from "@/components/report/CrimeReportForm"
 import { ArrowLeftIcon } from "@/components/icons/ArrowLeftIcon"
-import { useLanguage } from "@/contexts/LanguageContext"
+import { useTranslations } from "next-intl"
 
 export default function ReportFormPage() {
   const router = useRouter()
-  const params = useParams()
-  const { t } = useLanguage()
+  const t = useTranslations("ReportPage")
   const [formDef, setFormDef] = useState<FormDefinition | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const params = useParams()
 
   const slug = (params.slug as string[]) || []
   const [reportType, category, subcrime] = slug

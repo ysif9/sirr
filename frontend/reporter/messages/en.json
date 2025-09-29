@@ -1,0 +1,116 @@
+{
+  "SplashScreen": {
+    "title": "Anonymous Crime Reporting",
+    "subtitle": "Safe & Secure"
+  },
+  "EmergencyBanner": {
+    "line1": "In case of emergency, call immediately:",
+    "line2": "Police: 122 | Fire: 998 | Ambulance: 997"
+  },
+  "Hero": {
+    "title": "Report Crime Anonymously",
+    "subtitle": "Your safety is our priority. Report crimes safely and anonymously to help make your community safer.",
+    "startNewReport": "Start New Report",
+    "followUpOnReport": "Follow Up on Report",
+    "legalDisclaimer": "By using this service, you agree to our",
+    "legalLink": "Terms & Privacy Policy"
+  },
+  "ReportPage": {
+    "title": "Select Crime Category",
+    "subtitle": "Choose the category that best describes the crime you want to report.",
+    "searchPlaceholder": "Search categories...",
+    "noCategoriesFound": "No categories found for",
+    "backButton": "Back"
+  },
+  "Categories": {
+    "children": { "title": "Crimes Against Children", "subtitle": "Child abuse, neglect, exploitation, or endangerment" },
+    "domesticAbuse": { "title": "Domestic Violence", "subtitle": "Physical, emotional, or psychological abuse in relationships" },
+    "internetCrime": { "title": "Internet Crimes", "subtitle": "Cybercrime, online fraud, identity theft, hacking" },
+    "humanTrafficking": { "title": "Human Trafficking", "subtitle": "Forced labor, sex trafficking, modern slavery" },
+    "sexualAssault": { "title": "Sexual Assault", "subtitle": "Sexual violence, harassment, or misconduct" },
+    "restrainingOrders": { "title": "Restraining Order Violations", "subtitle": "Violations of protective or restraining orders" },
+    "stalking": { "title": "Stalking & Harassment", "subtitle": "Persistent unwanted contact or surveillance" },
+    "hateCrimes": { "title": "Hate Crimes", "subtitle": "Crimes motivated by bias or prejudice" },
+    "bombThreat": { "title": "Bomb Threats", "subtitle": "Explosive devices or terrorist threats" },
+    "organizedCrime": { "title": "Organized Crime", "subtitle": "Gang activity, racketeering, organized criminal enterprises" },
+    "whistleblower": { "title": "Whistleblower Reports", "subtitle": "Government corruption, corporate misconduct" },
+    "internationalCrimes": { "title": "International Crimes", "subtitle": "Cross-border crimes, international terrorism" },
+    "theft": { "title": "Theft & Property Crimes", "subtitle": "Burglary, robbery, vandalism, property damage" }
+  },
+  "Footer": {
+    "accessibility": "Accessibility",
+    "termsPrivacy": "Terms & Privacy",
+    "faqLink": "FAQ"
+  },
+  "InfoPages": {
+    "Accessibility": {
+      "title": "Accessibility Statement",
+      "content": [
+        "We are committed to ensuring that our anonymous crime reporting platform is accessible to all users, including those with disabilities.",
+        "Our platform follows **Web Content Accessibility Guidelines (WCAG) 2.1** at Level AA to ensure compatibility with assistive technologies.",
+        "**Accessibility Features:**",
+        "• Screen reader compatibility with proper ARIA labels and semantic HTML",
+        "• Keyboard navigation support for all interactive elements",
+        "• High contrast color schemes for better visibility",
+        "• Scalable text that can be enlarged up to 200% without loss of functionality",
+        "• Alternative text for all images and visual content",
+        "• Clear and simple language throughout the interface",
+        "If you encounter any accessibility barriers while using our service, please contact our support team. We are continuously working to improve accessibility and welcome your feedback."
+      ]
+    },
+    "Terms": {
+      "title": "Terms of Service & Privacy Policy",
+      "content": [
+        "**Anonymous Reporting Service**",
+        "This platform provides a secure, anonymous way to report crimes to law enforcement agencies. Your privacy and safety are our top priorities.",
+        "**Privacy Protection:**",
+        "• No personal information is collected or stored",
+        "• All reports are encrypted and transmitted securely",
+        "• IP addresses are not logged or tracked",
+        "• No cookies or tracking technologies are used",
+        "**Important Legal Information:**",
+        "• This service is for reporting crimes only",
+        "• False reports may be subject to legal consequences",
+        "• In emergency situations, call emergency services directly",
+        "• Reports are forwarded to appropriate law enforcement agencies",
+        "**Disclaimer:**",
+        "This service does not guarantee investigation or response to reports. For immediate assistance or life-threatening situations, contact emergency services directly at 122."
+      ]
+    }
+  },
+  "FollowUpModal": {
+    "title": "Follow Up on Your Report",
+    "description": "Enter your report reference number to check the status of your submission.",
+    "placeholder": "Enter report reference number",
+    "submit": "Check Status",
+    "cancel": "Cancel"
+  },
+  "FAQModal": {
+    "title": "Frequently Asked Questions",
+    "close": "Close",
+    "q1": {
+      "question": "Is my report really anonymous?",
+      "answer": "Yes, absolutely. We do not collect any personal information, IP addresses, or use tracking technologies. Your identity remains completely anonymous."
+    },
+    "q2": {
+      "question": "What happens after I submit a report?",
+      "answer": "Your report is encrypted and securely transmitted to the appropriate law enforcement agency. You will receive a reference number to track your report status."
+    },
+    "q3": {
+      "question": "Can I follow up on my report?",
+      "answer": "Yes, you can use the reference number provided after submission to check the status of your report through our follow-up system."
+    },
+    "q4": {
+      "question": "What if I have an emergency?",
+      "answer": "This service is not for emergencies. If you are in immediate danger, call emergency services directly: Police 122, Fire 998, Ambulance 997."
+    },
+    "q5": {
+      "question": "What information should I include?",
+      "answer": "Provide as much detail as possible including dates, times, locations, descriptions of people involved, and any evidence you may have."
+    },
+    "q6": {
+      "question": "Is this service available 24/7?",
+      "answer": "Yes, you can submit reports at any time. However, processing times may vary depending on the law enforcement agency and case complexity."
+    }
+  }
+}

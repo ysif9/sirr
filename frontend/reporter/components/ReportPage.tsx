@@ -3,7 +3,7 @@
 import type React from "react"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { useLanguage } from "../contexts/LanguageContext"
+import { useTranslations } from "next-intl"
 import { CategoryCard } from "./CategoryCard"
 import { ArrowLeftIcon } from "./icons/ArrowLeftIcon"
 import { getReportTypes, getCategoriesForReportType, getFormsForCategory, FormDefinition } from "@/lib/crime-forms"
@@ -11,7 +11,8 @@ import { getReportTypes, getCategoriesForReportType, getFormsForCategory, FormDe
 const reportTypes = getReportTypes()
 
 const ReportPage: React.FC<{ onNavigate: (page: string) => void }> = ({ onNavigate }) => {
-  const { t } = useLanguage()
+  const t = useTranslations("ReportPage")
+  const tCategories = useTranslations("Categories")
   const router = useRouter()
 
   const [view, setView] = useState<"main" | "categories" | "forms">("main")
@@ -88,6 +89,8 @@ const ReportPage: React.FC<{ onNavigate: (page: string) => void }> = ({ onNaviga
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
         {Object.entries(reportTypes).map(([key, type]) => (
+           // FIX: Removed the incorrect and unused tCategories call.
+           // The title and subtitle come directly from the `type` object.
           <CategoryCard key={key} title={type.title} subtitle={type.subtitle} onClick={() => selectReportType(key)} />
         ))}
       </div>
@@ -106,7 +109,7 @@ const ReportPage: React.FC<{ onNavigate: (page: string) => void }> = ({ onNaviga
       const reportType = reportTypes[selectedReportType as keyof typeof reportTypes]
       return reportType?.title || "Select Category"
     }
-    return t("reportPageTitle")
+    return t("title")
   }
 
   const getPageSubtitle = () => {
@@ -116,7 +119,7 @@ const ReportPage: React.FC<{ onNavigate: (page: string) => void }> = ({ onNaviga
     if (view === "categories") {
       return "Choose the category that best describes your report."
     }
-    return t("reportPageSubtitle")
+    return t("subtitle")
   }
 
   return (

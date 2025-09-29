@@ -1,8 +1,9 @@
+//START OF components\Hero.tsx
 "use client"
 
 import type React from "react"
 import { useState } from "react"
-import { useLanguage } from "../contexts/LanguageContext"
+import { useTranslations } from "next-intl"
 import FollowUpModal from "./FollowUpModal"
 import BlurText from "./BlurText"
 import { Squircle } from "@squircle-js/react"
@@ -13,7 +14,7 @@ interface HeroProps {
 }
 
 const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
-  const { t } = useLanguage()
+  const t = useTranslations("Hero")
   const [isFollowUpModalOpen, setIsFollowUpModalOpen] = useState(false)
 
   return (
@@ -22,13 +23,13 @@ const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
         {/* Content */}
         <div className="relative z-10 max-w-3xl mx-auto">
           <BlurText
-            text={t("heroTitle")}
+            text={t("title") as string}
             delay={150}
             animateBy="words"
             direction="top"
             className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white tracking-tighter mb-4"
           />
-          <p className="mt-4 text-lg md:text-xl text-gray-300 max-w-2xl mx-auto">{t("heroSubtitle")}</p>
+          <p className="mt-4 text-lg md:text-xl text-gray-300 max-w-2xl mx-auto">{t("subtitle")}</p>
           <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
             <button
               onClick={() => onNavigate("report")}
@@ -87,3 +88,4 @@ const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
 }
 
 export default Hero
+//END OF components\Hero.tsx
