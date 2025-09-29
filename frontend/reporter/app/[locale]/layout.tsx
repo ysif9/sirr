@@ -1,50 +1,59 @@
-// FILE: app/[locale]/layout.tsx
-import type React from "react"
-import type { Metadata } from "next"
-import { Inter, JetBrains_Mono } from "next/font/google"
-import { Analytics } from "@vercel/analytics/next"
-import { Suspense } from "react"
-import "./globals.css"
-import { NextIntlClientProvider } from "next-intl"
-import { getMessages } from "next-intl/server"
+import type { Metadata } from 'next';
+import { Inter, JetBrains_Mono } from 'next/font/google';
+import { Analytics } from '@vercel/analytics/next';
+import { Suspense } from 'react';
+import './styles.css';
+
+import { NextIntlClientProvider } from 'next-intl';
+import { getMessages, setRequestLocale } from 'next-intl/server';
+import { routing } from '@/i18n/routing';
 
 const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
-})
+  subsets: ['latin'],
+  variable: '--font-inter'
+});
 
 const jetbrainsMono = JetBrains_Mono({
-  subsets: ["latin"],
-  variable: "--font-jetbrains-mono",
-})
+  subsets: ['latin'],
+  variable: '--font-jetbrains-mono'
+});
 
 export const metadata: Metadata = {
-  title: "Anonymous Crime Reporting",
-  description: "Safe and secure anonymous crime reporting platform",
-  generator: "v0.app",
+  title: 'Anonymous Crime Reporting',
+  description: 'Safe and secure anonymous crime reporting platform',
+  generator: 'v0.app'
+};
+
+type Props = {
+  children: React.ReactNode;
+  params: Promise<{ locale: string }>;
+};
+
+export function generateStaticParams() {
+  return routing.locales.map((locale) => ({ locale }));
 }
 
-export default async function LocaleLayout({
-  children,
-  params,
-}: {
-  children: React.ReactNode
-  params: any // params must be awaited in Next.js 15
-}) {
-  // await the params proxy before accessing its properties
-  const { locale } = await params
+export default async function LocaleLayout({ children, params }: Props) {
+  // Await params before accessing its properties
+  const { locale } = await params;
+  
+  // Enable static rendering
+  setRequestLocale(locale);
 
-  // load messages for this locale (requires next-intl plugin / request config)
-  const messages = await getMessages({ locale })
+  // Providing all messages to the client
+  // side is the easiest way to get started
+  const messages = await getMessages();
+
+  const dir = locale === 'ar' ? 'rtl' : 'ltr';
 
   return (
-    <html lang={locale} dir={locale === "ar" ? "rtl" : "ltr"}>
+    <html lang={locale} dir={dir}>
       <body className={`font-sans ${inter.variable} ${jetbrainsMono.variable}`}>
-        <NextIntlClientProvider locale={locale} messages={messages}>
+        <NextIntlClientProvider messages={messages}>
           <Suspense fallback={null}>{children}</Suspense>
           <Analytics />
         </NextIntlClientProvider>
       </body>
     </html>
-  )
+  );
 }

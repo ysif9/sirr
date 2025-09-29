@@ -39,7 +39,6 @@ export async function POST(request: NextRequest) {
     // Parse request body
     body = await request.json();
 
-    // FIX: Add a guard clause to ensure body is not null before destructuring.
     if (!body) {
       return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
     }

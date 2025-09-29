@@ -1,6 +1,7 @@
 "use client"
 
-import { useParams, useRouter } from "next/navigation"
+import { useParams } from "next/navigation"
+import { useRouter } from "@/i18n/navigation";
 import { useEffect, useState } from "react"
 import { getFormDefinition, FormDefinition } from "@/lib/crime-forms"
 import CrimeReportForm from "@/components/report/CrimeReportForm"
@@ -42,7 +43,6 @@ export default function ReportFormPage() {
   }
 
   return (
-    // FIX: Added the gradient background classes to this div to match the app's theme
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex flex-col animate-fadeIn">
       <header className="pt-24 pb-4 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto flex items-center">

@@ -2,7 +2,7 @@
 
 import type React from "react"
 import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, Link } from "@/i18n/navigation";
 import { useTranslations } from "next-intl"
 import { CategoryCard } from "./CategoryCard"
 import { ArrowLeftIcon } from "./icons/ArrowLeftIcon"
@@ -10,9 +10,8 @@ import { getReportTypes, getCategoriesForReportType, getFormsForCategory, FormDe
 
 const reportTypes = getReportTypes()
 
-const ReportPage: React.FC<{ onNavigate: (page: string) => void }> = ({ onNavigate }) => {
+const ReportPage: React.FC = () => {
   const t = useTranslations("ReportPage")
-  const tCategories = useTranslations("Categories")
   const router = useRouter()
 
   const [view, setView] = useState<"main" | "categories" | "forms">("main")
@@ -27,7 +26,7 @@ const ReportPage: React.FC<{ onNavigate: (page: string) => void }> = ({ onNaviga
       setView("main")
       setSelectedReportType(null)
     } else {
-      onNavigate("landing")
+      router.push("/");
     }
   }
 
@@ -89,8 +88,6 @@ const ReportPage: React.FC<{ onNavigate: (page: string) => void }> = ({ onNaviga
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
         {Object.entries(reportTypes).map(([key, type]) => (
-           // FIX: Removed the incorrect and unused tCategories call.
-           // The title and subtitle come directly from the `type` object.
           <CategoryCard key={key} title={type.title} subtitle={type.subtitle} onClick={() => selectReportType(key)} />
         ))}
       </div>
@@ -123,7 +120,7 @@ const ReportPage: React.FC<{ onNavigate: (page: string) => void }> = ({ onNaviga
   }
 
   return (
-    <div className="report-theme min-h-screen flex flex-col animate-fadeIn">
+    <div className="report-theme min-h-screen flex flex-col animate-fadeIn bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
       <header className="pt-24 pb-4 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto flex items-center">
           <button onClick={handleBack} className="group mr-2 focus:outline-none" aria-label={t("backButton")}>
@@ -146,16 +143,6 @@ const ReportPage: React.FC<{ onNavigate: (page: string) => void }> = ({ onNaviga
           <div className="max-w-6xl mx-auto">{renderContent()}</div>
         </div>
       </main>
-
-      <style>{`
-        @keyframes fadeIn {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-        .animate-fadeIn {
-          animation: fadeIn 0.5s ease-in-out;
-        }
-      `}</style>
     </div>
   )
 }

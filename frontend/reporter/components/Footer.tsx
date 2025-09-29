@@ -1,52 +1,51 @@
-//START OF components\Footer.tsx
 "use client"
 
 import type React from "react"
-import { useTranslations, useLocale } from "next-intl"; // FIX: Correct import path
+import { useTranslations, useLocale } from "next-intl";
+import { Link, usePathname } from "@/i18n/navigation";
 import { GlobeIcon } from "./icons/GlobeIcon"
 import { Squircle } from "@squircle-js/react"
-import { useRouter } from "next/navigation"
 
 interface FooterProps {
-  onNavigate: (page: string) => void
   onOpenFaq: () => void
 }
 
-const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenFaq }) => {
+const Footer: React.FC<FooterProps> = ({ onOpenFaq }) => {
   const t = useTranslations("Footer")
   const locale = useLocale()
-  const router = useRouter()
+  const pathname = usePathname();
 
-  const toggleLanguage = () => {
-    const newLocale = locale === "en" ? "ar" : "en";
-    
-    // Perform navigation to change the locale
-    router.push(`/${newLocale}`);
-  }
+  const otherLocale = locale === 'en' ? 'ar' : 'en';
 
   const links = [
-    { text: t("accessibility") as string, action: () => onNavigate("accessibility") },
-    { text: t("termsPrivacy") as string, action: () => onNavigate("terms") },
-    { text: t("faqLink") as string, action: onOpenFaq },
-  ]
+    { text: t("accessibility") as string, href: "/info/accessibility" },
+    { text: t("termsPrivacy") as string, href: "/info/terms" },
+  ];
 
   return (
     <footer className="py-12 px-4 bg-gradient-to-t from-slate-900/30 to-transparent">
       <div className="max-w-5xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
         <div className="flex flex-wrap justify-center gap-x-6 gap-y-2">
-          {links.map((link, index) => (
-            <button
-              key={index}
-              onClick={link.action}
+          {links.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
               className="text-sm text-gray-400 hover:text-white transition-all duration-300 ease-out transform hover:scale-[1.02]"
             >
               {link.text}
-            </button>
+            </Link>
           ))}
+           <button
+              onClick={onOpenFaq}
+              className="text-sm text-gray-400 hover:text-white transition-all duration-300 ease-out transform hover:scale-[1.02]"
+            >
+              {t("faqLink")}
+            </button>
         </div>
         <div>
-          <button
-            onClick={toggleLanguage}
+          <Link
+            href={pathname}
+            locale={otherLocale}
             className="group focus:outline-none transition-all duration-300 ease-out transform hover:scale-[1.02]"
             aria-label="Toggle language"
           >
@@ -58,7 +57,7 @@ const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenFaq }) => {
               <GlobeIcon className="w-5 h-5 transition-transform duration-300 group-hover:rotate-6" />
               <span className="text-sm font-medium">{locale === "en" ? "English" : "العربية"}</span>
             </Squircle>
-          </button>
+          </Link>
         </div>
       </div>
     </footer>
@@ -66,4 +65,3 @@ const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenFaq }) => {
 }
 
 export default Footer
-//END OF components\Footer.tsx

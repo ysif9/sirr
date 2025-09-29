@@ -1,18 +1,16 @@
-//START OF components\InfoPage.tsx
 "use client"
 
 import type React from "react"
-import { useTranslations, useMessages } from "next-intl"; // FIX: Correct import path
+import { useMessages } from "next-intl";
+import { Link } from "@/i18n/navigation";
 import { ArrowLeftIcon } from "./icons/ArrowLeftIcon"
 import { Squircle } from "@squircle-js/react"
 
 interface InfoPageProps {
   pageKey: "accessibility" | "terms"
-  onNavigate: (page: string) => void
 }
 
-const InfoPage: React.FC<InfoPageProps> = ({ pageKey, onNavigate }) => {
-  const tReport = useTranslations("ReportPage")
+const InfoPage: React.FC<InfoPageProps> = ({ pageKey }) => {
   const messages = useMessages() as any; // Cast to any to simplify navigation
 
   const capitalizedPageKey = pageKey.charAt(0).toUpperCase() + pageKey.slice(1);
@@ -38,13 +36,13 @@ const InfoPage: React.FC<InfoPageProps> = ({ pageKey, onNavigate }) => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col animate-fadeIn">
+    <div className="min-h-screen flex flex-col animate-fadeIn bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
       <header className="pt-24 pb-4 px-4 sm:px-6 lg:px-8">
         <div className="max-w-3xl mx-auto flex items-center">
-          <button
-            onClick={() => onNavigate("landing")}
+          <Link
+            href="/"
             className="group mr-2 focus:outline-none"
-            aria-label={tReport("backButton")}
+            aria-label="Back"
           >
             <Squircle
               cornerRadius={10}
@@ -52,9 +50,9 @@ const InfoPage: React.FC<InfoPageProps> = ({ pageKey, onNavigate }) => {
               className="flex items-center gap-2 text-gray-400 group-hover:text-white transition-colors p-2 group-hover:bg-gray-500 group-hover:bg-opacity-20"
             >
               <ArrowLeftIcon className="w-5 h-5" />
-              <span>{tReport("backButton")}</span>
+              <span>Back</span>
             </Squircle>
-          </button>
+          </Link>
         </div>
       </header>
 
@@ -68,19 +66,8 @@ const InfoPage: React.FC<InfoPageProps> = ({ pageKey, onNavigate }) => {
           </div>
         </div>
       </main>
-
-      <style>{`
-        @keyframes fadeIn {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-        .animate-fadeIn {
-          animation: fadeIn 0.5s ease-in-out;
-        }
-      `}</style>
     </div>
   )
 }
 
 export default InfoPage
-//END OF components\InfoPage.tsx

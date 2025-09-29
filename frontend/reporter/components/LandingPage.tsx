@@ -8,11 +8,7 @@ import Footer from "./Footer"
 import FAQModal from "./FAQModal"
 import LightRays from "./LightRays"
 
-interface LandingPageProps {
-  onNavigate: (page: string) => void
-}
-
-const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
+const LandingPage: React.FC = () => {
   const [isFaqModalOpen, setIsFaqModalOpen] = useState(false)
 
   return (
@@ -34,9 +30,9 @@ const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
         </div>
         <EmergencyBanner />
         <main className="pt-16 flex-grow flex items-center justify-center">
-          <Hero onNavigate={onNavigate} />
+          <Hero />
         </main>
-        <Footer onNavigate={onNavigate} onOpenFaq={() => setIsFaqModalOpen(true)} />
+        <Footer onOpenFaq={() => setIsFaqModalOpen(true)} />
       </div>
       {isFaqModalOpen && <FAQModal onClose={() => setIsFaqModalOpen(false)} />}
     </>
