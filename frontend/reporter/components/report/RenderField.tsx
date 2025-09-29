@@ -10,6 +10,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Button } from "../ui/button"
+import { useTranslations } from "next-intl"
 
 interface RenderFieldProps {
   control: Control<any>
@@ -18,6 +19,8 @@ interface RenderFieldProps {
 }
 
 const RenderField: React.FC<RenderFieldProps> = ({ control, field, watch }) => {
+  const t = useTranslations("RenderField");
+
   if (field.conditional) {
     const watchedValue = watch(field.conditional.field)
     if (watchedValue !== field.conditional.value) {
@@ -25,8 +28,6 @@ const RenderField: React.FC<RenderFieldProps> = ({ control, field, watch }) => {
     }
   }
 
-  // Special handling for file uploads to avoid the "uncontrolled to controlled" warning.
-  // File inputs cannot have a controlled `value` prop.
   if (field.type === "file_upload") {
     return (
       <div className="mb-6">
@@ -46,7 +47,7 @@ const RenderField: React.FC<RenderFieldProps> = ({ control, field, watch }) => {
               name={name}
               ref={ref}
               onBlur={onBlur}
-              onChange={(e) => onChange(e.target.files)} // Pass the FileList to RHF
+              onChange={(e) => onChange(e.target.files)}
             />
           )}
         />
@@ -83,7 +84,7 @@ const RenderField: React.FC<RenderFieldProps> = ({ control, field, watch }) => {
         return (
           <Select onValueChange={rhfProps.onChange} value={rhfProps.value}>
             <SelectTrigger>
-              <SelectValue placeholder={`Select ${field.label.toLowerCase()}`} />
+              <SelectValue placeholder={t('selectPlaceholder', { label: field.label.toLowerCase() })} />
             </SelectTrigger>
             <SelectContent>
               {field.options?.map((option: string) => (
@@ -129,6 +130,8 @@ const RenderField: React.FC<RenderFieldProps> = ({ control, field, watch }) => {
       name: field.id,
     })
 
+    const addItemLabel = field.fields?.[0].label || t('defaultItem');
+
     return (
       <div className="space-y-4 p-4 border border-border rounded-lg">
         <Label className="text-base font-semibold text-card-foreground">{field.label}</Label>
@@ -143,12 +146,12 @@ const RenderField: React.FC<RenderFieldProps> = ({ control, field, watch }) => {
               />
             ))}
             <Button variant="destructive" size="sm" type="button" onClick={() => remove(index)} className="absolute top-2 right-2">
-              Remove
+              {t('remove')}
             </Button>
           </div>
         ))}
         <Button type="button" variant="secondary" onClick={() => append({})}>
-          Add {field.fields?.[0].label || "Item"}
+          {t('addItem', { item: addItemLabel })}
         </Button>
       </div>
     )
@@ -177,7 +180,7 @@ const RenderField: React.FC<RenderFieldProps> = ({ control, field, watch }) => {
           </Label>
           {renderInput(rhfField)}
           {field.helperText && <p className="mt-2 text-sm text-muted-foreground">{field.helperText}</p>}
-          {fieldState.error && <p className="mt-1 text-sm text-red-500">{field.label} is required.</p>}
+          {fieldState.error && <p className="mt-1 text-sm text-red-500">{t('requiredError', { label: field.label })}</p>}
         </div>
       )}
     />

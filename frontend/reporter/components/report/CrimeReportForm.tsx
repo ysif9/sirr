@@ -8,6 +8,7 @@ import ReportStepper from "@/components/Stepper"
 import RenderField from "./RenderField"
 import { Button } from "../ui/button"
 import SubmissionSuccess from "./SubmissionSuccess"
+import { useTranslations } from "next-intl"
 
 interface CrimeReportFormProps {
   formDefinition: FormDefinition
@@ -19,6 +20,7 @@ interface CrimeReportFormProps {
 }
 
 const CrimeReportForm: React.FC<CrimeReportFormProps> = ({ formDefinition, formIdentifier }) => {
+  const t = useTranslations("CrimeReportForm");
   const [currentStep, setCurrentStep] = useState(1)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submissionData, setSubmissionData] = useState<{ access_key: string } | null>(null)
@@ -43,7 +45,7 @@ const CrimeReportForm: React.FC<CrimeReportFormProps> = ({ formDefinition, formI
       setSubmissionData(result)
     } catch (error: any) {
       console.error("Submission Error:", error)
-      setSubmissionError(error.message || "An unexpected error occurred during submission.")
+      setSubmissionError(error.message || t("submissionError"))
     } finally {
       setIsSubmitting(false)
     }
@@ -110,10 +112,10 @@ const CrimeReportForm: React.FC<CrimeReportFormProps> = ({ formDefinition, formI
 
       <div className="mt-10 flex justify-between items-center pt-6 border-t border-border">
         <Button variant="outline" onClick={handlePrev} disabled={currentStep === 1 || isSubmitting}>
-          Previous Step
+          {t('previousStep')}
         </Button>
         <Button size="lg" onClick={handleNext} disabled={isSubmitting}>
-          {isSubmitting ? "Submitting..." : isLastStep ? "Submit Report" : "Next Step"}
+          {isSubmitting ? t('submitting') : isLastStep ? t('submitReport') : t('nextStep')}
         </Button>
       </div>
     </div>

@@ -2,122 +2,124 @@
 
 import type React from "react"
 import { useState } from "react"
-import { useRouter, Link } from "@/i18n/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { useTranslations } from "next-intl"
 import { CategoryCard } from "./CategoryCard"
 import { ArrowLeftIcon } from "./icons/ArrowLeftIcon"
-import { getReportTypes, getCategoriesForReportType, getFormsForCategory, FormDefinition } from "@/lib/crime-forms"
-
-const reportTypes = getReportTypes()
+import { getReportTypeKeys, getCategoryKeysForReportType, getFormKeysForCategory } from "@/lib/crime-forms-structure"
 
 const ReportPage: React.FC = () => {
-  const t = useTranslations("ReportPage")
-  const router = useRouter()
+  const t = useTranslations("ReportPage");
+  const tForms = useTranslations("crimeForms");
+  const router = useRouter();
 
-  const [view, setView] = useState<"main" | "categories" | "forms">("main")
-  const [selectedReportType, setSelectedReportType] = useState<string | null>(null)
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
+  const [view, setView] = useState<"main" | "categories" | "forms">("main");
+  const [selectedReportType, setSelectedReportType] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+
+  const reportTypeKeys = getReportTypeKeys();
 
   const handleBack = () => {
     if (view === "forms") {
-      setView("categories")
-      setSelectedCategory(null)
+      setView("categories");
+      setSelectedCategory(null);
     } else if (view === "categories") {
-      setView("main")
-      setSelectedReportType(null)
+      setView("main");
+      setSelectedReportType(null);
     } else {
       router.push("/");
     }
-  }
+  };
 
   const selectReportType = (typeKey: string) => {
-    setSelectedReportType(typeKey)
-    setView("categories")
-  }
+    setSelectedReportType(typeKey);
+    setView("categories");
+  };
 
   const selectCategory = (categoryKey: string) => {
-    setSelectedCategory(categoryKey)
-    setView("forms")
-  }
+    setSelectedCategory(categoryKey);
+    setView("forms");
+  };
 
   const selectForm = (formKey: string) => {
     if (selectedReportType && selectedCategory) {
-      router.push(`/report/${selectedReportType}/${selectedCategory}/${formKey}`)
+      router.push(`/report/${selectedReportType}/${selectedCategory}/${formKey}`);
     }
-  }
+  };
 
   const renderContent = () => {
     if (view === "forms" && selectedReportType && selectedCategory) {
-      const forms = getFormsForCategory(selectedReportType, selectedCategory)
-      if (!forms) return <p>No forms found for this category.</p>
+      const formKeys = getFormKeysForCategory(selectedReportType, selectedCategory);
+      if (!formKeys.length) return <p>No forms found for this category.</p>;
+      
       return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {Object.entries(forms).map(([key, form]) => {
-            const formDef = form as FormDefinition
+          {formKeys.map((key) => {
+            const title = tForms(`category_structures.${selectedReportType}.categories.${selectedCategory}.forms.${key}.title`);
             return (
               <CategoryCard
                 key={key}
-                title={formDef.title}
-                subtitle={`Report an incident of ${formDef.title.toLowerCase()}.`}
+                title={title}
+                subtitle={`Report an incident of ${title.toLowerCase()}.`}
                 onClick={() => selectForm(key)}
                 size="small"
               />
-            )
+            );
           })}
         </div>
-      )
+      );
     }
 
     if (view === "categories" && selectedReportType) {
-      const categories = getCategoriesForReportType(selectedReportType)
-      if (!categories) return <p>No categories found.</p>
+      const categoryKeys = getCategoryKeysForReportType(selectedReportType);
+      if (!categoryKeys.length) return <p>No categories found.</p>;
+
       return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {Object.entries(categories).map(([key, category]) => (
+          {categoryKeys.map((key) => (
             <CategoryCard
               key={key}
-              title={category.title}
-              subtitle={category.subtitle}
+              title={tForms(`category_structures.${selectedReportType}.categories.${key}.title`)}
+              subtitle={tForms(`category_structures.${selectedReportType}.categories.${key}.subtitle`)}
               onClick={() => selectCategory(key)}
             />
           ))}
         </div>
-      )
+      );
     }
 
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-        {Object.entries(reportTypes).map(([key, type]) => (
-          <CategoryCard key={key} title={type.title} subtitle={type.subtitle} onClick={() => selectReportType(key)} />
+        {reportTypeKeys.map((key) => (
+          <CategoryCard 
+            key={key} 
+            title={tForms(`category_structures.${key}.title`)} 
+            subtitle={tForms(`category_structures.${key}.subtitle`)} 
+            onClick={() => selectReportType(key)} />
         ))}
       </div>
-    )
-  }
+    );
+  };
 
   const getPageTitle = () => {
     if (view === "forms" && selectedReportType && selectedCategory) {
-      const categories = getCategoriesForReportType(selectedReportType)
-      if (categories) {
-        const category = categories[selectedCategory as keyof typeof categories] as { title?: string }
-        return category?.title || "Select Form"
-      }
+      return tForms(`category_structures.${selectedReportType}.categories.${selectedCategory}.title`);
     }
     if (view === "categories" && selectedReportType) {
-      const reportType = reportTypes[selectedReportType as keyof typeof reportTypes]
-      return reportType?.title || "Select Category"
+      return tForms(`category_structures.${selectedReportType}.title`);
     }
-    return t("title")
-  }
+    return t("title");
+  };
 
   const getPageSubtitle = () => {
     if (view === "forms") {
-      return "Please select the specific type of incident you wish to report."
+      return "Please select the specific type of incident you wish to report.";
     }
     if (view === "categories") {
-      return "Choose the category that best describes your report."
+      return "Choose the category that best describes your report.";
     }
-    return t("subtitle")
-  }
+    return t("subtitle");
+  };
 
   return (
     <div className="report-theme min-h-screen flex flex-col animate-fadeIn bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
@@ -133,7 +135,6 @@ const ReportPage: React.FC = () => {
           </button>
         </div>
       </header>
-
       <main className="flex-grow">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="text-center mb-12">
