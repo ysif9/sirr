@@ -79,7 +79,7 @@ export class LLMService {
 
       const scope = response.toLowerCase().trim();
       return {
-        binaryScore: scope.includes('legal') ? 'yes' : 'no'
+        binaryScore: scope.includes('yes') ? 'yes' : 'no'
       };
     } catch (error) {
       throw new LLMError(`Legal scope check failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -219,41 +219,39 @@ export class PostgreSQLVectorStore {
     }
   }
 
-  async similaritySearch(query: string, k: number = 6): Promise<Document[]> {
-    try {
-      // Check if vector store is initialized
+async similaritySearch(query: string, k: number = 6): Promise<Document[]> {
+  try {
+    // Check if vector store is initialized
+    if (!this.isInitialized || !this.vectorStore) {
+      console.warn('Vector store not initialized, attempting to reinitialize...');
+      await this.initializeVectorStore();
+
       if (!this.isInitialized || !this.vectorStore) {
-        console.warn('Vector store not initialized, attempting to reinitialize...');
-        await this.initializeVectorStore();
-
-        if (!this.isInitialized || !this.vectorStore) {
-          throw new VectorStoreError('Failed to initialize PostgreSQL vector store');
-        }
+        throw new VectorStoreError('Failed to initialize PostgreSQL vector store');
       }
-
-      console.log(`Performing similarity search for query: "${query}" with k=${k}`);
-
-      // Perform similarity search using PGVector
-      const results = await this.vectorStore.similaritySearch(query, k);
-
-      console.log(`Retrieved ${results.length} documents from PostgreSQL vector store`);
-
-      // Filter by score threshold if available
-      const filteredResults = results.filter(doc => {
-        const score = doc.metadata?.score || 1.0;
-        return score >= this.config.retriever.scoreThreshold;
-      });
-
-      console.log(`Filtered to ${filteredResults.length} documents above threshold ${this.config.retriever.scoreThreshold}`);
-
-      return filteredResults;
-    } catch (error) {
-      console.error('Error in PostgreSQL similarity search:', error);
-
-      // Fallback to sample documents for development/testing
-      return this.fallbackSampleDocuments(query, k);
     }
+
+    console.log(`Performing similarity search for query: "${query}" with k=${k}`);
+
+    // Perform similarity search using PGVector
+    const results = await this.vectorStore.similaritySearch(query, k);
+
+
+    // Filter by score threshold if available
+    const filteredResults = results.filter(doc => {
+      const score = doc.metadata?.score || 1.0;
+      return score >= this.config.retriever.scoreThreshold;
+    });
+
+
+    return filteredResults;
+  } catch (error) {
+    console.error('Error in PostgreSQL similarity search:', error);
+
+    // Fallback to sample documents for development/testing
+    return this.fallbackSampleDocuments(query, k);
   }
+}
 
   private fallbackSampleDocuments(query: string, k: number): Document[] {
     console.log('Using fallback sample documents due to database connection issues');
@@ -325,7 +323,8 @@ export class RAGWorkflowService {
       console.log('Legal scope:', legalScope.binaryScore);
 
       if (legalScope.binaryScore === 'no') {
-        return await this.llmService.generateWithTemplate(PROMPT_TEMPLATES.apology, { question });
+
+        return PROMPT_TEMPLATES.apology.replace("{question}", question);
       }
 
       // Step 2: Retrieve relevant documents
