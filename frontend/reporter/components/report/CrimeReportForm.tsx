@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { FormDefinition, Field } from "@/lib/crime-forms"
 import { submitReport } from "@/lib/api"
@@ -9,6 +9,7 @@ import RenderField from "./RenderField"
 import { Button } from "../ui/button"
 import SubmissionSuccess from "./SubmissionSuccess"
 import { useTranslations } from "next-intl"
+import { useLoader } from "@/contexts/LoaderContext"
 
 interface CrimeReportFormProps {
   formDefinition: FormDefinition
@@ -21,6 +22,7 @@ interface CrimeReportFormProps {
 
 const CrimeReportForm: React.FC<CrimeReportFormProps> = ({ formDefinition, formIdentifier }) => {
   const t = useTranslations("CrimeReportForm");
+  const { showLoader, hideLoader } = useLoader();
   const [currentStep, setCurrentStep] = useState(1)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submissionData, setSubmissionData] = useState<{ access_key: string } | null>(null)
@@ -29,6 +31,19 @@ const CrimeReportForm: React.FC<CrimeReportFormProps> = ({ formDefinition, formI
   const { control, watch, trigger, getValues, reset } = useForm({
     mode: "onChange",
   })
+
+  useEffect(() => {
+    if (isSubmitting) {
+      showLoader();
+    } else {
+      hideLoader();
+    }
+
+    // Cleanup to hide loader if component unmounts while submitting
+    return () => {
+      hideLoader();
+    };
+  }, [isSubmitting, showLoader, hideLoader]);
 
   const handleSubmit = async () => {
     setIsSubmitting(true)

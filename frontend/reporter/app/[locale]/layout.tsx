@@ -7,6 +7,7 @@ import './styles.css';
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages, setRequestLocale } from 'next-intl/server';
 import { routing } from '@/i18n/routing';
+import { LoaderProvider } from '@/contexts/LoaderContext';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -49,10 +50,12 @@ export default async function LocaleLayout({ children, params }: Props) {
   return (
     <html lang={locale} dir={dir}>
       <body className={`font-sans ${inter.variable} ${jetbrainsMono.variable}`}>
-        <NextIntlClientProvider messages={messages}>
-          <Suspense fallback={null}>{children}</Suspense>
-          <Analytics />
-        </NextIntlClientProvider>
+        <LoaderProvider>
+          <NextIntlClientProvider messages={messages}>
+            {children}
+            <Analytics />
+          </NextIntlClientProvider>
+        </LoaderProvider>
       </body>
     </html>
   );
