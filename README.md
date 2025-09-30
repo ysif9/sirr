@@ -216,7 +216,6 @@ POSTGRES_DB_USER=postgres
 POSTGRES_DB_PASSWORD=postgres
 
 # AI Service API Keys (Optional - for AI features)
-OPENAI_API_KEY=your-openai-key-here
 GOOGLE_API_KEY=your-google-api-key-here
 TAVILY_API_KEY=your-tavily-key-here
 
