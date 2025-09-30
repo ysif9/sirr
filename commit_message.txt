@@ -1,8 +1,0 @@
-feat(reporter): Add global loader for async operations
-
-Introduces a global loading indicator to improve user experience during asynchronous actions like form submissions.
-
-- Implements a `LoaderProvider` and `useLoader` hook to control the loader's visibility.
-- Integrates the loader into the main layout, making it available across the application.
-- The crime report submission form now uses this loader to provide feedback to the user while the report is being sent.
-- Removes the now-redundant `LanguageContext`, as `next-intl` handles internationalization directly.
