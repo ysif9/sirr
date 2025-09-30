@@ -1,0 +1,353 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.577 0.245 27.325);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+  --radius: 0.625rem;
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --color-slate-900: oklch(0.205 0 0);
+
+  /* === Merged Chatbot Variables START === */
+  --sidebar: oklch(0.21 0.006 285.885);
+  --sidebar-foreground: oklch(0.871 0.006 286.286);
+  --sidebar-primary: oklch(0.37 0.013 285.805);
+  --sidebar-primary-foreground: oklch(0.871 0.006 286.286);
+  --sidebar-accent: oklch(0.274 0.006 286.033);
+  --sidebar-accent-foreground: oklch(0.871 0.006 286.286);
+  --sidebar-border: oklch(0.92 0.004 286.32);
+  --sidebar-ring: oklch(0.871 0.006 286.286);
+  /* === Merged Chatbot Variables END === */
+}
+
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.922 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.556 0 0);
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+
+  /* === Merged Chatbot Dark Variables START === */
+  --sidebar: oklch(0.21 0.006 285.885);
+  --sidebar-foreground: oklch(0.871 0.006 286.286);
+  --sidebar-primary: oklch(0.37 0.013 285.805);
+  --sidebar-primary-foreground: oklch(0.871 0.006 286.286);
+  --sidebar-accent: oklch(0.274 0.006 286.033);
+  --sidebar-accent-foreground: oklch(0.871 0.006 286.286);
+  --sidebar-border: oklch(0.274 0.006 286.033);
+  --sidebar-ring: oklch(0.442 0.017 285.786);
+  /* === Merged Chatbot Dark Variables END === */
+}
+
+@theme inline {
+  /* optional: --font-sans, --font-serif, --font-mono if they are applied in the layout.tsx */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #1e293b;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #475569;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
+}
+
+/* Focus styles for accessibility */
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* Animation for modals */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.3s ease-out;
+}
+
+/* === NEW CHATBOT DEMO ANIMATION START === */
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.animate-pop-in {
+  animation: pop-in 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.typing-indicator {
+  width: 40px;
+  height: 20px;
+  position: relative;
+  margin-bottom: 0.25rem;
+  z-index: 4;
+}
+
+.typing-circle {
+  width: 6px; /* Was 8px */
+  height: 6px; /* Was 8px */
+  position: absolute;
+  border-radius: 50%;
+  background-color: var(--muted-foreground);
+  left: 15%;
+  transform-origin: 50%;
+  animation: typing-circle7124 0.5s alternate infinite ease;
+}
+
+@keyframes typing-circle7124 {
+  0% {
+    top: 14px; /* Was 20px */
+    height: 3px; /* Was 5px */
+    border-radius: 50px 50px 25px 25px;
+    transform: scaleX(1.7);
+  }
+  40% {
+    height: 6px; /* Was 8px */
+    border-radius: 50%;
+    transform: scaleX(1);
+  }
+  100% {
+    top: 0%;
+  }
+}
+
+.typing-circle:nth-child(2) {
+  left: 45%;
+  animation-delay: 0.2s;
+}
+
+.typing-circle:nth-child(3) {
+  left: auto;
+  right: 15%;
+  animation-delay: 0.3s;
+}
+
+.typing-shadow {
+  width: 4px; /* Was 5px */
+  height: 3px; /* Was 4px */
+  border-radius: 50%;
+  background-color: rgba(0, 0, 0, 0.2);
+  position: absolute;
+  top: 20px; /* Was 30px */
+  transform-origin: 50%;
+  z-index: 3;
+  left: 15%;
+  filter: blur(1px);
+  animation: typing-shadow046 0.5s alternate infinite ease;
+}
+
+@keyframes typing-shadow046 {
+  0% {
+    transform: scaleX(1.5);
+  }
+  40% {
+    transform: scaleX(1);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scaleX(0.2);
+    opacity: 0.4;
+  }
+}
+
+.typing-shadow:nth-child(4) {
+  left: 45%;
+  animation-delay: 0.2s;
+}
+
+.typing-shadow:nth-child(5) {
+  left: auto;
+  right: 15%;
+  animation-delay: 0.3s;
+}
+/* === NEW CHATBOT DEMO ANIMATION END === */
+/* === LOADER ANIMATION START === */
+.loader-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(15, 23, 42, 0.8); /* slate-900 with opacity */
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.loader {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    max-width: 6rem;
+    /* margin-top and margin-bottom removed for better centering in overlay */
+  }
+  .loader:before,
+  .loader:after {
+    content: "";
+    position: absolute;
+    border-radius: 50%;
+    animation: pulsOut 1.8s ease-in-out infinite;
+    filter: drop-shadow(0 0 1rem rgba(255, 255, 255, 0.75));
+  }
+  .loader:before {
+    width: 100%;
+    padding-bottom: 100%;
+    box-shadow: inset 0 0 0 1rem #fff;
+    animation-name: pulsIn;
+  }
+  .loader:after {
+    width: calc(100% - 2rem);
+    padding-bottom: calc(100% - 2rem);
+    box-shadow: 0 0 0 0 #fff;
+  }
+
+  @keyframes pulsIn {
+    0% {
+      box-shadow: inset 0 0 0 1rem #fff;
+      opacity: 1;
+    }
+    50%, 100% {
+      box-shadow: inset 0 0 0 0 #fff;
+      opacity: 0;
+    }
+  }
+
+  @keyframes pulsOut {
+    0%, 50% {
+      box-shadow: 0 0 0 0 #fff;
+      opacity: 0;
+    }
+    100% {
+      box-shadow: 0 0 0 1rem #fff;
+      opacity: 1;
+    }
+  }
+/* === LOADER ANIMATION END === */

@@ -1,0 +1,59 @@
+# Git and version control
+.git
+.gitignore
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Python cache and bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Development tools cache
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# IDEs and editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Documentation and README files (not needed in container)
+README.md
+DOCKER_CONFIGURATION_REVIEW.md
+docs/
+
+# Node.js (if any frontend assets)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+
+# Temporary files
+*.tmp
+*.temp
+.tmp/

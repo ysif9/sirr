@@ -1,0 +1,513 @@
+{
+  "CrimeReportForm": {
+    "previousStep": "الخطوة السابقة",
+    "nextStep": "الخطوة التالية",
+    "submitReport": "إرسال البلاغ",
+    "submitting": "جاري الإرسال...",
+    "submissionError": "حدث خطأ غير متوقع أثناء الإرسال."
+  },
+  "RenderField": {
+    "remove": "إزالة",
+    "addItem": "إضافة {item}",
+    "defaultItem": "عنصر",
+    "selectPlaceholder": "اختر {label}",
+    "requiredError": "{label} مطلوب."
+  },
+  "SubmissionSuccess": {
+    "title": "تم إرسال البلاغ بنجاح",
+    "subtitle": "شكراً لمساعدتك في الحفاظ على أمان مجتمعك. تم تقديم بلاغك بشكل مجهول.",
+    "accessKeyInstruction": "يرجى حفظ هذا الرقم المرجعي لمتابعة بلاغك:",
+    "accessKeyWarning": "هذا الرقم هو الطريقة الوحيدة للتحقق من حالة بلاغك. احتفظ به في مكان آمن.",
+    "fileAnotherReport": "تقديم بلاغ آخر"
+  },
+  "SplashScreen": {
+    "title": "الإبلاغ المجهول عن الجرائم",
+    "subtitle": "آمن ومضمون"
+  },
+  "EmergencyBanner": {
+    "line1": "في حالة الطوارئ، اتصل فوراً:",
+    "line2": "الشرطة: 122 | الإطفاء: 998 | الإسعاف: 997"
+  },
+  "Hero": {
+    "title": "أبلغ عن الجرائم بشكل مجهول",
+    "subtitle": "سلامتك أولويتنا. أبلغ عن الجرائم بأمان وبشكل مجهول للمساعدة في جعل مجتمعك أكثر أماناً.",
+    "startNewReport": "بدء بلاغ جديد",
+    "followUpOnReport": "متابعة البلاغ",
+    "legalDisclaimer": "باستخدام هذه الخدمة، فإنك توافق على",
+    "legalLink": "الشروط وسياسة الخصوصية"
+  },
+  "ReportPage": {
+    "title": "اختر فئة الجريمة",
+    "subtitle": "اختر الفئة التي تصف بشكل أفضل الجريمة التي تريد الإبلاغ عنها.",
+    "searchPlaceholder": "البحث في الفئات...",
+    "noCategoriesFound": "لم يتم العثور على فئات لـ",
+    "backButton": "رجوع"
+  },
+  "Footer": {
+    "accessibility": "إمكانية الوصول",
+    "termsPrivacy": "الشروط والخصوصية",
+    "faqLink": "الأسئلة الشائعة"
+  },
+  "InfoPages": {
+    "Accessibility": {
+      "title": "بيان إمكانية الوصول",
+      "content": [
+        "نحن ملتزمون بضمان أن منصة الإبلاغ المجهول عن الجرائم متاحة لجميع المستخدمين، بما في ذلك ذوي الإعاقة.",
+        "تتبع منصتنا **إرشادات إمكانية الوصول لمحتوى الويب (WCAG) 2.1** في المستوى AA لضمان التوافق مع التقنيات المساعدة.",
+        "**ميزات إمكانية الوصول:**",
+        "• التوافق مع قارئ الشاشة مع تسميات ARIA المناسبة و HTML الدلالي",
+        "• دعم التنقل بلوحة المفاتيح لجميع العناصر التفاعلية",
+        "• أنظمة ألوان عالية التباين لرؤية أفضل",
+        "• نص قابل للتكبير يمكن تكبيره حتى 200% دون فقدان الوظائف",
+        "• نص بديل لجميع الصور والمحتوى المرئي",
+        "• لغة واضحة وبسيطة في جميع أنحاء الواجهة",
+        "إذا واجهت أي حواجز في إمكانية الوصول أثناء استخدام خدمتنا، يرجى الاتصال بفريق الدعم لدينا. نحن نعمل باستمرار على تحسين إمكانية الوصول ونرحب بملاحظاتك."
+      ]
+    },
+    "Terms": {
+      "title": "شروط الخدمة وسياسة الخصوصية",
+      "content": [
+        "**خدمة الإبلاغ المجهول**",
+        "توفر هذه المنصة طريقة آمنة ومجهولة للإبلاغ عن الجرائم لوكالات إنفاذ القانون. خصوصيتك وسلامتك هما أولويتنا القصوى.",
+        "**حماية الخصوصية:**",
+        "• لا يتم جمع أو تخزين أي معلومات شخصية",
+        "• جميع التقارير مشفرة ومرسلة بشكل آمن",
+        "• عناوين IP غير مسجلة أو متتبعة",
+        "• لا يتم استخدام ملفات تعريف الارتباط أو تقنيات التتبع",
+        "**معلومات قانونية مهمة:**",
+        "• هذه الخدمة مخصصة للإبلاغ عن الجرائم فقط",
+        "• التقارير الكاذبة قد تخضع لعواقب قانونية",
+        "• في حالات الطوارئ، اتصل بخدمات الطوارئ مباشرة",
+        "• يتم إرسال التقارير إلى وكالات إنفاذ القانون المناسبة",
+        "**إخلاء المسؤولية:**",
+        "هذه الخدمة لا تضمن التحقيق أو الاستجابة للتقارير. للحصول على مساعدة فورية أو في المواقف المهددة للحياة، اتصل بخدمات الطوارئ مباشرة على 122."
+      ]
+    }
+  },
+  "FollowUpModal": {
+    "title": "متابعة بلاغك",
+    "description": "أدخل رقم مرجع البلاغ للتحقق من حالة تقديمك.",
+    "placeholder": "أدخل رقم مرجع البلاغ",
+    "submit": "تحقق من الحالة",
+    "cancel": "إلغاء"
+  },
+  "FAQModal": {
+    "title": "الأسئلة الشائعة",
+    "close": "إغلاق",
+    "q1": {
+      "question": "هل بلاغي مجهول حقاً؟",
+      "answer": "نعم، بالتأكيد. نحن لا نجمع أي معلومات شخصية أو عناوين IP أو نستخدم تقنيات التتبع. هويتك تبقى مجهولة تماماً."
+    },
+    "q2": {
+      "question": "ماذا يحدث بعد تقديم البلاغ؟",
+      "answer": "يتم تشفير بلاغك وإرساله بشكل آمن إلى وكالة إنفاذ القانون المناسبة. ستحصل على رقم مرجعي لتتبع حالة بلاغك."
+    },
+    "q3": {
+      "question": "هل يمكنني متابعة بلاغي؟",
+      "answer": "نعم، يمكنك استخدام الرقم المرجعي المقدم بعد التقديم للتحقق من حالة بلاغك من خلال نظام المتابعة لدينا."
+    },
+    "q4": {
+      "question": "ماذا لو كان لدي حالة طوارئ؟",
+      "answer": "هذه الخدمة ليست لحالات الطوارئ. إذا كنت في خطر مباشر، اتصل بخدمات الطوارئ مباشرة: الشرطة 122."
+    },
+    "q5": {
+      "question": "ما المعلومات التي يجب أن أتضمنها؟",
+      "answer": "قدم أكبر قدر ممكن من التفاصيل بما في ذلك التواريخ والأوقات والمواقع ووصف الأشخاص المعنيين وأي أدلة قد تكون لديك."
+    },
+    "q6": {
+      "question": "هل هذه الخدمة متاحة على مدار الساعة؟",
+      "answer": "نعم، يمكنك تقديم التقارير في أي وقت. ومع ذلك، قد تختلف أوقات المعالجة حسب وكالة إنفاذ القانون وتعقيد القضية."
+    }
+  },
+  "crimeForms": {
+    "yes": "نعم",
+    "no": "لا",
+    "unsure": "غير متأكد",
+    "other": "أخرى",
+    "violenceThreats": {
+      "step1_title": "تفاصيل الحادث",
+      "location_label": "أين وقع هذا؟",
+      "location_helper": "قدم عنوانًا أو حدد على الخريطة.",
+      "incident_date_label": "تاريخ الحادث",
+      "incident_time_label": "وقت الحادث",
+      "incident_description_label": "يرجى وصف ما حدث بالتفصيل.",
+      "incident_description_placeholder": "صف الأحداث بالترتيب الذي وقعت به...",
+      "step2_title": "معلومات الضحية",
+      "victim_identity_label": "من هو الضحية؟",
+      "victim_identity_options": ["أنا", "شخص آخر"],
+      "victim_name_label": "الاسم الكامل للضحية",
+      "child_involved_label": "هل كان هناك طفل معرض للخطر؟",
+      "anyone_injured_label": "هل أصيب أي شخص؟",
+      "victim_injuries_label": "ما هي الإصابات، إن وجدت، التي تعرض لها؟",
+      "victim_injuries_placeholder": "مثال: جروح، كدمات، كسور في العظام.",
+      "step3_title": "معلومات المشتبه به",
+      "suspect_count_label": "كم عدد المشتبه بهم؟",
+      "suspect_description_label": "يرجى وصف المشتبه به (أو المشتبه بهم).",
+      "suspect_description_placeholder": "أدخل تفاصيل مثل الجنس، العمر، الطول، البنية، الملابس، وأي سمات مميزة.",
+      "weapon_involved_label": "هل استخدم سلاح؟",
+      "weapon_type_label": "ما نوع السلاح؟",
+      "weapon_type_placeholder": "مثال: سكين، مضرب، سلاح ناري.",
+      "vehicle_involved_label": "هل استخدمت أو شوهدت مركبة؟",
+      "vehicle_description_label": "وصف المركبات المتورطة.",
+      "vehicle_description_placeholder": "الصنع، الطراز، لوحة الترخيص.",
+      "step4_title": "الأدلة والشهود",
+      "evidence_upload_label": "تحميل الصور أو مقاطع الفيديو",
+      "evidence_upload_helper": "يرجى تحميل أي دليل مرئي متعلق بالحادث.",
+      "witness_present_label": "هل كان هناك أي شهود؟",
+      "witness_details_label": "معلومات الشاهد",
+      "witness_name_label": "اسم الشاهد",
+      "witness_contact_label": "معلومات الاتصال بالشاهد"
+    },
+    "theftBurglary": {
+      "step1_title": "الموقع والتوقيت",
+      "location_label": "أين وقع السطو؟",
+      "property_type_label": "ما نوع العقار الذي تم دخوله؟",
+      "property_type_options": ["منزل", "شقة/وحدة سكنية", "عمل تجاري", "مرآب", "وحدة تخزين", "أخرى"],
+      "time_discovered_label": "متى اكتشفت الاقتحام؟",
+      "time_occurred_label": "متى تعتقد أنه حدث؟",
+      "time_occurred_helper": "قدم النطاق الزمني الذي كنت فيه بعيدًا أو كان العقار غير مشغول.",
+      "step2_title": "تفاصيل الحادث",
+      "was_anything_stolen_label": "هل سُرق أي شيء؟",
+      "stolen_items_label": "قائمة المسروقات",
+      "item_name_label": "القطعة",
+      "item_name_placeholder": "مثال: حاسوب محمول، مجوهرات",
+      "item_value_label": "القيمة التقديرية (بالدولار)",
+      "item_description_label": "الوصف / الرقم التسلسلي",
+      "was_anything_damaged_label": "هل حدث أي تلف للممتلكات أو لقطعة ما؟",
+      "damage_description_label": "ما الذي تعرض للتلف؟",
+      "damage_description_placeholder": "صف الأبواب أو النوافذ أو الأثاث التالف، إلخ.",
+      "step3_title": "المشتبه به والأدلة",
+      "suspect_info_label": "هل لديك أي معلومات عن مشتبه به؟",
+      "suspect_info_placeholder": "الوصف، الاسم، إلخ...",
+      "vehicle_involved_label": "هل استخدمت أو شوهدت مركبة؟",
+      "vehicle_description_label": "وصف المركبات المتورطة.",
+      "vehicle_description_placeholder": "الصنع، الطراز، لوحة الترخيص.",
+      "evidence_upload_label": "تحميل الأدلة",
+      "evidence_upload_helper": "مثال: لقطات كاميرا جرس الباب، صور.",
+      "witness_present_label": "هل كان هناك أي شهود؟"
+    },
+    "vehicleCrime": {
+      "step1_title": "تفاصيل الحادث",
+      "location_label": "أين كانت المركبة متوقفة؟",
+      "time_occurred_label": "متى تعتقد أن السرقة وقعت؟",
+      "vehicle_entered_label": "هل تم دخول مركبتك؟",
+      "vehicle_entry_label": "كيف دخل المشتبه به مركبتك؟",
+      "vehicle_entry_options": ["كسر النافذة", "الأبواب لم تكن مقفلة", "تم فتح الصندوق بالقوة", "غير متأكد", "أخرى"],
+      "was_anything_stolen_label": "هل سُرق أي شيء؟",
+      "stolen_items_label": "قائمة المسروقات",
+      "item_name_label": "القطعة",
+      "item_name_placeholder": "مثال: حاسوب محمول، مجوهرات",
+      "item_value_label": "القيمة التقديرية (بالدولار)",
+      "item_description_label": "الوصف / الرقم التسلسلي",
+      "step2_title": "معلومات المركبة",
+      "own_vehicle_make_label": "صنع المركبة",
+      "own_vehicle_make_placeholder": "مثال: هوندا",
+      "own_vehicle_model_label": "طراز المركبة",
+      "own_vehicle_model_placeholder": "مثال: سيفيك",
+      "own_vehicle_year_label": "السنة",
+      "own_vehicle_color_label": "اللون",
+      "own_license_plate_label": "رقم لوحة الترخيص",
+      "own_vin_number_label": "رقم تعريف المركبة (VIN)",
+      "own_vin_number_helper": "يمكن العثور على رقم تعريف المركبة على لوحة القيادة أو في وثائق التسجيل.",
+      "step3_title": "المشتبه به والأدلة",
+      "suspect_info_label": "هل لديك أي معلومات عن مشتبه به؟",
+      "suspect_info_placeholder": "الوصف، الاسم، إلخ...",
+      "vehicle_involved_label": "هل استخدمت أو شوهدت مركبة؟",
+      "vehicle_description_label": "وصف المركبات المتورطة.",
+      "vehicle_description_placeholder": "الصنع، الطراز، لوحة الترخيص.",
+      "evidence_upload_label": "تحميل الأدلة",
+      "evidence_upload_helper": "مثال: لقطات كاميرا السيارة (داش كام)، صور.",
+      "witness_present_label": "هل كان هناك أي شهود؟"
+    },
+    "fraudScam": {
+      "step1_title": "تفاصيل الحادث",
+      "location_label": "أين حدث ذلك؟",
+      "time_occurred_label": "متى تعتقد أنه وقع؟",
+      "step2_title": "الأضرار المحتملة",
+      "financial_loss_label": "هل خسرت أي مال أو ممتلكات؟",
+      "loss_amount_label": "إجمالي الخسارة المقدرة (بالدولار)",
+      "payment_method_label": "كيف قمت بالدفع؟",
+      "payment_method_placeholder": "مثال: بطاقة ائتمان، حوالة بنكية، بطاقة هدايا، عملة مشفرة",
+      "identity_stolen_label": "هل سُرقت هويتك؟",
+      "identity_used_for_label": "إذا كانت الإجابة نعم، فما الذي استُخدمت من أجله؟",
+      "identity_used_for_placeholder": "مثال: فتح حسابات، الحصول على قروض، مشتريات عبر الإنترنت",
+      "counterfeit_occurred_label": "هل تم تزوير أو تزييف أي شيء؟",
+      "counterfeit_details_label": "إذا كانت الإجابة نعم، فما الذي تم تزويره؟",
+      "counterfeit_details_placeholder": "مثال: شيكات، مستندات، تواقيع، بطاقات هوية",
+      "step3_title": "المشتبه به والأدلة",
+      "suspect_info_label": "هل لديك أي معلومات عن مشتبه به؟",
+      "suspect_info_placeholder": "الوصف، الاسم، إلخ...",
+      "evidence_upload_label": "تحميل الأدلة",
+      "evidence_upload_helper": "مثال: لقطات كاميرا جرس الباب، صور.",
+      "witness_present_label": "هل كان هناك أي شهود؟"
+    },
+    "cybercrime": {
+      "step1_title": "تفاصيل الحادث",
+      "incident_discovery_date_label": "متى اكتشفت هذا الحادث؟",
+      "platform_label": "أين حدث هذا؟",
+      "platform_placeholder": "مثال: فيسبوك، جيميل، موقع الشركة، حاسوب شخصي",
+      "incident_description_label": "يرجى وصف ما حدث.",
+      "incident_description_placeholder": "قدم وصفًا مفصلاً للأحداث، ما قيل، ما تم القيام به، أو ما تم اختراقه.",
+      "step2_title": "المشتبه به والتأثير المالي",
+      "suspect_info_label": "هل لديك أي معلومات عن مشتبه به؟",
+      "suspect_info_placeholder": "أدخل أسماء المستخدمين، روابط الملفات الشخصية، عناوين البريد الإلكتروني، أرقام الهواتف، أو أي معرفات أخرى.",
+      "financial_loss_label": "هل أدى هذا الحادث إلى خسارة مالية؟",
+      "loss_amount_label": "الخسارة المالية المقدرة (بالدولار)",
+      "step3_title": "الأدلة",
+      "evidence_upload_label": "تحميل الأدلة",
+      "evidence_upload_helper": "حمّل لقطات الشاشة، رسائل البريد الإلكتروني، السجلات، أو ملاحظات الفدية. لا تقم بتنزيل أو حفظ مواد غير قانونية على جهازك.",
+      "additional_info_label": "معلومات إضافية",
+      "additional_info_placeholder": "هل هناك أي شيء آخر يجب أن نعرفه؟"
+    },
+    "drugsWeaponsPublicOrder": {
+      "step1_title": "تفاصيل النشاط",
+      "safety_disclaimer_label": "إخلاء مسؤولية",
+      "safety_disclaimer_text": "إذا كان هذا وضعًا نشطًا ومهددًا للحياة (مثل شخص يشهر سلاحًا)، يرجى الاتصال برقم 122 فورًا.",
+      "location_label": "أين يحدث هذا النشاط؟",
+      "activity_timing_label": "متى يحدث هذا عادةً؟",
+      "activity_timing_placeholder": "مثال: مستمر، في وقت متأخر من الليل، بعد ظهر عطلة نهاية الأسبوع.",
+      "activity_description_label": "صف النشاط بالتفصيل.",
+      "activity_description_placeholder": "ماذا رأيت أو سمعت يشكل المخالفة؟",
+      "step2_title": "المشتبه بهم والمركبات",
+      "suspect_count_label": "كم عدد الأشخاص المتورطين؟",
+      "suspect_description_label": "يرجى وصف الشخص أو الأشخاص المتورطين.",
+      "suspect_description_placeholder": "أدخل تفاصيل مثل الجنس، العمر، الملابس، وأي سمات مميزة.",
+      "vehicle_involved_label": "هل كانت هناك مركبة متورطة؟",
+      "vehicle_description_label": "صف المركبات المتورطة.",
+      "vehicle_description_placeholder": "أدخل الصنع، الطراز، اللون، لوحة الترخيص، وأي ميزات فريدة.",
+      "step3_title": "الأدلة",
+      "weapon_involved_label": "هل رأيت سلاحًا؟",
+      "weapon_description_label": "ما نوع السلاح الذي كان؟",
+      "weapon_description_placeholder": "مثال: مسدس، بندقية، سكين، مضرب",
+      "evidence_upload_label": "تحميل الصور أو مقاطع الفيديو",
+      "evidence_upload_helper": "قم بتحميل الأدلة فقط إذا كان بإمكانك القيام بذلك بأمان."
+    },
+    "environmentalCrimes": {
+      "step1_title": "تفاصيل الحادث",
+      "hazard_disclaimer_label": "إخلاء مسؤولية حول الخطر الفوري",
+      "hazard_disclaimer_text": "إذا كان الحادث يشكل تهديدًا فوريًا للصحة أو الحياة (مثل تسرب كيميائي، حريق)، اتصل برقم 122 فورًا.",
+      "location_label": "أين وقع الحادث؟",
+      "incident_datetime_label": "متى اكتشفت هذا؟",
+      "step2_title": "الوصف والمواد",
+      "incident_description_label": "يرجى وصف الحادث بالتفصيل.",
+      "incident_description_placeholder": "ماذا لاحظت؟ ما نوع الحيوانات أو البيئة المتأثرة؟",
+      "material_description_label": "صف المواد أو المكونات المتورطة.",
+      "material_description_placeholder": "مثال: أنقاض بناء، براميل سائلة، إطارات، جثث حيوانات.",
+      "is_hazardous_label": "هل تبدو المادة خطرة؟",
+      "is_hazardous_helper": "ابحث عن ملصقات تحذيرية، روائح قوية، أو نباتات ميتة في الجوار.",
+      "step3_title": "المشتبه به والأدلة",
+      "suspect_description_label": "هل لديك أي معلومات عن مشتبه به؟",
+      "suspect_description_placeholder": "صف أي أشخاص، أسماء شركات، أو شعارات رأيتها.",
+      "vehicle_description_label": "صف أي مركبات متورطة.",
+      "vehicle_description_placeholder": "أدخل الصنع، الطراز، لوحة الترخيص، والنوع (مثال: شاحنة قلابة، فان).",
+      "evidence_upload_label": "تحميل الصور أو مقاطع الفيديو",
+      "evidence_upload_helper": "يرجى تحميل أي دليل مرئي إذا كان القيام بذلك آمنًا."
+    },
+    "suspiciousActivity": {
+      "step1_title": "تفاصيل النشاط",
+      "location_label": "أين وقع هذا؟",
+      "activity_datetime_label": "متى حدث هذا؟",
+      "activity_description_label": "يرجى وصف السلوك المشبوه بالتفصيل.",
+      "activity_description_placeholder": "مثال: شخص ينظر إلى نوافذ السيارات، يختبر الأبواب، يراقب منزلًا لفترة طويلة.",
+      "step2_title": "معلومات الشخص والمركبة",
+      "subject_description_label": "يرجى وصف الشخص (أو الأشخاص) المتورطين.",
+      "subject_description_placeholder": "أدخل تفاصيل مثل الجنس، العمر، البنية، الملابس، وأي سمات مميزة.",
+      "vehicle_involved_label": "هل كانت هناك مركبة متورطة؟",
+      "vehicle_description_label": "صف المركبة، إن وجدت.",
+      "vehicle_description_placeholder": "أدخل الصنع، الطراز، اللون، لوحة الترخيص، وأي ميزات فريدة.",
+      "step3_title": "الأدلة",
+      "evidence_upload_label": "تحميل الصور أو مقاطع الفيديو",
+      "evidence_upload_helper": "قم بتحميل الأدلة فقط إذا كان القيام بذلك آمنًا."
+    },
+    "trafficRoadSafety": {
+      "step1_title": "تفاصيل الحادث",
+      "location_label": "أين وقع هذا؟",
+      "incident_datetime_label": "متى حدث هذا؟",
+      "incident_description_label": "يرجى وصف ما حدث.",
+      "incident_description_placeholder": "قدم وصفًا مفصلاً لسلوك القيادة، أو الخطر، أو الاصطدام.",
+      "step2_title": "معلومات المركبة والسائق",
+      "vehicle_description_label": "صف المركبة (أو المركبات) المتورطة.",
+      "vehicle_description_placeholder": "أدخل الصنع، الطراز، اللون، وأي سمات مميزة.",
+      "license_plate_label": "رقم لوحة الترخيص",
+      "license_plate_helper": "حتى رقم جزئي للوحة مفيد.",
+      "driver_description_label": "إذا رأيت السائق، يرجى تقديم وصف.",
+      "step3_title": "الأدلة والشهود",
+      "evidence_upload_label": "تحميل الصور أو مقاطع الفيديو",
+      "evidence_upload_helper": "مثال: لقطات كاميرا السيارة (داش كام)، صور للموقع.",
+      "witness_present_label": "هل كان هناك أي شهود؟",
+      "witness_details_label": "معلومات الشاهد",
+      "witness_name_label": "اسم الشاهد",
+      "witness_contact_label": "معلومات الاتصال بالشاهد"
+    },
+    "publicSafetyCommunityConcerns": {
+      "step1_title": "تفاصيل المشكلة",
+      "location_label": "أين تقع المشكلة؟",
+      "concern_datetime_label": "متى لاحظت هذا؟",
+      "concern_description_label": "يرجى وصف المشكلة بالتفصيل.",
+      "concern_description_placeholder": "مثال: سلك كهربائي ساقط، مشكلة ضوضاء مزمنة، إهمال حيوان.",
+      "step2_title": "معلومات إضافية وأدلة",
+      "person_involved_description_label": "إذا كان هناك شخص متورط، يرجى تقديم وصف.",
+      "vehicle_involved_description_label": "إذا كانت هناك مركبة متورطة، يرجى تقديم وصف.",
+      "evidence_upload_label": "تحميل الصور أو مقاطع الفيديو",
+      "evidence_upload_helper": "يرجى تحميل أي دليل مرئي إذا كان القيام بذلك آمنًا."
+    },
+    "missingPerson": {
+      "step1_title": "معلومات هامة",
+      "disclaimer_label": "إخلاء مسؤولية",
+      "disclaimer_text": "إذا كان هذا الشخص في خطر فوري، أو كان طفلاً صغيرًا، أو لديه حالة تعرضه لخطر كبير، يرجى الاتصال برقم 122 فورًا بدلاً من استخدام هذا النموذج.",
+      "step2_title": "تفاصيل الشخص المفقود",
+      "person_name_label": "الاسم الكامل للشخص المفقود",
+      "person_age_label": "العمر",
+      "person_gender_label": "الجنس",
+      "person_description_label": "الوصف الجسدي",
+      "person_description_placeholder": "أدخل الطول، الوزن، لون الشعر، لون العين، والسمات المميزة مثل الندوب أو الوشوم.",
+      "person_photo_label": "تحميل صورة حديثة",
+      "person_photo_helper": "الصورة الواضحة والحديثة مفيدة للغاية.",
+      "step3_title": "آخر معلومات معروفة",
+      "last_seen_datetime_label": "تاريخ ووقت آخر رؤية",
+      "last_seen_location_label": "موقع آخر رؤية",
+      "last_seen_location_placeholder": "قدم العنوان أو المنطقة التي شوهدوا فيها آخر مرة.",
+      "last_seen_clothing_label": "ماذا كانوا يرتدون آخر مرة؟",
+      "circumstances_label": "صف الظروف المحيطة باختفائهم."
+    },
+    "welfareCheck": {
+      "step1_title": "معلومات الشخص المعني",
+      "disclaimer_label": "إخلاء مسؤولية",
+      "disclaimer_text": "إذا كنت تعتقد أن شخصًا ما في خطر فوري يهدد حياته، يرجى الاتصال برقم 122.",
+      "subject_name_label": "اسم الشخص الذي تشعر بالقلق بشأنه.",
+      "subject_location_label": "أين يمكن للسلطات العثور على هذا الشخص؟",
+      "subject_location_helper": "العنوان الكامل والدقيق أمر بالغ الأهمية لهذا الطلب.",
+      "step2_title": "سبب القلق",
+      "reason_for_check_label": "لماذا تطلب فحص الحالة؟ كن محددًا.",
+      "reason_for_check_placeholder": "مثال: لم أسمع منهم لفترة غير معتادة، أدلوا بتصريحات مثيرة للقلق، فاتتهم موعد مهم.",
+      "last_contact_date_label": "متى كان آخر اتصال لك بهم؟",
+      "your_relationship_label": "ما هي علاقتك بهذا الشخص؟",
+      "your_relationship_placeholder": "مثال: عائلة، صديق، جار، زميل عمل."
+    },
+    "category_structures": {
+      "report_a_crime": {
+        "title": "الإبلاغ عن جريمة",
+        "subtitle": "للحوادث التي تعتقد أن القانون قد انتهك فيها.",
+        "categories": {
+          "violence_threats_against_person": {
+            "title": "العنف والتهديدات ضد شخص",
+            "subtitle": "الأذى الجسدي، التهديدات، أو الجرائم ضد الحرية.",
+            "forms": {
+              "assault_attack": { "title": "الإبلاغ عن اعتداء / هجوم" },
+              "robbery_mugging": { "title": "الإبلاغ عن سرقة / نشل" },
+              "threats_harassment_stalking": { "title": "الإبلاغ عن تهديدات، مضايقات، أو مطاردة" },
+              "extortion_blackmail": { "title": "الإبلاغ عن ابتزاز أو تهديد مالي" },
+              "sexual_offense": { "title": "الإبلاغ عن جريمة جنسية" },
+              "kidnapping_abduction": { "title": "الإبلاغ عن اختطاف أو خطف" },
+              "domestic_family_violence": { "title": "الإبلاغ عن عنف أسري وعائلي" },
+              "human_trafficking": { "title": "الإبلاغ عن اشتباه في الاتجار بالبشر" },
+              "hate_crime": { "title": "الإبلاغ عن جريمة كراهية أو حادث تحيز" }
+            }
+          },
+          "theft_burglary_property_damage": {
+            "title": "السرقة، السطو، وتلف الممتلكات",
+            "subtitle": "الممتلكات المسروقة أو التلف الذي لم يُستخدم فيه القوة.",
+            "forms": {
+              "burglary_break_in": { "title": "الإبلاغ عن سطو / اقتحام" },
+              "theft_personal_property": { "title": "الإبلاغ عن سرقة ممتلكات شخصية" },
+              "mail_theft": { "title": "الإبلاغ عن سرقة البريد" },
+              "vandalism_property_damage": { "title": "الإبلاغ عن تخريب / تلف ممتلكات" },
+              "arson": { "title": "الإبلاغ عن حريق متعمد (إشعال نار)" },
+              "criminal_trespassing": { "title": "الإبلاغ عن التعدي الجنائي على الممتلكات" }
+            }
+          },
+          "vehicle_related_crime": {
+            "title": "الجرائم المتعلقة بالمركبات",
+            "subtitle": "الجرائم التي تتضمن مركبات آلية تحديداً.",
+            "forms": {
+              "motor_vehicle_theft": { "title": "الإبلاغ عن سرقة مركبة آلية" },
+              "theft_from_vehicle": { "title": "الإبلاغ عن سرقة من مركبة" },
+              "hit_and_run": { "title": "الإبلاغ عن اصطدام وفرار" },
+              "vehicle_vandalism": { "title": "الإبلاغ عن تخريب مركبة" }
+            }
+          },
+          "fraud_scams_financial_crime": {
+            "title": "الاحتيال، الخدع، والجرائم المالية",
+            "subtitle": "الخداع لتحقيق مكاسب مالية أو لتعريض المعلومات للخطر.",
+            "forms": {
+              "fraud_scam": { "title": "الإبلاغ عن احتيال / خدعة" },
+              "identity_theft": { "title": "الإبلاغ عن سرقة الهوية" },
+              "counterfeiting_forgery": { "title": "الإبلاغ عن تزوير أو تزييف" }
+            }
+          },
+          "cybercrime": {
+            "title": "الجرائم الإلكترونية",
+            "subtitle": "النشاط الإجرامي الذي يتضمن حاسوبًا أو شبكة.",
+            "forms": {
+              "hacking": { "title": "الإبلاغ عن اختراق (Hacking)" },
+              "online_harassment_cyberstalking": { "title": "الإبلاغ عن مضايقات عبر الإنترنت أو مطاردة إلكترونية" },
+              "phishing_spoofing": { "title": "الإبلاغ عن تصيّد احتيالي / انتحال" },
+              "ransomware_attack": { "title": "الإبلاغ عن هجوم فدية (Ransomware)" },
+              "distribution_illegal_content": { "title": "الإبلاغ عن توزيع محتوى غير قانوني عبر الإنترنت" },
+              "online_impersonation": { "title": "الإبلاغ عن انتحال شخصية عبر الإنترنت" }
+            }
+          },
+          "drugs_weapons_public_order": {
+            "title": "المخدرات، الأسلحة، والنظام العام",
+            "subtitle": "المواد الخاضعة للرقابة، الأسلحة غير القانونية، إلخ.",
+            "forms": {
+              "illegal_drug_activity": { "title": "الإبلاغ عن نشاط مخدرات غير قانوني" },
+              "unlawful_weapon_possession": { "title": "الإبلاغ عن حيازة سلاح غير قانوني" },
+              "indecent_exposure": { "title": "الإبلاغ عن تعرّض غير لائق" },
+              "public_disturbance": { "title": "الإبلاغ عن إخلال بالنظام العام" },
+              "prostitution_solicitation": { "title": "الإبلاغ عن دعارة / تحريض على الفسق" }
+            }
+          },
+          "environmental_crimes": {
+            "title": "الجرائم البيئية",
+            "subtitle": "الجرائم التي تضر بالبيئة الطبيعية.",
+            "forms": {
+              "illegal_dumping": { "title": "الإبلاغ عن إلقاء نفايات غير قانوني / تلوث" },
+              "wildlife_crime": { "title": "الإبلاغ عن جريمة تتعلق بالحياة البرية" }
+            }
+          }
+        }
+      },
+      "report_a_concern": {
+        "title": "الإبلاغ عن مشكلة",
+        "subtitle": "لقضايا السلامة العامة، النشاط المشبوه، أو تنبيهات المجتمع.",
+        "categories": {
+          "suspicious_activity": {
+            "title": "نشاط مشبوه",
+            "subtitle": "السلوك الذي قد يكون مقدمة لجريمة.",
+            "forms": {
+              "prowling_casing": { "title": "الإبلاغ عن تجول / استطلاع مشبوه" },
+              "suspicious_vehicle": { "title": "الإبلاغ عن مركبة مشبوهة" },
+              "suspicious_package": { "title": "الإبلاغ عن طرد أو غرض مشبوه" },
+              "unknown_visitor_impersonation": { "title": "الإبلاغ عن زائر غير معروف / انتحال شخصية محتمل" }
+            }
+          },
+          "traffic_road_safety": {
+            "title": "السلامة المرورية والطرق",
+            "subtitle": "قضايا القيادة التي لا تتضمن جريمة ضد شخص.",
+            "forms": {
+              "dangerous_reckless_driving": { "title": "الإبلاغ عن قيادة خطرة / متهورة" },
+              "driving_under_influence": { "title": "الإبلاغ عن سائق تحت تأثير المخدرات/الكحول" },
+              "traffic_collision_non_injury": { "title": "الإبلاغ عن حادث مروري بدون إصابات" },
+              "road_hazard": { "title": "الإبلاغ عن خطر على الطريق" },
+              "illegal_parking": { "title": "الإبلاغ عن وقوف غير قانوني" },
+              "abandoned_vehicle": { "title": "الإبلاغ عن مركبة مهجورة" }
+            }
+          },
+          "public_safety_community_concerns": {
+            "title": "السلامة العامة وشؤون المجتمع",
+            "subtitle": "المخاطر العامة أو القضايا غير الجنائية في الحي.",
+            "forms": {
+              "public_hazard": { "title": "الإبلاغ عن خطر عام" },
+              "noise_complaint": { "title": "الإبلاغ عن شكوى ضوضاء" },
+              "missing_person": { "title": "الإبلاغ عن شخص مفقود" },
+              "animal_related_concern": { "title": "الإبلاغ عن مشكلة متعلقة بالحيوانات" },
+              "code_violation": { "title": "الإبلاغ عن مخالفة نظام" },
+              "welfare_check": { "title": "طلب فحص حالة" }
+            }
+          }
+        }
+      }
+    }
+  }
+}

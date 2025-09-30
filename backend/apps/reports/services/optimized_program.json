@@ -1,0 +1,59 @@
+{
+  "spam_module.predict": {
+    "traces": [],
+    "train": [],
+    "demos": [],
+    "signature": {
+      "instructions": "Read the provided 'description' which represents a user-submitted Report. Your task is to determine whether *this Report itself* is spam or legitimate.\n\n**Crucial Distinction**: Always focus on whether the *submission itself* is legitimate user feedback, regardless of whether the *content described within the report* involves spam, fraud, or other negative experiences. Do not confuse the nature of the *incident being reported* with the nature of the *report submission itself*.\n\n**Definition of Spam vs. Not_Spam for Reports:**\n\n*   **not_spam**: A report is classified as `not_spam` if it is a genuine user submission describing an incident, a complaint, a security issue, a scam they encountered, a bug, a feature request, or any other legitimate user feedback. It represents a user reaching out to report a real event or concern.\n    *   **Key Clarification**: If a user reports an incident where *they were subjected to spam, fraud, a scam attempt, phishing, or an account compromise*, the report itself is considered `not_spam`. This is because the user is legitimately reporting a negative experience or seeking assistance for a real problem.\n    *   **Common Characteristics of legitimate `not_spam` reports (even if distressed or urgent):**\n        *   **Description of a personal experience**: The user details what happened to them, what they observed that affects them, or an incident they encountered.\n        *   **Reporting being a victim of a scam, fraud, or malicious activity**: E.g., \"I was scammed out of money,\" \"someone tried to phish me,\" \"my account was hacked.\" The act of reporting *these events* makes the report `not_spam`.\n        *   **Expression of distress, anxiety, frustration, or urgency**: Genuine victims of scams, fraud, or security incidents often use emotional language or express an urgent need for resolution. This is a characteristic of legitimate human feedback and should *not* be interpreted as a sign of spam.\n        *   **Requests for assistance or action**: Users frequently ask for help, for an account to be blocked, funds to be recovered, an incident to be investigated, or other forms of intervention. These are legitimate requests within the context of reporting a real incident and do not make the report `spam`.\n        *   **Providing identifying information related to the incident**: Such as phone numbers, account names, dates, amounts, links (that were part of the incident, not active malicious links in the report), etc., for the purpose of investigation.\n\n*   **spam**: A report is classified as `spam` if the report text itself is unsolicited, irrelevant, malicious, fantastical, or nonsensical content submitted to the system. This includes:\n    *   Unsolicited advertisements for products, services, or websites embedded directly in the report text, aiming to promote something to the reader of the report.\n    *   Phishing attempts or malware links embedded directly *within the report text* that are designed to trick the *reader of the report* (e.g., trying to get the report processor to click a link). This is distinct from a user *reporting* that they themselves clicked a malicious link.\n    *   Gibberish, random characters, or completely nonsensical text.\n    *   Abusive language, harassment, or threats that are not part of a legitimate incident report (i.e., the report *is* the abuse, directed at the recipient, rather than *reporting* having been subjected to abuse).\n    *   Attempts to misuse or exploit the reporting system by submitting fabricated reports *without a genuine underlying incident* for disruptive purposes (e.g., repeatedly submitting false reports to overload the system, not a user genuinely reporting an actual event that happened to them).\n\n**Your output should include:**\n\n*   **reasoning**: A detailed explanation of why you classified the report as 'spam' or 'not_spam'. Your reasoning must clearly articulate the distinction between the report's nature (as a submission) and the content it describes, especially emphasizing why a report detailing *being subjected to* spam/fraud is `not_spam`. Refer to the specific characteristics from the definitions that led to your classification (e.g., \"this report is `not_spam` because the user is legitimately reporting being a victim of a scam, as evidenced by their description of money being deducted and their request for intervention, which are common for genuine incident reports, and not indicative of the report itself being spam\").\n*   **is_spam**: Your final classification, either 'spam' or 'not_spam'.\n*   **confidence**: A numerical value between 0.0 and 1.0 indicating your certainty in the classification, where 1.0 is absolute certainty.",
+      "fields": [
+        {
+          "prefix": "Description:",
+          "description": "The report body to analyze."
+        },
+        {
+          "prefix": "Reasoning: Let's think step by step in order to",
+          "description": "${reasoning}"
+        },
+        {
+          "prefix": "Is Spam:",
+          "description": "Whether the report is spam."
+        },
+        {
+          "prefix": "Confidence:",
+          "description": "The confidence score of the prediction."
+        }
+      ]
+    },
+    "lm": null
+  },
+  "urgency_module.predict": {
+    "traces": [],
+    "train": [],
+    "demos": [],
+    "signature": {
+      "instructions": "The user will provide a `description` of a Report. Your task is to analyze this description and determine its urgency.\n\nFollow these steps:\n1.  **Read the `description` carefully:** Understand the events, timeline, and the user's current situation and emotional state.\n2.  **Identify key indicators:** Look for keywords related to financial loss, harassment, privacy breaches, threats to safety, legal issues, and the immediacy of the situation.\n3.  **Determine the timeline:** Is the reported event actively happening now, did it just happen (within the last few hours to a day), or did it happen in the past (days, weeks, or months ago)?\n4.  **Assess the impact:** Evaluate the severity of the consequences for the user (e.g., financial loss, emotional distress, threat to physical safety, reputational damage, privacy invasion, legal implications).\n5.  **Classify urgency based on the following definitions:**\n\n    *   **Critical:**\n        *   An *immediate and severe threat* to physical safety, life, or mental well-being (e.g., explicit suicidal ideation, severe ongoing harassment causing extreme psychological distress, immediate risk of severe physical harm).\n        *   Active financial fraud leading to *immediate, substantial, and potentially ruinous* loss, where the user explicitly states extreme distress or inability to cope.\n        *   A situation with severe legal implications or reputational damage that is *actively escalating* and requires instant intervention to prevent irreversible harm.\n        *   *Example 3 (Mpokket harassment with \"last hope to stay alive\")* is a critical situation due to the severe mental distress and perceived threat to well-being.\n\n    *   **High:**\n        *   An *active or very recent significant financial loss* due to fraud or scam that occurred *just now* (within a few hours) or is *actively ongoing*, requiring immediate intervention to prevent further loss or attempt recovery of funds.\n        *   Ongoing harassment that causes significant distress but is not immediately life-threatening, or an *active privacy breach* where personal data is *currently being shared* without consent.\n        *   Time-sensitive issues where delay could lead to *significant, irreversible negative consequences* (e.g., immediate account lockout, data deletion).\n        *   *Example 2 (money just transferred to another account in an active scam)* is a high urgency situation.\n\n    *   **Medium:**\n        *   A *past financial loss or scam* where initial attempts to resolve (e.g., through a bank) have failed, and the user is now seeking further assistance or redress. The immediate danger or ongoing loss has ceased.\n        *   Non-critical ongoing issues, complaints about services or products, or privacy concerns where the data sharing is a past event and not actively ongoing in a severe manner.\n        *   The situation is concerning but does not pose an immediate danger or require instantaneous intervention.\n        *   *Example 1 (past job scam where the bank already refused help)* is a medium urgency situation.\n\n    *   **Low:**\n        *   General inquiries, suggestions, minor inconveniences, feedback, informational requests, or issues with no immediate impact on finance, safety, or well-being.\n\nOutput your response in the following format:\n```\n### reasoning\n[Your step-by-step reasoning for the urgency classification, referencing the timeline, impact, and specific details from the description.]\n\n### urgency\n[critical|high|medium|low]",
+      "fields": [
+        {
+          "prefix": "Description:",
+          "description": "The report body to analyze."
+        },
+        {
+          "prefix": "Reasoning: Let's think step by step in order to",
+          "description": "${reasoning}"
+        },
+        {
+          "prefix": "Urgency:",
+          "description": "The urgency of the report for criminal investigation."
+        }
+      ]
+    },
+    "lm": null
+  },
+  "metadata": {
+    "dependency_versions": {
+      "python": "3.13",
+      "dspy": "3.0.3",
+      "cloudpickle": "3.1"
+    }
+  }
+}

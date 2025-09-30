@@ -1,0 +1,544 @@
+{
+  "CrimeReportForm": {
+    "previousStep": "Previous Step",
+    "nextStep": "Next Step",
+    "submitReport": "Submit Report",
+    "submitting": "Submitting...",
+    "submissionError": "An unexpected error occurred during submission."
+  },
+  "RenderField": {
+    "remove": "Remove",
+    "addItem": "Add {item}",
+    "defaultItem": "Item",
+    "selectPlaceholder": "Select {label}",
+    "requiredError": "{label} is required."
+  },
+  "SubmissionSuccess": {
+    "title": "Report Submitted Successfully",
+    "subtitle": "Thank you for helping keep your community safe. Your report has been submitted anonymously.",
+    "accessKeyInstruction": "Please save this reference key to follow up on your report:",
+    "accessKeyWarning": "This key is the only way to check the status of your report. Keep it safe.",
+    "fileAnotherReport": "File Another Report"
+  },
+  "SplashScreen": {
+    "title": "Anonymous Crime Reporting",
+    "subtitle": "Safe & Secure"
+  },
+  "EmergencyBanner": {
+    "line1": "In case of emergency, call immediately:",
+    "line2": "Police: 122 | Fire: 998 | Ambulance: 997"
+  },
+  "Hero": {
+    "title": "Report Crime Anonymously",
+    "subtitle": "Your safety is our priority. Report crimes safely and anonymously to help make your community safer.",
+    "startNewReport": "Start New Report",
+    "followUpOnReport": "Follow Up on Report",
+    "legalDisclaimer": "By using this service, you agree to our",
+    "legalLink": "Terms & Privacy Policy"
+  },
+  "ReportPage": {
+    "title": "Select Crime Category",
+    "subtitle": "Choose the category that best describes the crime you want to report.",
+    "searchPlaceholder": "Search categories...",
+    "noCategoriesFound": "No categories found for",
+    "backButton": "Back"
+  },
+  "Footer": {
+    "accessibility": "Accessibility",
+    "termsPrivacy": "Terms & Privacy",
+    "faqLink": "FAQ"
+  },
+  "InfoPages": {
+    "Accessibility": {
+      "title": "Accessibility Statement",
+      "content": [
+        "We are committed to ensuring that our anonymous crime reporting platform is accessible to all users, including those with disabilities.",
+        "Our platform follows **Web Content Accessibility Guidelines (WCAG) 2.1** at Level AA to ensure compatibility with assistive technologies.",
+        "**Accessibility Features:**",
+        "• Screen reader compatibility with proper ARIA labels and semantic HTML",
+        "• Keyboard navigation support for all interactive elements",
+        "• High contrast color schemes for better visibility",
+        "• Scalable text that can be enlarged up to 200% without loss of functionality",
+        "• Alternative text for all images and visual content",
+        "• Clear and simple language throughout the interface",
+        "If you encounter any accessibility barriers while using our service, please contact our support team. We are continuously working to improve accessibility and welcome your feedback."
+      ]
+    },
+    "Terms": {
+      "title": "Terms of Service & Privacy Policy",
+      "content": [
+        "**Anonymous Reporting Service**",
+        "This platform provides a secure, anonymous way to report crimes to law enforcement agencies. Your privacy and safety are our top priorities.",
+        "**Privacy Protection:**",
+        "• No personal information is collected or stored",
+        "• All reports are encrypted and transmitted securely",
+        "• IP addresses are not logged or tracked",
+        "• No cookies or tracking technologies are used",
+        "**Important Legal Information:**",
+        "• This service is for reporting crimes only",
+        "• False reports may be subject to legal consequences",
+        "• In emergency situations, call emergency services directly",
+        "• Reports are forwarded to appropriate law enforcement agencies",
+        "**Disclaimer:**",
+        "This service does not guarantee investigation or response to reports. For immediate assistance or life-threatening situations, contact emergency services directly at 122."
+      ]
+    }
+  },
+  "FollowUpModal": {
+    "title": "Follow Up on Your Report",
+    "description": "Enter your report reference number to check the status of your submission.",
+    "placeholder": "Enter report reference number",
+    "submit": "Check Status",
+    "cancel": "Cancel"
+  },
+  "FAQModal": {
+    "title": "Frequently Asked Questions",
+    "close": "Close",
+    "q1": {
+      "question": "Is my report really anonymous?",
+      "answer": "Yes, absolutely. We do not collect any personal information, IP addresses, or use tracking technologies. Your identity remains completely anonymous."
+    },
+    "q2": {
+      "question": "What happens after I submit a report?",
+      "answer": "Your report is encrypted and securely transmitted to the appropriate law enforcement agency. You will receive a reference number to track your report status."
+    },
+    "q3": {
+      "question": "Can I follow up on my report?",
+      "answer": "Yes, you can use the reference number provided after submission to check the status of your report through our follow-up system."
+    },
+    "q4": {
+      "question": "What if I have an emergency?",
+      "answer": "This service is not for emergencies. If you are in immediate danger, call emergency services directly: Police 122."
+    },
+    "q5": {
+      "question": "What information should I include?",
+      "answer": "Provide as much detail as possible including dates, times, locations, descriptions of people involved, and any evidence you may have."
+    },
+    "q6": {
+      "question": "Is this service available 24/7?",
+      "answer": "Yes, you can submit reports at any time. However, processing times may vary depending on the law enforcement agency and case complexity."
+    }
+  },
+  "crimeForms": {
+    "yes": "Yes",
+    "no": "No",
+    "unsure": "Unsure",
+    "other": "Other",
+    "violenceThreats": {
+      "step1_title": "Incident Details",
+      "location_label": "Where did this happen?",
+      "location_helper": "Provide an address or mark on the map.",
+      "incident_date_label": "Date of Incident",
+      "incident_time_label": "Time of Incident",
+      "incident_description_label": "Please describe what happened in detail.",
+      "incident_description_placeholder": "Describe the events in the order they occurred...",
+      "step2_title": "Victim Information",
+      "victim_identity_label": "Who was the victim?",
+      "victim_identity_options": ["I was", "Someone else"],
+      "victim_name_label": "Victim's Full Name",
+      "child_involved_label": "Was a child endangered?",
+      "child_involved_options": ["Yes", "No", "Unsure"],
+      "anyone_injured_label": "Was anyone injured?",
+      "anyone_injured_options": ["Yes", "No", "Unsure"],
+      "victim_injuries_label": "What injuries, if any, were sustained?",
+      "victim_injuries_placeholder": "e.g., cuts, bruises, broken bones.",
+      "step3_title": "Suspect Information",
+      "suspect_count_label": "How many suspects were there?",
+      "suspect_description_label": "Please describe the suspect(s).",
+      "suspect_description_placeholder": "Include details like gender, age, height, build, clothing, and any distinguishing features.",
+      "weapon_involved_label": "Was a weapon used?",
+      "weapon_involved_options": ["Yes", "No", "Unsure"],
+      "weapon_type_label": "What kind of weapon?",
+      "weapon_type_placeholder": "e.g., knife, bat, firearm.",
+      "vehicle_involved_label": "Was a vehicle used or sighted?",
+      "vehicle_involved_options": ["Yes", "No", "Unsure"],
+      "vehicle_description_label": "Description of any involved vehicles.",
+      "vehicle_description_placeholder": "Make, model, license plate.",
+      "step4_title": "Evidence & Witnesses",
+      "evidence_upload_label": "Upload Photos or Videos",
+      "evidence_upload_helper": "Please upload any visual evidence related to the incident.",
+      "witness_present_label": "Were there any witnesses?",
+      "witness_present_options": ["Yes", "No", "Unsure"],
+      "witness_details_label": "Witness Information",
+      "witness_name_label": "Witness Name",
+      "witness_contact_label": "Witness Contact Info"
+    },
+    "theftBurglary": {
+      "step1_title": "Location & Timing",
+      "location_label": "Where did the burglary happen?",
+      "property_type_label": "What type of property was entered?",
+      "property_type_options": ["House", "Apartment/Condo", "Business", "Garage", "Storage Unit", "Other"],
+      "time_discovered_label": "When did you discover the break-in?",
+      "time_occurred_label": "When do you believe it occurred?",
+      "time_occurred_helper": "Provide the time range when you were away or the property was unoccupied.",
+      "step2_title": "Incident Details",
+      "was_anything_stolen_label": "Was anything stolen?",
+      "was_anything_stolen_options": ["Yes", "No", "Unsure"],
+      "stolen_items_label": "List of Stolen Items",
+      "item_name_label": "Item",
+      "item_name_placeholder": "e.g., Laptop, Jewelry",
+      "item_value_label": "Estimated Value ($)",
+      "item_description_label": "Description / Serial Number",
+      "was_anything_damaged_label": "Was there any damage to a property or item?",
+      "was_anything_damaged_options": ["Yes", "No", "Unsure"],
+      "damage_description_label": "What was damaged?",
+      "damage_description_placeholder": "Describe any damaged doors, windows, furniture, etc.",
+      "step3_title": "Suspect & Evidence",
+      "suspect_info_label": "Do you have any suspect information?",
+      "suspect_info_placeholder": "Description, name, etc...",
+      "vehicle_involved_label": "Was a vehicle used or sighted?",
+      "vehicle_involved_options": ["Yes", "No", "Unsure"],
+      "vehicle_description_label": "Description of any involved vehicles.",
+      "vehicle_description_placeholder": "Make, model, license plate.",
+      "evidence_upload_label": "Upload Evidence",
+      "evidence_upload_helper": "e.g., doorbell camera footage, photos.",
+      "witness_present_label": "Were there any witnesses?",
+      "witness_present_options": ["Yes", "No"]
+    },
+    "vehicleCrime": {
+      "step1_title": "Incident Details",
+      "location_label": "Where was the vehicle parked?",
+      "location_placeholder": "Enter address or cross-streets",
+      "time_occurred_label": "When do you believe this occurred?",
+      "time_occurred_helper": "Provide your best estimate of the time range.",
+      "vehicle_entered_label": "Was your vehicle entered?",
+      "vehicle_entered_options": ["Yes", "No", "Unsure"],
+      "vehicle_entry_label": "How did the suspect get into your vehicle?",
+      "vehicle_entry_options": ["Window was broken", "Doors were unlocked", "Trunk was forced open", "Unsure", "Other"],
+      "was_anything_stolen_label": "Was anything stolen?",
+      "was_anything_stolen_options": ["Yes", "No", "Unsure"],
+      "stolen_items_label": "List of Stolen Items",
+      "stolen_items_fields": {
+        "item_name_label": "Item",
+        "item_name_placeholder": "e.g., Laptop, Jewelry",
+        "item_value_label": "Estimated Value ($)",
+        "item_description_label": "Description / Serial Number"
+      },
+      "step2_title": "Your Vehicle's Information",
+      "own_vehicle_make_label": "Vehicle Make",
+      "own_vehicle_make_placeholder": "e.g., Honda",
+      "own_vehicle_model_label": "Vehicle Model",
+      "own_vehicle_model_placeholder": "e.g., Civic",
+      "own_vehicle_year_label": "Year",
+      "own_vehicle_year_placeholder": "e.g., 2022",
+      "own_vehicle_color_label": "Color",
+      "own_vehicle_color_placeholder": "e.g., Blue",
+      "own_license_plate_label": "License Plate Number",
+      "own_license_plate_placeholder": "Enter license plate",
+      "own_vin_number_label": "VIN (optional)",
+      "own_vin_number_helper": "Vehicle Identification Number, found on your dashboard or registration.",
+      "own_vin_number_placeholder": "Enter 17-digit VIN",
+      "step3_title": "Suspect & Evidence",
+      "suspect_info_label": "Do you have any suspect information?",
+      "suspect_info_placeholder": "Description, name, etc...",
+      "vehicle_involved_label": "Was another vehicle used or sighted?",
+      "vehicle_involved_options": ["Yes", "No", "Unsure"],
+      "vehicle_description_label": "Description of any other involved vehicles.",
+      "vehicle_description_placeholder": "Make, model, color, license plate...",
+      "evidence_upload_label": "Upload Evidence",
+      "evidence_upload_helper": "e.g., Dashcam footage, photos of damage.",
+      "witness_present_label": "Were there any witnesses?",
+      "witness_present_options": ["Yes", "No", "Unsure"]
+    },
+    "fraudScam": {
+      "step1_title": "Incident Details",
+      "location_label": "Where did that happen?",
+      "time_occurred_label": "When do you believe it occurred?",
+      "step2_title": "Possible Damages",
+      "financial_loss_label": "Did you lose any money or property?",
+      "financial_loss_options": ["Yes", "No"],
+      "loss_amount_label": "Total Estimated Loss ($)",
+      "payment_method_label": "How did you pay?",
+      "payment_method_placeholder": "e.g., Credit Card, Bank Transfer, Gift Card, Cryptocurrency",
+      "identity_stolen_label": "Was your identity stolen?",
+      "identity_stolen_options": ["Yes", "No"],
+      "identity_used_for_label": "If yes, what was it used for?",
+      "identity_used_for_placeholder": "e.g., opening accounts, taking loans, online purchases",
+      "counterfeit_occurred_label": "Was anything counterfeited or forged?",
+      "counterfeit_occurred_options": ["Yes", "No"],
+      "counterfeit_details_label": "If yes, what was counterfeited?",
+      "counterfeit_details_placeholder": "e.g., checks, documents, signatures, ID cards",
+      "step3_title": "Suspect & Evidence",
+      "suspect_info_label": "Do you have any suspect information?",
+      "suspect_info_placeholder": "Description, name, etc...",
+      "evidence_upload_label": "Upload Evidence",
+      "evidence_upload_helper": "e.g., doorbell camera footage, photos.",
+      "witness_present_label": "Were there any witnesses?",
+      "witness_present_options": ["Yes", "No"]
+    },
+    "cybercrime": {
+      "step1_title": "Incident Details",
+      "incident_discovery_date_label": "When did you discover this incident?",
+      "platform_label": "Where did this happen?",
+      "platform_placeholder": "e.g., Facebook, Gmail, Company Website, Personal Computer",
+      "incident_description_label": "Please describe what happened.",
+      "incident_description_placeholder": "Provide a detailed account of the events, what was said, done, or compromised.",
+      "step2_title": "Suspect & Financial Impact",
+      "suspect_info_label": "Do you have any suspect information?",
+      "suspect_info_placeholder": "Include usernames, profile links, email addresses, phone numbers, or any other identifiers.",
+      "financial_loss_label": "Did this incident result in a financial loss?",
+      "financial_loss_options": ["Yes", "No", "Unsure"],
+      "loss_amount_label": "Estimated Financial Loss ($)",
+      "step3_title": "Evidence",
+      "evidence_upload_label": "Upload Evidence",
+      "evidence_upload_helper": "Upload screenshots, emails, logs, or ransom notes. Do NOT download or save illegal material to your device.",
+      "additional_info_label": "Additional Information",
+      "additional_info_placeholder": "Is there anything else we should know?"
+    },
+    "drugsWeaponsPublicOrder": {
+      "step1_title": "Activity Details",
+      "safety_disclaimer_label": "Disclaimer",
+      "safety_disclaimer_text": "If this is an active, life-threatening situation (e.g., someone is brandishing a weapon), please CALL 122 immediately.",
+      "location_label": "Where is the activity happening?",
+      "activity_timing_label": "When does this usually occur?",
+      "activity_timing_placeholder": "e.g., Ongoing, late nights, weekend afternoons.",
+      "activity_description_label": "Describe the activity in detail.",
+      "activity_description_placeholder": "What have you seen or heard that constitutes the offense?",
+      "step2_title": "Suspects & Vehicles",
+      "suspect_count_label": "How many people are involved?",
+      "suspect_description_label": "Please describe the person or people involved.",
+      "suspect_description_placeholder": "Include details like gender, age, clothing, and any distinguishing features.",
+      "vehicle_involved_label": "Was a vehicle involved?",
+      "vehicle_involved_options": ["Yes", "No", "Unsure"],
+      "vehicle_description_label": "Describe any involved vehicles.",
+      "vehicle_description_placeholder": "Include make, model, color, license plate, and any unique features.",
+      "step3_title": "Evidence",
+      "weapon_involved_label": "Did you see a weapon?",
+      "weapon_involved_options": ["Yes", "No", "Unsure"],
+      "weapon_description_label": "What kind of weapon was it?",
+      "weapon_description_placeholder": "e.g., Handgun, Rifle, Knife, Bat",
+      "evidence_upload_label": "Upload Photos or Videos",
+      "evidence_upload_helper": "Only upload evidence if you can do so safely."
+    },
+    "environmentalCrimes": {
+      "step1_title": "Incident Details",
+      "hazard_disclaimer_label": "Immediate Danger Disclaimer",
+      "hazard_disclaimer_text": "If the incident poses an immediate threat to health or life (e.g., chemical spill, fire), call 122 immediately.",
+      "location_label": "Where did the incident occur?",
+      "incident_datetime_label": "When did you discover this?",
+      "step2_title": "Description & Materials",
+      "incident_description_label": "Please describe the incident in detail.",
+      "incident_description_placeholder": "What did you observe? What kind of animals or environment are affected?",
+      "material_description_label": "Describe the materials or substances involved.",
+      "material_description_placeholder": "e.g., Construction debris, barrels of liquid, tires, animal carcasses.",
+      "is_hazardous_label": "Does the material seem hazardous?",
+      "is_hazardous_options": ["Yes", "No", "Unsure"],
+      "is_hazardous_helper": "Look for warning labels, strong odors, or dead vegetation nearby.",
+      "step3_title": "Suspect & Evidence",
+      "suspect_description_label": "Do you have any suspect information?",
+      "suspect_description_placeholder": "Describe any people, company names, or logos you saw.",
+      "vehicle_description_label": "Describe any vehicles involved.",
+      "vehicle_description_placeholder": "Include make, model, license plate, and type (e.g., dump truck, van).",
+      "evidence_upload_label": "Upload Photos or Videos",
+      "evidence_upload_helper": "Please upload any visual evidence if it is safe to do so."
+    },
+    "suspiciousActivity": {
+      "step1_title": "Activity Details",
+      "location_label": "Where did this happen?",
+      "activity_datetime_label": "When did this happen?",
+      "activity_description_label": "Please describe the suspicious behavior in detail.",
+      "activity_description_placeholder": "e.g., someone looking into car windows, testing doors, observing a house for a long time.",
+      "step2_title": "Subject & Vehicle Information",
+      "subject_description_label": "Please describe the person(s) involved.",
+      "subject_description_placeholder": "Include details like gender, age, build, clothing, and any distinguishing features.",
+      "vehicle_involved_label": "Was a vehicle involved?",
+      "vehicle_involved_options": ["Yes", "No", "Unsure"],
+      "vehicle_description_label": "Describe the vehicle, if any.",
+      "vehicle_description_placeholder": "Include make, model, color, license plate, and any unique features.",
+      "step3_title": "Evidence",
+      "evidence_upload_label": "Upload Photos or Videos",
+      "evidence_upload_helper": "Only upload evidence if it is safe to do so."
+    },
+    "trafficRoadSafety": {
+      "step1_title": "Incident Details",
+      "location_label": "Where did this happen?",
+      "incident_datetime_label": "When did this happen?",
+      "incident_description_label": "Please describe what happened.",
+      "incident_description_placeholder": "Provide a detailed account of the driving behavior, hazard, or collision.",
+      "step2_title": "Vehicle & Driver Information",
+      "vehicle_description_label": "Describe the vehicle(s) involved.",
+      "vehicle_description_placeholder": "Include make, model, color, and any distinguishing features.",
+      "license_plate_label": "License Plate Number",
+      "license_plate_helper": "Even a partial plate number is helpful.",
+      "driver_description_label": "If you saw the driver, please provide a description.",
+      "step3_title": "Evidence & Witnesses",
+      "evidence_upload_label": "Upload Photos or Videos",
+      "evidence_upload_helper": "e.g., dashcam footage, photos of the scene.",
+      "witness_present_label": "Were there any witnesses?",
+      "witness_present_options": ["Yes", "No", "Unsure"],
+      "witness_details_label": "Witness Information",
+      "witness_name_label": "Witness Name",
+      "witness_contact_label": "Witness Contact Info"
+    },
+    "publicSafetyCommunityConcerns": {
+      "step1_title": "Concern Details",
+      "location_label": "Where is the concern located?",
+      "concern_datetime_label": "When did you observe this?",
+      "concern_description_label": "Please describe the concern in detail.",
+      "concern_description_placeholder": "e.g., downed power line, chronic noise issue, animal neglect.",
+      "step2_title": "Additional Information & Evidence",
+      "person_involved_description_label": "If a person is involved, please provide a description.",
+      "vehicle_involved_description_label": "If a vehicle is involved, please provide a description.",
+      "evidence_upload_label": "Upload Photos or Videos",
+      "evidence_upload_helper": "Please upload any visual evidence if it is safe to do so."
+    },
+    "missingPerson": {
+      "step1_title": "Important Information",
+      "disclaimer_label": "Disclaimer",
+      "disclaimer_text": "If this person is in immediate danger, is a young child, or has a condition that places them at high risk, please call 122 immediately instead of using this form.",
+      "step2_title": "Missing Person's Details",
+      "person_name_label": "Full Name of Missing Person",
+      "person_age_label": "Age",
+      "person_gender_label": "Gender",
+      "person_description_label": "Physical Description",
+      "person_description_placeholder": "Include height, weight, hair color, eye color, and distinguishing features like scars or tattoos.",
+      "person_photo_label": "Upload a recent photo",
+      "person_photo_helper": "A clear, recent photo is extremely helpful.",
+      "step3_title": "Last Known Information",
+      "last_seen_datetime_label": "Date and Time Last Seen",
+      "last_seen_location_label": "Location Last Seen",
+      "last_seen_location_placeholder": "Provide the address or area where they were last seen.",
+      "last_seen_clothing_label": "What were they last seen wearing?",
+      "circumstances_label": "Describe the circumstances surrounding their disappearance."
+    },
+    "welfareCheck": {
+      "step1_title": "Subject Information",
+      "disclaimer_label": "Disclaimer",
+      "disclaimer_text": "If you believe someone is in immediate, life-threatening danger, please call 122.",
+      "subject_name_label": "Name of the person you are concerned about.",
+      "subject_location_label": "Where can authorities find this person?",
+      "subject_location_helper": "A full, exact address is critical for this request.",
+      "step2_title": "Reason for Concern",
+      "reason_for_check_label": "Why are you requesting a welfare check? Be specific.",
+      "reason_for_check_placeholder": "e.g., haven't heard from them in an unusual amount of time, they made concerning statements, missed an important appointment.",
+      "last_contact_date_label": "When was your last contact with them?",
+      "your_relationship_label": "What is your relationship to this person?",
+      "your_relationship_placeholder": "e.g., family, friend, neighbor, coworker."
+    },
+    "category_structures": {
+      "report_a_crime": {
+        "title": "Report a Crime",
+        "subtitle": "For incidents where you believe a law has been broken.",
+        "categories": {
+          "violence_threats_against_person": {
+            "title": "Violence & Threats Against a Person",
+            "subtitle": "Physical harm, threats, or offenses against liberty.",
+            "forms": {
+              "assault_attack": { "title": "Report an Assault / Attack" },
+              "robbery_mugging": { "title": "Report a Robbery / Mugging" },
+              "threats_harassment_stalking": { "title": "Report Threats, Harassment, or Stalking" },
+              "extortion_blackmail": { "title": "Report Extortion or Blackmail" },
+              "sexual_offense": { "title": "Report a Sexual Offense" },
+              "kidnapping_abduction": { "title": "Report a Kidnapping or Abduction" },
+              "domestic_family_violence": { "title": "Report Domestic & Family Violence" },
+              "human_trafficking": { "title": "Report Suspected Human Trafficking" },
+              "hate_crime": { "title": "Report a Hate Crime or Bias Incident" }
+            }
+          },
+          "theft_burglary_property_damage": {
+            "title": "Theft, Burglary & Property Damage",
+            "subtitle": "Stolen property or damage where no force was used.",
+            "forms": {
+              "burglary_break_in": { "title": "Report a Burglary / Break-in" },
+              "theft_personal_property": { "title": "Report Theft of Personal Property" },
+              "mail_theft": { "title": "Report Mail Theft" },
+              "vandalism_property_damage": { "title": "Report Vandalism / Property Damage" },
+              "arson": { "title": "Report Arson (Deliberate Fire)" },
+              "criminal_trespassing": { "title": "Report Criminal Trespassing" }
+            }
+          },
+          "vehicle_related_crime": {
+            "title": "Vehicle-Related Crime",
+            "subtitle": "Crimes specifically involving motor vehicles.",
+            "forms": {
+              "motor_vehicle_theft": { "title": "Report Motor Vehicle Theft" },
+              "theft_from_vehicle": { "title": "Report Theft From a Vehicle" },
+              "hit_and_run": { "title": "Report a Hit & Run Collision" },
+              "vehicle_vandalism": { "title": "Report Vehicle Vandalism" }
+            }
+          },
+          "fraud_scams_financial_crime": {
+            "title": "Fraud, Scams & Financial Crime",
+            "subtitle": "Deception for financial gain or to compromise info.",
+            "forms": {
+              "fraud_scam": { "title": "Report a Fraud / Scam" },
+              "identity_theft": { "title": "Report Identity Theft" },
+              "counterfeiting_forgery": { "title": "Report Counterfeiting or Forgery" }
+            }
+          },
+          "cybercrime": {
+            "title": "Cybercrime",
+            "subtitle": "Criminal activity involving a computer or network.",
+            "forms": {
+              "hacking": { "title": "Report Hacking" },
+              "online_harassment_cyberstalking": { "title": "Report Online Harassment or Cyberstalking" },
+              "phishing_spoofing": { "title": "Report Phishing / Spoofing" },
+              "ransomware_attack": { "title": "Report a Ransomware Attack" },
+              "distribution_illegal_content": { "title": "Report Distribution of Illegal Online Content" },
+              "online_impersonation": { "title": "Report Online Impersonation" }
+            }
+          },
+          "drugs_weapons_public_order": {
+            "title": "Drugs, Weapons & Public Order",
+            "subtitle": "Controlled substances, illegal weapons, etc.",
+            "forms": {
+              "illegal_drug_activity": { "title": "Report Illegal Drug Activity" },
+              "unlawful_weapon_possession": { "title": "Report Unlawful Weapon Possession" },
+              "indecent_exposure": { "title": "Report Indecent Exposure" },
+              "public_disturbance": { "title": "Report a Public Disturbance" },
+              "prostitution_solicitation": { "title": "Report Prostitution / Solicitation" }
+            }
+          },
+          "environmental_crimes": {
+            "title": "Environmental Crimes",
+            "subtitle": "Offenses that harm the natural environment.",
+            "forms": {
+              "illegal_dumping": { "title": "Report Illegal Dumping / Pollution" },
+              "wildlife_crime": { "title": "Report a Wildlife Crime" }
+            }
+          }
+        }
+      },
+      "report_a_concern": {
+        "title": "Report a Concern",
+        "subtitle": "For public safety issues, suspicious activity, or community alerts.",
+        "categories": {
+          "suspicious_activity": {
+            "title": "Suspicious Activity",
+            "subtitle": "Behavior that may be a precursor to a crime.",
+            "forms": {
+              "prowling_casing": { "title": "Report Prowling / Casing" },
+              "suspicious_vehicle": { "title": "Report a Suspicious Vehicle" },
+              "suspicious_package": { "title": "Report a Suspicious Package or Item" },
+              "unknown_visitor_impersonation": { "title": "Report an Unknown Visitor / Possible Impersonation" }
+            }
+          },
+          "traffic_road_safety": {
+            "title": "Traffic & Road Safety",
+            "subtitle": "Driving issues that do not involve a crime against a person.",
+            "forms": {
+              "dangerous_reckless_driving": { "title": "Report Dangerous / Reckless Driving" },
+              "driving_under_influence": { "title": "Report a Driver Under the Influence (DUI)" },
+              "traffic_collision_non_injury": { "title": "Report a Non-Injury Traffic Collision" },
+              "road_hazard": { "title": "Report a Road Hazard" },
+              "illegal_parking": { "title": "Report Illegal Parking" },
+              "abandoned_vehicle": { "title": "Report an Abandoned Vehicle" }
+            }
+          },
+          "public_safety_community_concerns": {
+            "title": "Public Safety & Community Concerns",
+            "subtitle": "General hazards or non-criminal neighborhood issues.",
+            "forms": {
+              "public_hazard": { "title": "Report a Public Hazard" },
+              "noise_complaint": { "title": "Report a Noise Complaint" },
+              "missing_person": { "title": "Report a Missing Person" },
+              "animal_related_concern": { "title": "Report an Animal-Related Concern" },
+              "code_violation": { "title": "Report a Code Violation" },
+              "welfare_check": { "title": "Request a Welfare Check" }
+            }
+          }
+        }
+      }
+    }
+  }
+}
