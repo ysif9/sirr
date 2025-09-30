@@ -1,9 +1,7 @@
 "use client"
 
 import { usePathname } from "next/navigation"
-import InfoMenu from "@/components/info-menu"
 import Logo from "@/components/logo"
-import NotificationMenu from "@/components/notification-menu"
 import UserMenu from "@/components/user-menu"
 import { Button } from "@/components/ui/button"
 import {
@@ -119,12 +117,6 @@ export default function Component() {
         </div>
         {/* Right side */}
         <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
-            {/* Info menu */}
-            <InfoMenu />
-            {/* Notification */}
-            <NotificationMenu />
-          </div>
           {/* User menu */}
           <UserMenu />
         </div>

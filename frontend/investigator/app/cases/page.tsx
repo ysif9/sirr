@@ -18,7 +18,7 @@ import { useState, useCallback, useEffect, FC, useMemo, MouseEvent } from "react
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import apiClient from "@/lib/api";
-import { Loader2, AlertTriangle, Star, Paperclip, Filter, RefreshCw, Eye } from "lucide-react";
+import { Loader2, AlertTriangle, Star, Paperclip, RefreshCw, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -80,11 +80,20 @@ const StatusCellRenderer: FC<ICellRendererParams<ICaseFromApi, ICaseFromApi["sta
 };
 
 const AttachmentCountCellRenderer: FC<ICellRendererParams<ICaseFromApi, number>> = ({ value }) => {
-  if (!value || value === 0) return null;
+  const count = value ?? 0;
+
+  if (count > 0) {
+    return (
+      <div className="flex h-full items-center" title={`${count} attachment(s)`}>
+        <Paperclip className="mr-2 h-4 w-4 text-muted-foreground" />
+        <span className="text-sm font-medium">{count}</span>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex h-full items-center" title={`${value} attachment(s)`}>
-      <Paperclip className="mr-2 h-4 w-4 text-muted-foreground" />
-      <span className="text-sm font-medium">{value}</span>
+    <div className="flex h-full items-center">
+      <span className="text-sm text-muted-foreground">0</span>
     </div>
   );
 };
@@ -128,7 +137,7 @@ export default function CasesPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [quickFilterText, setQuickFilterText] = useState("");
-  const [showFilters, setShowFilters] = useState(false);
+  const [showOnlyImportant, setShowOnlyImportant] = useState(false);
 
   const fetchCases = useCallback(async () => {
     if (!isAuthenticated) {
@@ -183,6 +192,10 @@ export default function CasesPage() {
     [handleUpdate]
   );
 
+  const filteredData = useMemo(() => {
+    return showOnlyImportant ? rowData.filter((row) => row.important) : rowData;
+  }, [rowData, showOnlyImportant]);
+
   // --- Column Definitions ---
   const colDefs: ColDef<ICaseFromApi>[] = useMemo(
     () => [
@@ -197,7 +210,7 @@ export default function CasesPage() {
       {
         headerName: "Action",
         cellRenderer: OpenCaseCellRenderer,
-        width: 56, // tightened width since it's now an icon-only action
+        width: 80, // tightened width since it's now an icon-only action
         resizable: false,
         sortable: false,
         filter: false,
@@ -276,9 +289,8 @@ export default function CasesPage() {
       sortable: true,
       filter: true,
       resizable: true,
-      floatingFilter: showFilters,
     }),
-    [showFilters]
+    []
   );
 
   const handleRefresh = () => {
@@ -304,7 +316,7 @@ export default function CasesPage() {
     }
     return (
       <AgGridReact<ICaseFromApi>
-        rowData={rowData}
+        rowData={filteredData}
         columnDefs={colDefs}
         defaultColDef={defaultColDef}
         onCellValueChanged={onCellValueChanged}
@@ -331,8 +343,13 @@ export default function CasesPage() {
             onChange={(e) => setQuickFilterText(e.target.value)}
             className="max-w-xs"
           />
-          <Button variant="outline" size="icon" onClick={() => setShowFilters((prev) => !prev)} title="Toggle column filters">
-            <Filter className="h-4 w-4" />
+          <Button
+            variant={showOnlyImportant ? "secondary" : "outline"}
+            onClick={() => setShowOnlyImportant((prev) => !prev)}
+            title={showOnlyImportant ? "Show all cases" : "Show only important cases"}
+          >
+            <Star className="mr-2 h-4 w-4" />
+            {showOnlyImportant ? "Show All" : "Only Important"}
           </Button>
           <Button variant="outline" size="icon" onClick={handleRefresh} title="Refresh data">
             <RefreshCw className="h-4 w-4" />

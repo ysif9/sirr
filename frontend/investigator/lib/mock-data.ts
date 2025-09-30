@@ -5,9 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 export type Priority = "Critical" | "High" | "Medium" | "Low";
 export type Status = "New" | "Assigned" | "Active" | "Closed" | "Flagged for Review";
-export type PersonType = "Suspect" | "Victim" | "Witness";
 export type AttachmentType = "Image" | "Video" | "Audio" | "Document";
-export type LogType = "Interview" | "Evidence Collection" | "Canvass" | "Communication" | "Analyst Report" | "General";
 
 // Represents an attachment as provided by the backend API
 export interface IApiAttachment {
@@ -17,6 +15,17 @@ export interface IApiAttachment {
   nonce: string; // Base64 encoded nonce
   mime_type: string;
   file_extension: string;
+}
+
+// Represents the AI analysis data from the backend
+export interface IAIAnalysis {
+  is_spam: boolean;
+  confidence: number;
+  analyzed_at: string;
+  model_version: string;
+  spam_reasoning: string;
+  urgency: string; // e.g., "low", "medium", "high", "critical"
+  urgency_reasoning: string;
 }
 
 export interface IReporter {
@@ -31,32 +40,6 @@ export interface ITimelineEvent {
   timestamp: string;
   event: string;
   user?: string;
-}
-
-export interface IPerson {
-  id: string;
-  type: PersonType;
-  name: string;
-  age?: number;
-  description: string;
-}
-
-export interface IVehicle {
-  id: string;
-  make: string;
-  model: string;
-  year?: number;
-  color?: string;
-  licensePlate?: string;
-  description: string;
-}
-
-export interface INote {
-  id: string;
-  timestamp: string;
-  author: string;
-  logType: LogType;
-  note: string;
 }
 
 // The primary data structure for the case detail view in the UI
@@ -74,10 +57,10 @@ export interface ICaseInfo {
 
   // Dynamic/Complex fields
   timeline: ITimelineEvent[];
-  personsInvolved: IPerson[];
-  vehicles: IVehicle[];
-  investigatorNotes: INote[];
   
+  // AI Analysis Data
+  analysis: IAIAnalysis | null;
+
   // Data for decryption and form rendering
   attachments: IApiAttachment[];
   attachmentKeys: { [attachmentId: string]: string }; // map of attachmentId -> base64 key
