@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox"
 import { Button } from "../ui/button"
 import { useTranslations } from "next-intl"
+import FileUpload from "../FileUpload"
 
 interface RenderFieldProps {
   control: Control<any>
@@ -39,15 +40,9 @@ const RenderField: React.FC<RenderFieldProps> = ({ control, field, watch }) => {
           name={field.id}
           control={control}
           defaultValue={[]}
-          render={({ field: { onChange, onBlur, name, ref } }) => (
-            <Input
-              id={field.id}
-              type="file"
-              multiple
-              name={name}
-              ref={ref}
-              onBlur={onBlur}
-              onChange={(e) => onChange(e.target.files)}
+          render={({ field: { onChange } }) => (
+            <FileUpload
+              onChange={onChange}
             />
           )}
         />

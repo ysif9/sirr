@@ -36,12 +36,33 @@ const CrimeReportForm: React.FC<CrimeReportFormProps> = ({ formDefinition, formI
 
     try {
       const allFormValues = getValues()
-      const attachments = allFormValues.evidence_upload as FileList | null
+      
+      // Dynamically find all file upload fields from the form definition
+      const fileFieldIds = new Set(
+        formDefinition.steps.flatMap(step => 
+          step.fields
+            .filter(field => field.type === 'file_upload')
+            .map(field => field.id)
+        )
+      );
 
-      const reportData = { ...allFormValues }
-      delete reportData.evidence_upload
+      const reportData: { [key: string]: any } = {};
+      const allAttachments: File[] = [];
 
-      const result = await submitReport(reportData, attachments, formIdentifier, formDefinition.title)
+      // Separate file data from other form data
+      for (const key in allFormValues) {
+        if (fileFieldIds.has(key)) {
+          const files = allFormValues[key];
+          if (Array.isArray(files)) {
+            // Filter out any non-File objects just in case
+            allAttachments.push(...files.filter(f => f instanceof File));
+          }
+        } else {
+          reportData[key] = allFormValues[key];
+        }
+      }
+
+      const result = await submitReport(reportData, allAttachments, formIdentifier, formDefinition.title)
       setSubmissionData(result)
     } catch (error: any) {
       console.error("Submission Error:", error)

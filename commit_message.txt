@@ -1,0 +1,10 @@
+feat(reporter): Generalize file upload handling in crime reports
+
+Refactors the crime report submission process to support multiple file upload fields dynamically.
+
+Key changes:
+- CrimeReportForm.tsx now inspects the form definition to identify all file upload fields, rather than assuming a single 'evidence_upload' field.
+- A new 'FileUpload' component is used in RenderField.tsx to provide a consistent UI for uploads.
+- The 'submitReport' API function in api.ts is updated to accept a more flexible array of files.
+
+This makes the reporting form more modular and extensible for future requirements involving different types of file evidence.

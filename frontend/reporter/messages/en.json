@@ -288,7 +288,7 @@
     "drugsWeaponsPublicOrder": {
       "step1_title": "Activity Details",
       "safety_disclaimer_label": "Disclaimer",
-      "safety_disclaimer_text": "If this is an active, life-threatening situation (e.g., someone is brandishing a weapon), please CALL 911 immediately.",
+      "safety_disclaimer_text": "If this is an active, life-threatening situation (e.g., someone is brandishing a weapon), please CALL 122 immediately.",
       "location_label": "Where is the activity happening?",
       "activity_timing_label": "When does this usually occur?",
       "activity_timing_placeholder": "e.g., Ongoing, late nights, weekend afternoons.",
@@ -313,7 +313,7 @@
     "environmentalCrimes": {
       "step1_title": "Incident Details",
       "hazard_disclaimer_label": "Immediate Danger Disclaimer",
-      "hazard_disclaimer_text": "If the incident poses an immediate threat to health or life (e.g., chemical spill, fire), call 911 immediately.",
+      "hazard_disclaimer_text": "If the incident poses an immediate threat to health or life (e.g., chemical spill, fire), call 122 immediately.",
       "location_label": "Where did the incident occur?",
       "incident_datetime_label": "When did you discover this?",
       "step2_title": "Description & Materials",
@@ -385,7 +385,7 @@
     "missingPerson": {
       "step1_title": "Important Information",
       "disclaimer_label": "Disclaimer",
-      "disclaimer_text": "If this person is in immediate danger, is a young child, or has a condition that places them at high risk, please call 911 immediately instead of using this form.",
+      "disclaimer_text": "If this person is in immediate danger, is a young child, or has a condition that places them at high risk, please call 122 immediately instead of using this form.",
       "step2_title": "Missing Person's Details",
       "person_name_label": "Full Name of Missing Person",
       "person_age_label": "Age",
@@ -404,7 +404,7 @@
     "welfareCheck": {
       "step1_title": "Subject Information",
       "disclaimer_label": "Disclaimer",
-      "disclaimer_text": "If you believe someone is in immediate, life-threatening danger, please call 911.",
+      "disclaimer_text": "If you believe someone is in immediate, life-threatening danger, please call 122.",
       "subject_name_label": "Name of the person you are concerned about.",
       "subject_location_label": "Where can authorities find this person?",
       "subject_location_helper": "A full, exact address is critical for this request.",
