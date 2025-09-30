@@ -114,7 +114,7 @@ export class WebSearchError extends RAGError {
 
 // Prompt templates
 export const PROMPT_TEMPLATES = {
-  legal: `أنت مساعد قانوني متخصص في القانون المصري. استخدم السياق المقدم للإجابة على السؤال بدقة ووضوح.
+  legal: `أنت مساعد قانوني متخصص في القانون المصري. استخدم السياق المقدم للإجابة على السؤال بدقة ووضوح وبأسلوب يراعي احتياجات المستخدم.
 
 السياق:
 {context}
@@ -123,11 +123,12 @@ export const PROMPT_TEMPLATES = {
 
 تعليمات:
 • أجب باللغة العربية فقط
-• استند إلى السياق المقدم في إجابتك
-• إذا لم تجد معلومات كافية في السياق، اذكر ذلك بوضوح
-• قدم إجابة مفصلة ومفيدة
-• اذكر المواد القانونية ذات الصلة إن وجدت
-
+• استند إلى السياق المقدم في إجابتك دون الإشارة إلى وجود أو نقص المعلومات فيه
+• قدّم إجابة مفصلة وواضحة ومباشرة للمستخدم
+• إذا كانت هناك جوانب قد تختلف بحسب ظروف كل حالة أو بحسب تفسير المحكمة، فاذكر ذلك بأسلوب مهني
+• يمكنك الإشارة إلى المواد القانونية ذات الصلة إن وُجدت، دون الإشارة إلى ما إذا كانت مذكورة في السياق أم لا
+• يُفضل تنبيه المستخدم إلى الرجوع لنص القانون الكامل أو استشارة محامٍ مختص عند الحاجة
+اذا لم يقدم تفاصيل عن مادة قم بتجاهلها
 الإجابة:`,
 
   apology: `أعتذر، ولكنني متخصص في تقديم الاستشارات القانونية المصرية فقط.
@@ -143,39 +144,60 @@ export const PROMPT_TEMPLATES = {
 • القانون التجاري والشركات
 • القانون الجنائي والعقوبات`,
 
-  gradeDocuments: `أنت خبير في تقييم مدى صلة الوثائق بالأسئلة القانونية.
+  gradeDocuments: `You are a grader assessing relevance of a retrieved document to a user question.
 
-السؤال: {question}
+If the document contains keyword(s) or semantic meaning related to the question, grade it as relevant.
 
-الوثيقة: {document}
+Give a binary score: "yes" or "no" to indicate whether the document is relevant to the question.
 
-هل هذه الوثيقة ذات صلة بالسؤال؟ أجب بـ "yes" أو "no" فقط.
+Retrieved document:
 
-الإجابة:`,
+{document}
 
-  gradeGeneration: `أنت خبير في تقييم جودة الإجابات القانونية.
+User question: {question}
 
-السؤال: {question}
+Answer:`,
 
-الإجابة المولدة: {generation}
+  gradeGeneration: `You are an expert in evaluating the quality of legal answers.
 
-السياق المستخدم: {context}
+Question: {question}
 
-هل هذه الإجابة مفيدة وتجيب على السؤال بشكل صحيح؟ أجب بـ "yes" أو "no" فقط.
+Generated answer: {generation}
 
-الإجابة:`,
+Used context: {context}
 
-  legalScope: `أنت خبير في تحديد ما إذا كان السؤال قانونياً أم لا.
+Is this answer helpful and does it correctly answer the question? Respond with "yes" or "no" only.
 
-السؤال: {question}
+Answer:`,
 
-هل هذا السؤال متعلق بالقانون المصري أو يحتاج استشارة قانونية؟ أجب بـ "legal" أو "not_legal" فقط.
+    legalScope :`You are an expert at determining whether a question is legal or not, specifically if it relates to Egyptian law.
 
-الإجابة:`,
+Only respond with "yes" if the question is **clearly and directly** about a legal matter governed by the **Egyptian constitution, civil law, traffic law, drug laws, or penalties law**.
 
-  transformQuery: `حول السؤال التالي إلى استعلام بحث مناسب للبحث على الإنترنت:
+Do **not** mark questions as "yes" if they are:
+- Social, political, religious, or moral in nature **without a clear legal context**
+- General inquiries or opinions that are **not based on specific legal issues**
+- Vague or indirectly related to law without explicit legal terminology or implications
 
-السؤال الأصلي: {question}
+Use "yes" **only if the question requires legal interpretation, action, or reference to Egyptian legal texts**. Otherwise, respond with "no".
+
+Question: {question}
+
+Answer:
+`,
+
+
+  transformQuery: `You are a question rewriter that transforms user questions into optimized queries for web search.
+
+Your task is to:
+- Understand the underlying legal intent behind the original question.
+- Rewrite the question in Arabic, making it clearer, more specific, and well-suited for search engines.
+- Ensure the rewritten question focuses exclusively on Egyptian laws or the Egyptian constitution.
+
+
+Original question: {question}
+
+Return only the improved Arabic search query:
 
 استعلام البحث المحسن:`
 };
