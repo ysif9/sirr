@@ -7,15 +7,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import CaseHeader from "@/components/case-view/case-header";
 import InitialReportTab from "@/components/case-view/initial-report-tab";
-import InvestigationLogTab from "@/components/case-view/investigation-log-tab";
 import EvidenceManagerTab from "@/components/case-view/evidence-manager-tab";
-import EntitiesTab from "@/components/case-view/entities-tab";
 
 import { useAuth } from "@/contexts/AuthContext";
 import apiClient from "@/lib/api";
 import { decryptReport } from "@/lib/crypto";
 import type { ICaseInfo, IApiAttachment } from "@/lib/mock-data";
-import { Loader2, AlertTriangle } from "lucide-react";
+import { Loader2, AlertTriangle, FileText, Package } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 // Helper function to transform API data to ICaseInfo
@@ -43,9 +41,6 @@ const transformApiDataToCaseInfo = (
     reportedAt: apiData.created_at,
     reporter: { name: "Anonymous", isAnonymous: true, contact: "", credibilityScore: 0, reportingHistory: 0 },
     timeline: [], // Placeholder for future implementation
-    personsInvolved: [], // Placeholder for future implementation
-    vehicles: [], // Placeholder for future implementation
-    investigatorNotes: [], // Placeholder for future implementation
 
     // Decrypted and structured data
     attachments: apiData.attachments || [],
@@ -152,10 +147,28 @@ export default function CaseDetailPage() {
         <Tabs defaultValue="initial-report" className="w-full">
           <ScrollArea>
             <TabsList className="before:bg-border relative mb-3 h-auto w-full gap-0.5 bg-transparent p-0 before:absolute before:inset-x-0 before:bottom-0 before:h-px">
-              <TabsTrigger value="initial-report">Initial Report</TabsTrigger>
-              <TabsTrigger value="investigation-log">Investigation Log</TabsTrigger>
-              <TabsTrigger value="evidence-manager">Evidence Manager</TabsTrigger>
-              <TabsTrigger value="entities">Entities</TabsTrigger>
+              <TabsTrigger
+                value="initial-report"
+                className="bg-muted overflow-hidden rounded-b-none border-x border-t py-2 data-[state=active]:z-10 data-[state=active]:shadow-none"
+              >
+                <FileText
+                  className="-ms-0.5 me-1.5 opacity-60"
+                  size={16}
+                  aria-hidden="true"
+                />
+                Initial Report
+              </TabsTrigger>
+              <TabsTrigger
+                value="evidence-manager"
+                className="bg-muted overflow-hidden rounded-b-none border-x border-t py-2 data-[state=active]:z-10 data-[state=active]:shadow-none"
+              >
+                <Package
+                  className="-ms-0.5 me-1.5 opacity-60"
+                  size={16}
+                  aria-hidden="true"
+                />
+                Evidence Manager
+              </TabsTrigger>
             </TabsList>
             <ScrollBar orientation="horizontal" />
           </ScrollArea>
@@ -164,16 +177,8 @@ export default function CaseDetailPage() {
             <InitialReportTab caseData={caseData} />
           </TabsContent>
 
-          <TabsContent value="investigation-log" className="mt-6">
-            <InvestigationLogTab caseData={caseData} />
-          </TabsContent>
-
           <TabsContent value="evidence-manager" className="mt-6">
             <EvidenceManagerTab caseData={caseData} />
-          </TabsContent>
-
-          <TabsContent value="entities" className="mt-6">
-            <EntitiesTab caseData={caseData} />
           </TabsContent>
         </Tabs>
       </main>

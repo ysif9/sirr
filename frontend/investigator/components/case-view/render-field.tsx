@@ -102,12 +102,7 @@ export default function RenderField({ field, formData, allAttachments, attachmen
     case "location":
       return (
         <FieldWrapper label={field.label}>
-          <div className="space-y-2">
-            <p className="text-sm flex items-center gap-2"><MapPin className="h-4 w-4" />{value}</p>
-            <div className="aspect-video w-full bg-muted rounded-md flex items-center justify-center">
-              <p className="text-muted-foreground text-sm">Map Preview</p>
-            </div>
-          </div>
+          <p className="text-sm flex items-center gap-2"><MapPin className="h-4 w-4" />{value}</p>
         </FieldWrapper>
       )
     case "file_upload":

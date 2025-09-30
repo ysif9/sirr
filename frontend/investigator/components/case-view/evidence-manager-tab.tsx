@@ -2,12 +2,10 @@
 
 import { useState } from "react";
 import {
-  FileText, ImageIcon, VideoIcon, FileAudio, Download, Eye, Tag, BookUser, Loader2, AlertTriangle, ShieldCheck
+  FileText, ImageIcon, VideoIcon, FileAudio, Loader2, ShieldCheck, PackageX
 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import type { ICaseInfo, IApiAttachment } from "@/lib/mock-data";
 import { decryptAttachment } from "@/lib/crypto";
@@ -103,6 +101,18 @@ interface EvidenceManagerTabProps {
 }
 
 export default function EvidenceManagerTab({ caseData }: EvidenceManagerTabProps) {
+  if (caseData.attachments.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center text-center mt-12 py-8">
+        <PackageX className="h-12 w-12 text-muted-foreground" />
+        <h3 className="mt-4 text-lg font-semibold">No Evidence Submitted</h3>
+        <p className="mt-1 text-sm text-muted-foreground">
+          There were no files attached to the initial report.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
       {caseData.attachments.map((att) => (
