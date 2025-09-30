@@ -178,7 +178,6 @@ Before setting up the project, ensure you have the following installed:
 5. **Ollama** (for local LLM inference)
    - Only needed if using local AI models
    - [Download Ollama](https://ollama.com/download)
-   - See `backend/README_OLLAMA.md` for setup instructions
 
 ### System Requirements
 
@@ -418,7 +417,7 @@ poe down
 
 ```
 sirr2/
-├── backend/                      # Django REST API backend
+├──                       # Django REST API backend
 │   ├── apps/                     # Django applications
 │   │   ├── common/              # Shared models and utilities
 │   │   ├── reports/             # Report management (models, views, serializers)
@@ -490,7 +489,7 @@ sirr2/
 - **Redaction System**: Remove sensitive information with audit trail
 
 ## 📚 Additional Documentation
-- **[Backend README](backend/README.md)**: Detailed backend development guide
+- **[Backend README](README.md)**: Detailed backend development guide
 - **[Ollama Setup](docs/Ollama.md)**: Local LLM configuration
 - **[Admin Keys Guide](docs/Admin-Keys.md)**: Encryption key management
 
