@@ -42,33 +42,57 @@ class OnboardingInvitationAdmin(admin.ModelAdmin):
 @admin.register(User)
 class UserAdmin(BaseUserAdmin):
     """
-    Customized User admin to display caseworker status, public key bundle,
-    and add a custom action to invite a new investigator.
+    Customized User admin to enforce an email-only workflow, hiding the underlying
+    'username' field and adding a custom action to invite new investigators.
     """
-    list_display = (
-        "email",
-        "username",
-        "first_name",
-        "last_name",
-        "is_staff",
-        "is_caseworker",
-        "is_superuser",
-        "is_active",
-        "is_locked",
-    )
-    list_filter = ("is_staff", "is_superuser", "is_active", "groups", "is_caseworker", "is_locked")
-    search_fields = ("username", "first_name", "last_name", "email")
+    # --- Core Configuration ---
     ordering = ("email",)
+    list_display = ("email", "first_name", "last_name", "is_staff", "is_caseworker", "is_active", "is_locked")
+    list_filter = ("is_staff", "is_superuser", "is_active", "groups", "is_caseworker", "is_locked")
+    search_fields = ("first_name", "last_name", "email")
+    readonly_fields = ('last_login', 'date_joined', 'failed_login_attempts')
 
-    readonly_fields = ('failed_login_attempts', 'last_login', 'date_joined')
-
-    fieldsets = BaseUserAdmin.fieldsets + (  # type: ignore
+    # --- Form Field Configuration (hiding 'username') ---
+    # Fieldsets for editing an existing user
+    fieldsets = (
+        (None, {"fields": ("email", "password")}),
+        (_("Personal info"), {"fields": ("first_name", "last_name")}),
         (_("Custom Properties"), {"fields": ("is_caseworker", "public_key_bundle")}),
+        (
+            _("Permissions"),
+            {
+                "fields": (
+                    "is_active",
+                    "is_staff",
+                    "is_superuser",
+                    "groups",
+                    "user_permissions",
+                ),
+            },
+        ),
         (_("Security Status"), {"fields": ("is_locked", "failed_login_attempts")}),
+        (_("Important dates"), {"fields": ("last_login", "date_joined")}),
     )
-    add_fieldsets = BaseUserAdmin.add_fieldsets + (
+
+    # Fieldsets for adding a new user
+    add_fieldsets = (
+        (
+            None,
+            {
+                "classes": ("wide",),
+                "fields": ("email", "password", "password2"),
+            },
+        ),
         (_("Custom Properties"), {"fields": ("is_caseworker",)}),
     )
+
+    def save_model(self, request, obj, form, change):
+        """
+        When a user is created in the admin, set the username to the email.
+        """
+        if not change:  # This means the object is being created
+            obj.username = obj.email
+        super().save_model(request, obj, form, change)
 
     def get_urls(self):
         """Add the custom URL for the invitation view."""

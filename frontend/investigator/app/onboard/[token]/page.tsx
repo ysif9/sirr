@@ -2,12 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Loader2, ShieldAlert, GalleryVerticalEnd } from "lucide-react";
+import { Loader2, ShieldAlert } from "lucide-react";
 import apiClient from "@/lib/api";
 import StepASetPassword from "@/components/onboarding/StepA-SetPassword";
 import StepBEnroll2FA from "@/components/onboarding/StepB-Enroll2FA";
 import StepCViewCredentials from "@/components/onboarding/StepC-ViewCredentials";
 import { Card, CardContent } from "@/components/ui/card";
+import Logo from "@/components/logo";
 
 type OnboardingStep = "verifying" | "stepA" | "stepB" | "stepC" | "invalid";
 
@@ -118,8 +119,8 @@ export default function OnboardPage() {
     <div className="bg-background flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">
       <div className="flex flex-col items-center gap-2 mb-4">
           <a href="#" className="flex flex-col items-center gap-2 font-medium">
-            <div className="flex size-8 items-center justify-center rounded-md">
-              <GalleryVerticalEnd className="size-6" />
+            <div className="flex size-10 items-center justify-center rounded-md">
+              <Logo />
             </div>
             <span className="sr-only">Sirr.</span>
           </a>

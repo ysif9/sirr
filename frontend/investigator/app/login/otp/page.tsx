@@ -4,9 +4,10 @@ import { FormEvent, useState, useEffect }
 from "react";
 import { useRouter } from "next/navigation";
 import { OTPInput, SlotProps } from "input-otp";
-import { MinusIcon, GalleryVerticalEnd } from "lucide-react";
+import { MinusIcon } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import apiClient from "@/lib/api";
+import Logo from "@/components/logo";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -72,8 +73,8 @@ export default function OtpPage() {
               href="#"
               className="flex flex-col items-center gap-2 font-medium"
             >
-              <div className="flex size-8 items-center justify-center rounded-md">
-                <GalleryVerticalEnd className="size-6" />
+              <div className="flex size-10 items-center justify-center rounded-md">
+                <Logo />
               </div>
               <span className="sr-only">Sirr.</span>
             </a>
