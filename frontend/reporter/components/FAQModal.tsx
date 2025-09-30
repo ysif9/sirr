@@ -4,7 +4,12 @@ import React from "react"
 import { useTranslations } from "next-intl"
 import { Squircle } from "@squircle-js/react"
 import { XMarkIcon } from "./icons/XMarkIcon"
-import { ChevronDownIcon } from "./icons/ChevronDownIcon"
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion'
 
 interface FAQModalProps {
   onClose: () => void
@@ -12,14 +17,7 @@ interface FAQModalProps {
 
 const FAQModal: React.FC<FAQModalProps> = ({ onClose }) => {
   const t = useTranslations("FAQModal")
-  const [openItems, setOpenItems] = React.useState<number[]>([])
 
-  const toggleItem = (index: number) => {
-    setOpenItems((prev) => (prev.includes(index) ? prev.filter((i) => i !== index) : [...prev, index]))
-  }
-
-  // NOTE: next-intl t() returns a string by default. When accessing nested objects
-  // we treat them as namespaces (e.g., t('q1.question')).
   const faqs = [
     { question: t("q1.question"), answer: t("q1.answer") },
     { question: t("q2.question"), answer: t("q2.answer") },
@@ -49,32 +47,22 @@ const FAQModal: React.FC<FAQModalProps> = ({ onClose }) => {
           </div>
 
           <div className="flex-1 overflow-y-auto p-6">
-            <div className="space-y-4">
+            <Accordion type="single" collapsible className="w-full space-y-4">
               {faqs.map((faq, index) => (
-                <div key={index}>
-                  <button onClick={() => toggleItem(index)} className="w-full text-left">
-                    <Squircle
-                      cornerRadius={12}
-                      cornerSmoothing={1}
-                      className="w-full p-4 bg-white/5 border border-white/10 hover:bg-white/10 transition-colors"
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="font-semibold text-white pr-4">{faq.question}</span>
-                        <ChevronDownIcon
-                          className={`w-5 h-5 text-gray-400 transition-transform ${
-                            openItems.includes(index) ? "rotate-180" : ""
-                          }`}
-                        />
-                      </div>
-                    </Squircle>
-                  </button>
-
-                  {openItems.includes(index) && (
-                    <div className="mt-2 px-4 py-3 text-gray-300 leading-relaxed">{faq.answer}</div>
-                  )}
-                </div>
+                <AccordionItem
+                  key={index}
+                  value={`item-${index}`}
+                  className="bg-white/5 border border-white/10 rounded-lg transition-colors"
+                >
+                  <AccordionTrigger className="w-full text-left p-4 font-semibold text-white hover:bg-white/10 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white rounded-lg">
+                    {faq.question}
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    <div className="px-4 pb-4 pt-0 text-gray-300 leading-relaxed">{faq.answer}</div>
+                  </AccordionContent>
+                </AccordionItem>
               ))}
-            </div>
+            </Accordion>
           </div>
 
           <div className="p-6 border-t border-white/10">
