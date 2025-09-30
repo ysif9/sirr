@@ -1,4 +1,4 @@
-# Sirr - Secure Anonymous Reporting System
+# Sirr - Secure Incident Reporting & Response
 
 <div align="center">
 
@@ -11,8 +11,6 @@
 [![Docker](https://img.shields.io/badge/Docker-Ready-blue.svg)](https://www.docker.com/)
 
 </div>
-
----
 
 ## 📋 Table of Contents
 
@@ -28,8 +26,6 @@
 - [Security Features](#-security-features)
 - [Additional Documentation](#-additional-documentation)
 
----
-
 ## 🎯 Overview
 
 **Sirr** (Arabic: سِرّ, meaning "secret") is a secure, anonymous reporting platform designed to enable safe submission and management of sensitive reports. The system provides end-to-end encryption (E2EE), AI-powered analysis, and comprehensive investigation tools for caseworkers.
@@ -39,8 +35,6 @@
 - **For Reporters**: Submit anonymous reports securely with end-to-end encryption, ensuring complete privacy
 - **For Investigators**: Manage, analyze, and track reports through a comprehensive case management portal
 - **For Organizations**: Deploy a trusted, secure platform for handling sensitive information
-
----
 
 ## ✨ Key Features
 
@@ -67,8 +61,6 @@
 - 🔑 **Cryptographic Security**: PyNaCl-based encryption system
 - 📊 **RESTful API**: Django REST Framework with comprehensive endpoints
 - 🔐 **Password Security**: Pwned Passwords integration, Argon2 hashing
-
----
 
 ## 🏗️ Architecture
 
@@ -115,15 +107,6 @@ graph TB
     style Ollama fill:#4a2456,stroke:#9c27b0,color:#fff
 ```
 
-### Data Flow
-
-1. **Report Submission**: Reporter encrypts data client-side → Backend stores encrypted data
-2. **Report Access**: Investigator authenticates → Backend decrypts with private key → Investigator views
-3. **AI Analysis**: Celery worker analyzes report → Stores spam/urgency predictions
-4. **Chatbot Query**: User asks question → RAG retrieves relevant law articles → LLM generates response
-
----
-
 ## 🛠️ Technology Stack
 
 ### Backend
@@ -159,8 +142,6 @@ graph TB
 - **Backend**: Ruff (linting/formatting), MyPy (type checking)
 - **Frontend**: ESLint, TypeScript compiler
 - **Version Control**: Git
-
----
 
 ## 📦 Prerequisites
 
@@ -204,8 +185,6 @@ Before setting up the project, ensure you have the following installed:
 - **RAM**: Minimum 8GB (16GB recommended)
 - **Storage**: 10GB free space
 - **GPU**: Optional, for Ollama (NVIDIA GPU with CUDA support)
-
----
 
 ## 🚀 Setup and Installation
 
@@ -370,7 +349,6 @@ If you want to use local AI models for report analysis:
    ```bash
    poe devlm
    ```
----
 
 ## 🎮 Running the Project
 
@@ -436,8 +414,6 @@ poe down
 # Stop frontend (Ctrl+C in the terminal)
 ```
 
----
-
 ## 📁 Project Structure
 
 ```
@@ -485,7 +461,6 @@ sirr2/
 ├── .env.example                 # Environment variables template
 └── README.md                    # This file
 ```
----
 
 ## 🔐 Security Features
 
@@ -514,13 +489,10 @@ sirr2/
 - **Access Logging**: Track who accessed which reports and when
 - **Redaction System**: Remove sensitive information with audit trail
 
----
-
 ## 📚 Additional Documentation
 - **[Backend README](backend/README.md)**: Detailed backend development guide
 - **[Ollama Setup](docs/Ollama.md)**: Local LLM configuration
 - **[Admin Keys Guide](docs/Admin-Keys.md)**: Encryption key management
----
 
 ## 🤝 Contributing
 
@@ -531,13 +503,15 @@ sirr2/
 3. **Testing**: Write tests for new features (coming soon)
 4. **Documentation**: Update relevant documentation for changes
 5. **Commits**: Use clear, descriptive commit messages
----
 
 ## 👥 Authors
 
-[Add author information here]
+- Yousif Abdulhafiz - [@ysif9](https://github.com/ysif9)
+- Philopater Guirgis - [@Philodoescode](https://github.com/Philodoescode)
+- Ahmed Lotfy - [@dark-hunter0](https://github.com/dark-hunter0)
+- Ramy George - [@RamyGeorge](https://github.com/RamyGeorge)
+- Patrick Ramez - [@Patrick-ramez](https://github.com/Patrick-ramez)
 
----
 
 ## 📞 Support
 
@@ -545,7 +519,5 @@ For issues, questions, or contributions:
 - Open an issue on GitHub
 - Contact the development team
 - Check existing documentation
-
----
 
 **Built with ❤️ for secure, anonymous reporting**
