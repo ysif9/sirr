@@ -102,10 +102,17 @@ graph TB
     API --> Redis
     API -.-> Ollama
 
-    style Frontend fill:#e1f5ff
-    style Backend fill:#fff4e1
-    style DataLayer fill:#e8f5e9
-    style Optional fill:#f3e5f5
+    style Frontend fill:#1e3a5f,stroke:#4a9eff,stroke-width:2px,color:#fff
+    style Backend fill:#3d2817,stroke:#ff9f43,stroke-width:2px,color:#fff
+    style DataLayer fill:#1e4620,stroke:#4caf50,stroke-width:2px,color:#fff
+    style Optional fill:#3d1e47,stroke:#9c27b0,stroke-width:2px,color:#fff
+    style Reporter fill:#2c5282,stroke:#4a9eff,color:#fff
+    style Investigator fill:#2c5282,stroke:#4a9eff,color:#fff
+    style API fill:#5a3825,stroke:#ff9f43,color:#fff
+    style DB fill:#2d5a2f,stroke:#4caf50,color:#fff
+    style VectorDB fill:#2d5a2f,stroke:#4caf50,color:#fff
+    style Redis fill:#2d5a2f,stroke:#4caf50,color:#fff
+    style Ollama fill:#4a2456,stroke:#9c27b0,color:#fff
 ```
 
 ### Data Flow
