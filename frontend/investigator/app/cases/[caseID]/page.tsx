@@ -8,12 +8,13 @@ import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import CaseHeader from "@/components/case-view/case-header";
 import InitialReportTab from "@/components/case-view/initial-report-tab";
 import EvidenceManagerTab from "@/components/case-view/evidence-manager-tab";
+import AiAnalysisTab from "@/components/case-view/ai-analysis-tab";
 
 import { useAuth } from "@/contexts/AuthContext";
 import apiClient from "@/lib/api";
 import { decryptReport } from "@/lib/crypto";
-import type { ICaseInfo, IApiAttachment } from "@/lib/mock-data";
-import { Loader2, AlertTriangle, FileText, Package } from "lucide-react";
+import type { ICaseInfo } from "@/lib/mock-data";
+import { Loader2, AlertTriangle, FileText, Package, BrainCircuit } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 // Helper function to transform API data to ICaseInfo
@@ -45,6 +46,7 @@ const transformApiDataToCaseInfo = (
     // Decrypted and structured data
     attachments: apiData.attachments || [],
     attachmentKeys: attachmentKeys,
+    analysis: apiData.analysis || null,
     formKey: { reportTypeKey, categoryKey, formKey },
     formData: decryptedBody || {},
   };
@@ -169,6 +171,17 @@ export default function CaseDetailPage() {
                 />
                 Evidence Manager
               </TabsTrigger>
+              <TabsTrigger
+                value="ai-analysis"
+                className="bg-muted overflow-hidden rounded-b-none border-x border-t py-2 data-[state=active]:z-10 data-[state=active]:shadow-none"
+              >
+                <BrainCircuit
+                  className="-ms-0.5 me-1.5 opacity-60"
+                  size={16}
+                  aria-hidden="true"
+                />
+                AI Analysis
+              </TabsTrigger>
             </TabsList>
             <ScrollBar orientation="horizontal" />
           </ScrollArea>
@@ -179,6 +192,10 @@ export default function CaseDetailPage() {
 
           <TabsContent value="evidence-manager" className="mt-6">
             <EvidenceManagerTab caseData={caseData} />
+          </TabsContent>
+
+          <TabsContent value="ai-analysis" className="mt-6">
+            <AiAnalysisTab analysis={caseData.analysis} />
           </TabsContent>
         </Tabs>
       </main>

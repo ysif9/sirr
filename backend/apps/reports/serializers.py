@@ -132,6 +132,23 @@ class ReportSerializer(serializers.ModelSerializer):
         ]
 
 
+# -------------------
+# AI Analysis serializers
+# -------------------
+class AIAnalysisSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AIAnalysis
+        fields = [
+            "is_spam",
+            "confidence",
+            "analyzed_at",
+            "model_version",
+            "spam_reasoning",
+            "urgency",
+            "urgency_reasoning",
+        ]
+
+
 class CaseworkerReportSerializer(ReportSerializer):
     """
     A specialized serializer for caseworkers that provides the re-encrypted
@@ -139,10 +156,11 @@ class CaseworkerReportSerializer(ReportSerializer):
     """
     key_envelope = serializers.SerializerMethodField()
     attachments = AttachmentSerializer(many=True, read_only=True)
+    analysis = AIAnalysisSerializer(read_only=True, allow_null=True)
 
     class Meta(ReportSerializer.Meta):
         # Explicitly inherit fields and add 'attachments' for the detail view.
-        fields = ReportSerializer.Meta.fields + ["attachments"]
+        fields = ReportSerializer.Meta.fields + ["attachments", "analysis"]
         read_only_fields = ReportSerializer.Meta.read_only_fields
 
     def get_key_envelope(self, obj: Report) -> dict | None:
@@ -206,15 +224,6 @@ class ReportAssignmentSerializer(serializers.Serializer):
 
     def update(self, instance, validated_data):
         raise NotImplementedError()
-
-
-# -------------------
-# AI Analysis serializers
-# -------------------
-class AIAnalysisSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = AIAnalysis
-        fields = ["report", "is_spam", "confidence", "analyzed_at", "model_version", "analysis_data"]
 
 
 # -------------------

@@ -117,7 +117,7 @@ class ReportViewSet(viewsets.ModelViewSet):
         user = self.request.user
 
         # Base queryset with annotations for all users
-        base_qs = Report.objects.annotate(
+        base_qs = Report.objects.select_related("analysis").annotate(
             last_access_date=Max('assignments__last_access'),
             attachment_count=Count('attachments', distinct=True)
         )

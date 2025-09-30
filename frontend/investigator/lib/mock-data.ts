@@ -17,6 +17,17 @@ export interface IApiAttachment {
   file_extension: string;
 }
 
+// Represents the AI analysis data from the backend
+export interface IAIAnalysis {
+  is_spam: boolean;
+  confidence: number;
+  analyzed_at: string;
+  model_version: string;
+  spam_reasoning: string;
+  urgency: string; // e.g., "low", "medium", "high", "critical"
+  urgency_reasoning: string;
+}
+
 export interface IReporter {
   name: string;
   contact: string;
@@ -47,6 +58,9 @@ export interface ICaseInfo {
   // Dynamic/Complex fields
   timeline: ITimelineEvent[];
   
+  // AI Analysis Data
+  analysis: IAIAnalysis | null;
+
   // Data for decryption and form rendering
   attachments: IApiAttachment[];
   attachmentKeys: { [attachmentId: string]: string }; // map of attachmentId -> base64 key
