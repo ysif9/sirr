@@ -34,7 +34,7 @@ export async function getAdminPublicKey(): Promise<AdminPublicKey> {
 /**
  * Fully encrypts and submits the report and attachments using multipart/form-data.
  * @param {object} reportData The plaintext report data.
- * @param {FileList | null} attachments The files to upload.
+ * @param {File[] | FileList | null} attachments The files to upload.
  * @param {FormIdentifier} formIdentifier The keys identifying the form template.
  * @param {string} formTitle The display title of the form.
  * @returns {Promise<{ access_key: string }>} The submission result with the access key.
@@ -42,14 +42,14 @@ export async function getAdminPublicKey(): Promise<AdminPublicKey> {
  */
 export async function submitReport(
   reportData: object,
-  attachments: FileList | null,
+  attachments: File[] | FileList | null,
   formIdentifier: FormIdentifier,
   formTitle: string
 ): Promise<{ access_key: string }> {
   // 1. Fetch the admin's public key
   const adminKey = await getAdminPublicKey()
 
-  // 2. Encrypt the entire report payload and all attachments
+  // 2. Encrypt the entire report payload and all attachments.
   const { encryptedPayload, encryptedAttachments } = await encryptReportAndAttachments(
     reportData,
     attachments,

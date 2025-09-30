@@ -1,3 +1,4 @@
+//START OF components/chatbot/chat.tsx
 "use client";
 
 import { Button } from "@/components/ui/button";
@@ -7,8 +8,9 @@ import { useRef, useEffect, useState, KeyboardEvent, FormEvent } from "react";
 import { SendHorizonalIcon } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { sendChatMessage, sendStreamingChatMessage, RAG_API_CONFIG } from "@/lib/rag-api";
+import { sendChatMessage, sendStreamingChatMessage } from "@/lib/rag-api";
 import ReactMarkdown from "react-markdown";
+import { useLocale } from "next-intl";
 
 type Message = {
   id: string;
@@ -37,6 +39,7 @@ const initialMessages: Message[] = [
 ];
 
 export default function Chat() {
+  const locale = useLocale();
   const [session, setSession] = useState<ChatSession>({
     sessionId: '',
     messages: initialMessages
@@ -117,6 +120,7 @@ export default function Chat() {
       const data = await sendChatMessage({
         message: message,
         sessionId: session.sessionId,
+        locale: locale,
       });
 
       // Add assistant response to chat
@@ -171,6 +175,7 @@ export default function Chat() {
       for await (const chunk of sendStreamingChatMessage({
         message: message,
         sessionId: session.sessionId,
+        locale: locale,
       })) {
         if (chunk.response) {
           finalResponse = chunk.response;
@@ -417,19 +422,15 @@ export default function Chat() {
                 type="submit"
                 size="icon"
                 aria-label="إرسال السؤال"
-                disabled={!userInput.trim() || isLoading}
+                disabled={isLoading}
               >
-                <SendHorizonalIcon className="h-5 w-5" />
+                <SendHorizonalIcon className="w-5 h-5" />
               </Button>
             </div>
-            {isLoading && (
-              <div className="text-xs text-muted-foreground text-center">
-                جاري معالجة سؤالك...
-              </div>
-            )}
           </form>
         </div>
       </div>
     </div>
   );
 }
+//END OF components/chatbot/chat.tsx

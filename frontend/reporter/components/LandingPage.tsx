@@ -1,19 +1,25 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
+import { useState, useRef, useEffect } from "react"
 import EmergencyBanner from "./EmergencyBanner"
+import DNSBanner from "./DNSBanner"
 import Hero from "./Hero"
 import Footer from "./Footer"
 import FAQModal from "./FAQModal"
 import LightRays from "./LightRays"
 
-interface LandingPageProps {
-  onNavigate: (page: string) => void
-}
-
-const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
+const LandingPage: React.FC = () => {
   const [isFaqModalOpen, setIsFaqModalOpen] = useState(false)
+  const headerRef = useRef<HTMLDivElement>(null)
+  const [headerHeight, setHeaderHeight] = useState(0)
+
+  // This effect runs once to measure the height of the fixed header
+  useEffect(() => {
+    if (headerRef.current) {
+      setHeaderHeight(headerRef.current.offsetHeight)
+    }
+  }, [])
 
   return (
     <>
@@ -32,11 +38,22 @@ const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
             className="custom-rays"
           />
         </div>
-        <EmergencyBanner />
-        <main className="pt-16 flex-grow flex items-center justify-center">
-          <Hero onNavigate={onNavigate} />
+        
+        {/* A fixed container for both banners */}
+        <header ref={headerRef} className="fixed top-0 left-0 right-0 z-50 w-full">
+          <EmergencyBanner />
+          <DNSBanner />
+        </header>
+
+        {/* Main content area now has dynamic padding-top to avoid being covered by the banners */}
+        <main 
+          className="flex-grow flex items-center justify-center"
+          style={{ paddingTop: `${headerHeight}px` }}
+        >
+          <Hero />
         </main>
-        <Footer onNavigate={onNavigate} onOpenFaq={() => setIsFaqModalOpen(true)} />
+
+        <Footer onOpenFaq={() => setIsFaqModalOpen(true)} />
       </div>
       {isFaqModalOpen && <FAQModal onClose={() => setIsFaqModalOpen(false)} />}
     </>
