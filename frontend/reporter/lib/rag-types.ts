@@ -26,12 +26,14 @@ export interface ChatRequest {
   message: string;
   sessionId?: string;
   userId?: string;
+  locale?: string;
 }
 
 export interface ChatResponse {
   response: string;
   sessionId: string;
   processingTime_ms: number;
+  sources?: any[]; // FIX: Added optional sources property
   processingSteps?: string[];
   metadata?: {
     userId?: string;
@@ -195,6 +197,7 @@ Your task is to:
 
 Original question: {question}
 
-Return only the improved Arabic search query.
-`
+Return only the improved Arabic search query:
+
+استعلام البحث المحسن:`
 };

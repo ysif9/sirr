@@ -1,8 +1,9 @@
+//START OF components\FollowUpModal.tsx
 "use client"
 
 import type React from "react"
 import { useState } from "react"
-import { useLanguage } from "../contexts/LanguageContext"
+import { useTranslations } from "next-intl"
 import { Squircle } from "@squircle-js/react"
 import { XMarkIcon } from "./icons/XMarkIcon"
 
@@ -11,7 +12,7 @@ interface FollowUpModalProps {
 }
 
 const FollowUpModal: React.FC<FollowUpModalProps> = ({ onClose }) => {
-  const { t } = useLanguage()
+  const t = useTranslations("FollowUpModal")
   const [referenceNumber, setReferenceNumber] = useState("")
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -26,7 +27,7 @@ const FollowUpModal: React.FC<FollowUpModalProps> = ({ onClose }) => {
       <div className="w-full max-w-md">
         <Squircle cornerRadius={20} cornerSmoothing={1} className="bg-slate-800 border border-white/10 p-6 shadow-2xl">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold text-white">{t("followUpTitle")}</h2>
+            <h2 className="text-xl font-bold text-white">{t("title")}</h2>
             <button
               onClick={onClose}
               className="text-gray-400 hover:text-white transition-colors p-1"
@@ -36,7 +37,7 @@ const FollowUpModal: React.FC<FollowUpModalProps> = ({ onClose }) => {
             </button>
           </div>
 
-          <p className="text-gray-300 mb-6">{t("followUpDescription")}</p>
+          <p className="text-gray-300 mb-6">{t("description")}</p>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
@@ -44,7 +45,7 @@ const FollowUpModal: React.FC<FollowUpModalProps> = ({ onClose }) => {
                 type="text"
                 value={referenceNumber}
                 onChange={(e) => setReferenceNumber(e.target.value)}
-                placeholder={t("followUpPlaceholder")}
+                placeholder={t("placeholder") as string}
                 className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-gray-400 focus:ring-2 focus:ring-white focus:border-transparent"
                 required
               />
@@ -57,7 +58,7 @@ const FollowUpModal: React.FC<FollowUpModalProps> = ({ onClose }) => {
                   cornerSmoothing={1}
                   className="w-full py-3 px-4 border border-white/20 text-gray-300 hover:bg-white/5 transition-colors"
                 >
-                  {t("followUpCancel")}
+                  {t("cancel")}
                 </Squircle>
               </button>
 
@@ -67,7 +68,7 @@ const FollowUpModal: React.FC<FollowUpModalProps> = ({ onClose }) => {
                   cornerSmoothing={1}
                   className="w-full py-3 px-4 bg-white text-slate-900 font-semibold hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {t("followUpSubmit")}
+                  {t("submit")}
                 </Squircle>
               </button>
             </div>
@@ -79,3 +80,4 @@ const FollowUpModal: React.FC<FollowUpModalProps> = ({ onClose }) => {
 }
 
 export default FollowUpModal
+//END OF components\FollowUpModal.tsx

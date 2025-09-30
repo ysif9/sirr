@@ -62,7 +62,7 @@ interface FormIdentifier {
 /**
  * Orchestrates the end-to-end encryption of a report and its attachments.
  * @param reportData The plaintext report data object.
- * @param attachments A FileList of attachments.
+ * @param attachments A FileList or array of Files of attachments.
  * @param adminKey The admin's public key object from the API.
  * @param formIdentifier The keys identifying the form template.
  * @param formTitle The display title of the form.
@@ -70,7 +70,7 @@ interface FormIdentifier {
  */
 export async function encryptReportAndAttachments(
   reportData: object,
-  attachments: FileList | null,
+  attachments: File[] | FileList | null,
   adminKey: AdminPublicKey,
   formIdentifier: FormIdentifier,
   formTitle: string
@@ -100,6 +100,12 @@ export async function encryptReportAndAttachments(
   // 3. Encrypt Each Attachment
   if (attachments) {
     for (const file of Array.from(attachments)) {
+      // Add a guard to ensure we are only processing valid File objects
+      if (!(file instanceof File)) {
+        console.warn("Skipping an invalid item in attachments array:", file);
+        continue;
+      }
+
       const attachmentId = uuidv4()
       const attachmentKey = nacl.randomBytes(nacl.secretbox.keyLength)
       const attachmentNonce = nacl.randomBytes(nacl.secretbox.nonceLength)

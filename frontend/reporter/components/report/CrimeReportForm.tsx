@@ -1,14 +1,15 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { FormDefinition, Field } from "@/lib/crime-forms"
 import { submitReport } from "@/lib/api"
 import ReportStepper from "@/components/Stepper"
 import RenderField from "./RenderField"
 import { Button } from "../ui/button"
-import { Squircle } from "@squircle-js/react"
 import SubmissionSuccess from "./SubmissionSuccess"
+import { useTranslations } from "next-intl"
+import { useLoader } from "@/contexts/LoaderContext"
 
 interface CrimeReportFormProps {
   formDefinition: FormDefinition
@@ -20,6 +21,8 @@ interface CrimeReportFormProps {
 }
 
 const CrimeReportForm: React.FC<CrimeReportFormProps> = ({ formDefinition, formIdentifier }) => {
+  const t = useTranslations("CrimeReportForm");
+  const { showLoader, hideLoader } = useLoader();
   const [currentStep, setCurrentStep] = useState(1)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submissionData, setSubmissionData] = useState<{ access_key: string } | null>(null)
@@ -29,22 +32,56 @@ const CrimeReportForm: React.FC<CrimeReportFormProps> = ({ formDefinition, formI
     mode: "onChange",
   })
 
+  useEffect(() => {
+    if (isSubmitting) {
+      showLoader();
+    } else {
+      hideLoader();
+    }
+
+    // Cleanup to hide loader if component unmounts while submitting
+    return () => {
+      hideLoader();
+    };
+  }, [isSubmitting, showLoader, hideLoader]);
+
   const handleSubmit = async () => {
     setIsSubmitting(true)
     setSubmissionError(null)
 
     try {
       const allFormValues = getValues()
-      const attachments = allFormValues.evidence_upload as FileList | null
+      
+      // Dynamically find all file upload fields from the form definition
+      const fileFieldIds = new Set(
+        formDefinition.steps.flatMap(step => 
+          step.fields
+            .filter(field => field.type === 'file_upload')
+            .map(field => field.id)
+        )
+      );
 
-      const reportData = { ...allFormValues }
-      delete reportData.evidence_upload
+      const reportData: { [key: string]: any } = {};
+      const allAttachments: File[] = [];
 
-      const result = await submitReport(reportData, attachments, formIdentifier, formDefinition.title)
+      // Separate file data from other form data
+      for (const key in allFormValues) {
+        if (fileFieldIds.has(key)) {
+          const files = allFormValues[key];
+          if (Array.isArray(files)) {
+            // Filter out any non-File objects just in case
+            allAttachments.push(...files.filter(f => f instanceof File));
+          }
+        } else {
+          reportData[key] = allFormValues[key];
+        }
+      }
+
+      const result = await submitReport(reportData, allAttachments, formIdentifier, formDefinition.title)
       setSubmissionData(result)
     } catch (error: any) {
       console.error("Submission Error:", error)
-      setSubmissionError(error.message || "An unexpected error occurred during submission.")
+      setSubmissionError(error.message || t("submissionError"))
     } finally {
       setIsSubmitting(false)
     }
@@ -78,21 +115,17 @@ const CrimeReportForm: React.FC<CrimeReportFormProps> = ({ formDefinition, formI
 
   if (submissionData) {
     return (
-      <Squircle
-        className="max-w-3xl mx-auto p-8 bg-card border border-border shadow-2xl transition-all duration-300"
-        cornerRadius={30}
-        cornerSmoothing={1}
+      <div
+        className="max-w-3xl mx-auto p-8 bg-card border border-border shadow-2xl transition-all duration-300 rounded-[1.875rem]"
       >
         <SubmissionSuccess accessKey={submissionData.access_key} onReset={handleReset} />
-      </Squircle>
+      </div>
     )
   }
 
   return (
-    <Squircle
-      className="max-w-3xl mx-auto p-8 bg-card border border-border shadow-2xl transition-all duration-300"
-      cornerRadius={30}
-      cornerSmoothing={1}
+    <div
+      className="max-w-3xl mx-auto p-8 bg-card border border-border shadow-2xl transition-all duration-300 rounded-[1.875rem]"
     >
       <div className="mb-10">
         <ReportStepper steps={formDefinition.steps} currentStep={currentStep} />
@@ -115,13 +148,13 @@ const CrimeReportForm: React.FC<CrimeReportFormProps> = ({ formDefinition, formI
 
       <div className="mt-10 flex justify-between items-center pt-6 border-t border-border">
         <Button variant="outline" onClick={handlePrev} disabled={currentStep === 1 || isSubmitting}>
-          Previous Step
+          {t('previousStep')}
         </Button>
         <Button size="lg" onClick={handleNext} disabled={isSubmitting}>
-          {isSubmitting ? "Submitting..." : isLastStep ? "Submit Report" : "Next Step"}
+          {isSubmitting ? t('submitting') : isLastStep ? t('submitReport') : t('nextStep')}
         </Button>
       </div>
-    </Squircle>
+    </div>
   )
 }
 
