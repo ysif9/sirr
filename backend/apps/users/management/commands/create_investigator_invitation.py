@@ -64,8 +64,8 @@ class Command(BaseCommand):
         )
 
         # 4. Output Onboarding Link
-        # This URL should match the frontend route for user onboarding.
-        frontend_base_url = "http://localhost:3000"
+        # Investigator frontend runs on port 3001
+        frontend_base_url = "http://localhost:3001"
         onboarding_url = f"{frontend_base_url}/onboard/{token}"
 
         self.stdout.write(self.style.SUCCESS(f"\nSuccessfully created investigator and invitation for {username}."))
