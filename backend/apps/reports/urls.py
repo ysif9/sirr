@@ -8,6 +8,7 @@ from .views import (
     ReportRedactionViewSet,
     ReportTemplateViewSet,
     ReportViewSet,
+    FollowUpViewSet,
 )
 
 router = DefaultRouter()
@@ -17,6 +18,8 @@ router.register(r"reports", ReportViewSet)
 router.register(r"attachments", AttachmentViewSet)
 router.register(r"ai-analyses", AIAnalysisViewSet)
 router.register(r"redactions", ReportRedactionViewSet)
+
+router.register(r"follow-up", FollowUpViewSet, basename="report-followup-status")
 
 urlpatterns = [
     path("", include(router.urls)),

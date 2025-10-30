@@ -3,7 +3,7 @@ import json
 import secrets
 from binascii import Error as BinasciiError
 from typing import Any
-
+from rest_framework.exceptions import NotFound
 from django.conf import settings
 from django.db import transaction
 from django.db.models import Count, Max, Prefetch
@@ -11,7 +11,7 @@ from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
 from nacl.exceptions import CryptoError
 from nacl.public import Box, PrivateKey, PublicKey
-from rest_framework import filters, status, viewsets
+from rest_framework import filters, status, viewsets, mixins
 from rest_framework.decorators import action
 from rest_framework.exceptions import ParseError, ValidationError
 from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
@@ -39,7 +39,7 @@ from .serializers import (
     ReportListSerializer,
     ReportRedactionSerializer,
     ReportSerializer,
-    ReportTemplateSerializer,
+    ReportTemplateSerializer, ReportStatusSerializer,
 )
 
 
@@ -324,3 +324,42 @@ class ReportRedactionViewSet(viewsets.ModelViewSet):
     queryset = ReportRedaction.objects.all()
     serializer_class = ReportRedactionSerializer
     permission_classes = [AllowAny]
+
+
+
+# -------------------
+# Follow up viewset
+# -------------------
+class FollowUpViewSet(mixins.RetrieveModelMixin, viewsets.GenericViewSet):
+    """
+    A viewset for anonymous users to retrieve the status of a report
+    using the unique 'access_key' (reference key) instead of the primary key (ID).
+
+    It uses the ReportStatusSerializer to return only essential, anonymous status data.
+    """
+    # Pre-fetch 'analysis' relationship for efficiency, required by get_priority_display
+    queryset = Report.objects.select_related('analysis').all()
+    serializer_class = ReportStatusSerializer
+    permission_classes = [AllowAny]  # Must be publicly accessible
+    lookup_field = 'access_key'      # Instructs DRF to look for 'access_key' in the URL
+
+    def get_object(self):
+        """
+        Overrides the default get_object behavior to retrieve the report
+        based on the 'access_key' provided in the URL.
+        """
+        # The lookup value is retrieved from the URL kwargs using the lookup_field name
+        lookup_value = self.kwargs.get(self.lookup_field)
+
+        if not lookup_value:
+            raise NotFound(detail="Access key missing.")
+
+        try:
+            # Perform the lookup against the access_key field
+            obj = self.get_queryset().get(**{self.lookup_field: lookup_value})
+        except Report.DoesNotExist:
+            # Crucially, raise a generic NotFound exception to prevent attackers
+            # from enumerating valid access keys.
+            raise NotFound(detail="Report not found.")
+
+        return obj

@@ -89,7 +89,12 @@
     "description": "Enter your report reference number to check the status of your submission.",
     "placeholder": "Enter report reference number",
     "submit": "Check Status",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "validating": "Validating...",
+    "errorTitle": "Invalid Access Key",
+    "errorNotFound": "Report not found. Please check your access key and try again.",
+    "errorGeneric": "Failed to validate access key. Please try again later.",
+    "errorNetwork": "Network error. Please check your connection and try again."
   },
   "FAQModal": {
     "title": "Frequently Asked Questions",
