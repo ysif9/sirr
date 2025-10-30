@@ -7,7 +7,7 @@ from rest_framework.exceptions import ValidationError
 
 from apps.users.models import User
 
-from .models import AIAnalysis, Attachment, Report, ReportCategory, ReportRedaction, ReportTemplate
+from .models import AIAnalysis, Attachment, Report, ReportCategory, ReportRedaction, ReportTemplate, ReportPriority
 
 
 # -------------------
@@ -234,3 +234,80 @@ class ReportRedactionSerializer(serializers.ModelSerializer):
         model = ReportRedaction
         fields = ["report", "redactor_user", "reference_id", "redaction_reason"]
         read_only_fields = ["reference_id", "created_at", "updated_at", "redactor_user"]
+
+
+
+# -------------------
+# Followup serializers
+# -------------------
+
+class AIAnalysisStatusSerializer(serializers.ModelSerializer):
+    """
+    Serializer for exposing key AI analysis findings for the reporter dashboard.
+    (Used internally by ReportStatusSerializer's priority logic, though
+    nested fields are excluded from the final output for anonymity.)
+    """
+    # Translate internal urgency choice to a readable string
+    urgency_display = serializers.CharField(source='get_urgency_display', read_only=True)
+
+    class Meta:
+        model = AIAnalysis
+        fields = (
+            'urgency',
+            'urgency_display',
+            'confidence',
+            'analyzed_at'
+        )
+        read_only_fields = fields
+
+
+class ReportStatusSerializer(serializers.ModelSerializer):
+    """
+    Main serializer for the anonymous report follow-up page.
+    Returns only essential status information concerning the reporter
+    (status, priority, and timeline details).
+    """
+    # 1. Status: Translate internal status (e.g., 'new') to display value (e.g., 'New')
+    status_display = serializers.CharField(source='get_status_display', read_only=True)
+
+    # 2. Priority: Use a method field to determine the displayed priority,
+    # overriding the manual priority with the AI urgency for a clearer message.
+    priority_display = serializers.SerializerMethodField()
+
+
+    class Meta:
+        model = Report
+        fields = (
+            'access_key',
+            'status_display',
+            'priority_display',
+            'created_at',
+            'last_access_by_reporter',
+
+        )
+        read_only_fields = fields
+
+    def get_priority_display(self, obj: Report) -> str:
+        """
+        Determines the priority string shown to the reporter.
+        Prioritizes the AI urgency if available, otherwise uses the manual priority.
+        """
+        try:
+            # Check if AI analysis exists and if it flagged the report as high urgency
+            # Assumes ReportPriority is available (HIGH, CRITICAL)
+            # You must ensure the Report instance is fetched with its related analysis
+            if obj.analysis.urgency in ['high', 'critical']:
+                # Provide a clear, actionable message for the reporter
+                return "High Urgency Tip - Active Follow-up Recommended"
+
+            # Otherwise, use the manually set priority's display value
+            return obj.get_priority_display()
+
+        except AttributeError:
+            # Handle cases where the 'analysis' relation is missing (e.g., no AI run yet)
+            return obj.get_priority_display()
+        except Exception:
+            # Fallback for any other error
+            return obj.get_priority_display()
+
+
