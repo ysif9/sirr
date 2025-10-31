@@ -1,11 +1,17 @@
 {% extends "admin/change_list.html" %}
 {% load i18n static %}
 
-{% block object-tools-items %}
-  {{ block.super }}
-  <li>
-    {% if invite_button %}
+{% block content_title %}
+  {% if title %}
+    <h1>{{ title }}</h1>
+  {% endif %}
+  {% if invite_button %}
+    <div style="margin: 15px 0; padding: 15px; background-color: #f8f9fa; border-left: 4px solid #417690; border-radius: 4px;">
+      <p style="margin: 0 0 10px 0; font-size: 14px; color: #333;">
+        <strong>Note:</strong> To create new investigator accounts, please use the invitation system below.
+        Direct user creation has been disabled for security reasons.
+      </p>
       {{ invite_button|safe }}
-    {% endif %}
-  </li>
+    </div>
+  {% endif %}
 {% endblock %}

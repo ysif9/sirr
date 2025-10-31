@@ -157,9 +157,6 @@ SESSION_COOKIE_AGE = 1209600  # Default value (seconds)
 CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL", "redis://redis:6379/0")
 CELERY_RESULT_BACKEND = os.environ.get("CELERY_RESULT_BACKEND", "redis://redis:6379/0")
 
-# OpenAI API Configuration
-OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", default="")
-
 # Google Gemini API Configuration
 GOOGLE_API_KEY = os.environ.get("GOOGLE_API_KEY", default="")
 
