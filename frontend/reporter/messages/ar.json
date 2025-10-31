@@ -96,6 +96,29 @@
     "errorGeneric": "فشل التحقق من مفتاح الوصول. يرجى المحاولة مرة أخرى لاحقاً.",
     "errorNetwork": "خطأ في الشبكة. يرجى التحقق من اتصالك والمحاولة مرة أخرى."
   },
+
+  "FollowUpPage": {
+    "title": "حالة البلاغ",
+    "subtitle": "تتبع البلاغ المقدم",
+    "closeAriaLabel": "إغلاق",
+    "errorTitle": "خطأ",
+    "errorNotFound": "لم يتم العثور على البلاغ. يرجى التحقق من مفتاح الوصول.",
+    "errorFetchFailed": "فشل في جلب حالة البلاغ. يرجى المحاولة مرة أخرى لاحقاً.",
+    "errorUnexpected": "حدث خطأ غير متوقع",
+    "accessKeyLabel": "مفتاح الوصول",
+    "statusCardTitle": "حالة البلاغ",
+    "priorityCardTitle": "مستوى الأولوية",
+    "timelineTitle": "الجدول الزمني",
+    "timelineSubmitted": "تم التقديم",
+    "timelineLastChecked": "آخر فحص",
+    "investigatorNotesTitle": "ملاحظات المحقق",
+    "noNotesAvailable": "لا توجد ملاحظات من المحقق حتى الآن.",
+    "noNotesDescription": "سيتم إعلامك عندما يضيف المحقق تحديثات إلى بلاغك.",
+    "infoBannerTitle": "احتفظ بمفتاح الوصول في مكان آمن",
+    "infoBannerDescription": "احفظ مفتاح الوصول بشكل آمن. ستحتاجه للتحقق من حالة بلاغك في المستقبل.",
+    "closeButton": "إغلاق"
+  },
+
   "FAQModal": {
     "title": "الأسئلة الشائعة",
     "close": "إغلاق",

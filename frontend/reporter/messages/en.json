@@ -96,6 +96,29 @@
     "errorGeneric": "Failed to validate access key. Please try again later.",
     "errorNetwork": "Network error. Please check your connection and try again."
   },
+
+  "FollowUpPage": {
+    "title": "Report Status",
+    "subtitle": "Track your submitted report",
+    "closeAriaLabel": "Close",
+    "errorTitle": "Error",
+    "errorNotFound": "Report not found. Please check your access key.",
+    "errorFetchFailed": "Failed to fetch report status. Please try again later.",
+    "errorUnexpected": "An unexpected error occurred",
+    "accessKeyLabel": "Access Key",
+    "statusCardTitle": "Report Status",
+    "priorityCardTitle": "Priority Level",
+    "timelineTitle": "Timeline",
+    "timelineSubmitted": "Submitted",
+    "timelineLastChecked": "Last Checked",
+    "investigatorNotesTitle": "Investigator Notes",
+    "noNotesAvailable": "No investigator notes available yet.",
+    "noNotesDescription": "You will be notified when the investigator adds updates to your report.",
+    "infoBannerTitle": "Keep Your Access Key Safe",
+    "infoBannerDescription": "Save your access key securely. You'll need it to check the status of your report in the future.",
+    "closeButton": "Close"
+  },
+
   "FAQModal": {
     "title": "Frequently Asked Questions",
     "close": "Close",
