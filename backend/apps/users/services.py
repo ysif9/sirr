@@ -55,8 +55,8 @@ def create_investigator_invitation(
     )
 
     # 3. Construct the full onboarding URL.
-    # TODO: This should ideally come from Django settings or site configuration.
-    frontend_base_url = "http://localhost:3000"
+    # Investigator frontend runs on port 3001
+    frontend_base_url = "http://localhost:3001"
     onboarding_url = f"{frontend_base_url}/onboard/{token}"
 
     return onboarding_url

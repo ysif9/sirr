@@ -86,6 +86,13 @@ class UserAdmin(BaseUserAdmin):
         (_("Custom Properties"), {"fields": ("is_caseworker",)}),
     )
 
+    def has_add_permission(self, request):
+        """
+        Disable the 'Add User' button in the admin interface.
+        Users should be invited through the 'Invite Investigator' feature instead.
+        """
+        return False
+
     def save_model(self, request, obj, form, change):
         """
         When a user is created in the admin, set the username to the email.
@@ -111,9 +118,10 @@ class UserAdmin(BaseUserAdmin):
         extra_context = extra_context or {}
         # The URL for our custom view
         invite_url = reverse("admin:users_user_invite_investigator")
-        # Use format_html to mark the string as safe for rendering
+        # Use format_html to mark the string as safe for rendering with prominent styling
         extra_context["invite_button"] = format_html(
-            '<a href="{}" class="button">Invite Investigator</a>', invite_url
+            '<a href="{}" class="button" style="background-color: #417690; color: white; font-weight: bold; padding: 10px 15px; font-size: 14px;">✉ Invite Investigator</a>',
+            invite_url
         )
         return super().changelist_view(request, extra_context=extra_context)
 
