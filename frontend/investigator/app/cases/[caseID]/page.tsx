@@ -9,12 +9,13 @@ import CaseHeader from "@/components/case-view/case-header";
 import InitialReportTab from "@/components/case-view/initial-report-tab";
 import EvidenceManagerTab from "@/components/case-view/evidence-manager-tab";
 import AiAnalysisTab from "@/components/case-view/ai-analysis-tab";
+import NotesTab from "@/components/case-view/notes-tab";
 
 import { useAuth } from "@/contexts/AuthContext";
 import apiClient from "@/lib/api";
 import { decryptReport } from "@/lib/crypto";
 import type { ICaseInfo } from "@/lib/mock-data";
-import { Loader2, AlertTriangle, FileText, Package, BrainCircuit } from "lucide-react";
+import { Loader2, AlertTriangle, FileText, Package, BrainCircuit, StickyNote } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 // Helper function to transform API data to ICaseInfo
@@ -90,7 +91,7 @@ export default function CaseDetailPage() {
         if (!decryptionResult) {
           throw new Error("Decryption failed. Please check your private key and the case data.");
         }
-        
+
         const { reportBody, attachmentKeys } = decryptionResult;
 
         // Debugging log as requested
@@ -182,6 +183,17 @@ export default function CaseDetailPage() {
                 />
                 AI Analysis
               </TabsTrigger>
+              <TabsTrigger
+                value="notes"
+                className="bg-muted overflow-hidden rounded-b-none border-x border-t py-2 data-[state=active]:z-10 data-[state=active]:shadow-none"
+              >
+                <StickyNote
+                  className="-ms-0.5 me-1.5 opacity-60"
+                  size={16}
+                  aria-hidden="true"
+                />
+                Notes
+              </TabsTrigger>
             </TabsList>
             <ScrollBar orientation="horizontal" />
           </ScrollArea>
@@ -196,6 +208,10 @@ export default function CaseDetailPage() {
 
           <TabsContent value="ai-analysis" className="mt-6">
             <AiAnalysisTab analysis={caseData.analysis} />
+          </TabsContent>
+
+          <TabsContent value="notes" className="mt-6">
+            <NotesTab reportId={caseData.caseId} />
           </TabsContent>
         </Tabs>
       </main>

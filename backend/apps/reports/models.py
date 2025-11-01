@@ -109,6 +109,23 @@ class Report(BaseModel):
     last_access_by_reporter = models.DateTimeField(null=True, blank=True)
     expires_at = models.DateTimeField(null=True, blank=True)
 
+    # Timeline tracking fields
+    assigned_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text=_("Timestamp when the report was first assigned to an investigator.")
+    )
+    opened_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text=_("Timestamp when the report status changed from NEW to OPENED.")
+    )
+    closed_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text=_("Timestamp when the report was closed/resolved.")
+    )
+
     @property
     def is_expired(self) -> bool:
         """Check if the report has expired."""
@@ -263,3 +280,36 @@ class ReportRedaction(BaseModel):
     class Meta:
         verbose_name = _("Report Redaction")
         verbose_name_plural = _("Report Redactions")
+
+
+class InvestigatorNote(BaseModel):
+    """
+    Notes and comments added by investigators during the investigation process.
+
+    Allows investigators to document their findings, observations, and actions
+    taken during the investigation. Each note is timestamped and attributed to
+    a specific investigator for audit trail purposes.
+    """
+    report = models.ForeignKey(Report, on_delete=models.CASCADE, related_name="investigator_notes")
+    author = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="authored_notes",
+        help_text=_("The investigator who created this note.")
+    )
+    content = models.TextField(help_text=_("The content of the investigator's note."))
+    is_internal = models.BooleanField(
+        default=True,
+        help_text=_("Whether this note is internal only or can be shared externally.")
+    )
+
+    def __str__(self) -> str:
+        return f"Note by {self.author} on Report {self.report.id}"
+
+    class Meta:
+        verbose_name = _("Investigator Note")
+        verbose_name_plural = _("Investigator Notes")
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["report", "-created_at"]),
+        ]

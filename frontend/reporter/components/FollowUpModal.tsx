@@ -58,9 +58,9 @@ const FollowUpModal: React.FC<FollowUpModalProps> = ({ onClose }) => {
 
   // Otherwise, show the access key input form
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className="w-full max-w-md">
-        <Squircle cornerRadius={20} cornerSmoothing={1} className="bg-slate-800 border border-white/10 p-6 shadow-2xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm overflow-y-auto">
+      <div className="w-full max-w-md my-auto">
+        <Squircle cornerRadius={20} cornerSmoothing={1} className="bg-slate-800 border border-white/10 p-6 shadow-2xl transition-all duration-300 ease-in-out">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-bold text-white">{t("title")}</h2>
             <button
@@ -72,18 +72,20 @@ const FollowUpModal: React.FC<FollowUpModalProps> = ({ onClose }) => {
             </button>
           </div>
 
-          <p className="text-gray-300 mb-6">{t("description")}</p>
+          <p className="text-gray-300 mb-4">{t("description")}</p>
 
-          {/* Error message display */}
-          {error && (
-            <div className="mb-4 flex items-start gap-3 p-4 bg-red-500/10 border border-red-500/20 rounded-xl">
-              <XCircle className="h-5 w-5 text-red-500 mt-0.5 flex-shrink-0" />
-              <div>
-                <h3 className="font-semibold text-red-500">{t("errorTitle")}</h3>
-                <p className="text-sm text-red-400 mt-1">{error}</p>
+          {/* Error message display - Smooth transition when appearing */}
+          <div className={`transition-all duration-300 ease-in-out overflow-hidden ${error ? 'max-h-40 opacity-100 mb-4' : 'max-h-0 opacity-0 mb-0'}`}>
+            {error && (
+              <div className="flex items-start gap-3 p-4 bg-red-500/10 border border-red-500/20 rounded-xl">
+                <XCircle className="h-5 w-5 text-red-500 mt-0.5 flex-shrink-0" />
+                <div>
+                  <h3 className="font-semibold text-red-500">{t("errorTitle")}</h3>
+                  <p className="text-sm text-red-400 mt-1">{error}</p>
+                </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>

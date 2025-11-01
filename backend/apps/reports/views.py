@@ -21,6 +21,7 @@ from .filters import ReportFilter
 from .models import (
     AIAnalysis,
     Attachment,
+    InvestigatorNote,
     Report,
     ReportAssignment,
     ReportCategory,
@@ -33,6 +34,7 @@ from .serializers import (
     AttachmentSerializer,
     CaseworkerReportSerializer,
     EncryptedReportCreationSerializer,
+    InvestigatorNoteSerializer,
     ReportAssignmentSerializer,
     ReportCategorySerializer,
     ReportCreationResponseSerializer,
@@ -128,12 +130,15 @@ class ReportViewSet(viewsets.ModelViewSet):
         prefetch_assignments = Prefetch(
             "assignments", queryset=ReportAssignment.objects.select_related("assignee")
         )
+        prefetch_notes = Prefetch(
+            "investigator_notes", queryset=InvestigatorNote.objects.select_related("author")
+        )
 
         if user.is_superuser:
-            return base_qs.prefetch_related(prefetch_assignments)
+            return base_qs.prefetch_related(prefetch_assignments, prefetch_notes)
 
         if user.is_caseworker:
-            return base_qs.filter(assignments__assignee=user).prefetch_related(prefetch_assignments)
+            return base_qs.filter(assignments__assignee=user).prefetch_related(prefetch_assignments, prefetch_notes)
 
         return base_qs.none()
 
@@ -199,6 +204,7 @@ class ReportViewSet(viewsets.ModelViewSet):
     def retrieve(self, request, *args, **kwargs):
         """
         Retrieves a report and updates its status and access time if it's the first access.
+        Also sets the opened_at timestamp when status changes from NEW to OPENED.
         """
         report = self.get_object()
         user = request.user
@@ -213,11 +219,35 @@ class ReportViewSet(viewsets.ModelViewSet):
 
                 if report.status == ReportStatus.NEW:
                     report.status = ReportStatus.OPENED
-                    report.save(update_fields=['status'])
+                    report.opened_at = timezone.now()
+                    report.save(update_fields=['status', 'opened_at'])
 
         serializer = self.get_serializer(report)
         return Response(serializer.data)
 
+    def partial_update(self, request, *args, **kwargs):
+        """
+        Handles partial updates to a report, including setting timeline timestamps
+        when status changes to CLOSED.
+        """
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+
+        # Check if status is being changed to CLOSED
+        new_status = serializer.validated_data.get('status')
+        if new_status == ReportStatus.CLOSED and instance.status != ReportStatus.CLOSED:
+            # Set closed_at timestamp when status changes to CLOSED
+            serializer.validated_data['closed_at'] = timezone.now()
+
+        self.perform_update(serializer)
+
+        if getattr(instance, '_prefetched_objects_cache', None):
+            # If 'prefetch_related' has been applied to a queryset, we need to
+            # forcibly invalidate the prefetch cache on the instance.
+            instance._prefetched_objects_cache = {}
+
+        return Response(serializer.data)
 
     @action(detail=True, methods=["post"], url_path="assign")
     def assign(self, request, pk=None):
@@ -287,11 +317,16 @@ class ReportViewSet(viewsets.ModelViewSet):
             except (KeyError, BinasciiError, CryptoError):
                 raise ValidationError("Failed to re-encrypt keys for caseworker. Their public key may be invalid.")
 
-            assignment, _ = ReportAssignment.objects.update_or_create(
+            assignment, created = ReportAssignment.objects.update_or_create(
                 report=report,
                 assignee=assignee,
                 defaults={"key_envelope": new_key_envelope},
             )
+
+            # Set assigned_at timestamp on the report if this is the first assignment
+            if report.assigned_at is None:
+                report.assigned_at = timezone.now()
+                report.save(update_fields=['assigned_at'])
 
         return Response(
             {"status": "Report assigned successfully", "assignment_id": assignment.pk},
@@ -337,8 +372,8 @@ class FollowUpViewSet(mixins.RetrieveModelMixin, viewsets.GenericViewSet):
 
     It uses the ReportStatusSerializer to return only essential, anonymous status data.
     """
-    # Pre-fetch 'analysis' relationship for efficiency, required by get_priority_display
-    queryset = Report.objects.select_related('analysis').all()
+    # Pre-fetch 'analysis' and 'investigator_notes' relationships for efficiency
+    queryset = Report.objects.select_related('analysis').prefetch_related('investigator_notes__author').all()
     serializer_class = ReportStatusSerializer
     permission_classes = [AllowAny]  # Must be publicly accessible
     lookup_field = 'access_key'      # Instructs DRF to look for 'access_key' in the URL
@@ -363,3 +398,56 @@ class FollowUpViewSet(mixins.RetrieveModelMixin, viewsets.GenericViewSet):
             raise NotFound(detail="Report not found.")
 
         return obj
+
+
+# -------------------
+# Investigator Note viewset
+# -------------------
+class InvestigatorNoteViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet for managing investigator notes on reports.
+    Only authenticated caseworkers can create, view, update, and delete notes.
+    """
+    queryset = InvestigatorNote.objects.all()
+    serializer_class = InvestigatorNoteSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
+    filterset_fields = ["report", "author", "is_internal"]
+    ordering_fields = ["created_at", "updated_at"]
+    ordering = ["-created_at"]
+
+    def get_queryset(self):
+        """
+        Filter notes based on user permissions:
+        - Caseworkers can only see notes for reports assigned to them
+        - Admins can see all notes
+        """
+        user = self.request.user
+        base_qs = InvestigatorNote.objects.select_related("report", "author")
+
+        if user.is_superuser:
+            return base_qs
+
+        if user.is_caseworker:
+            # Only show notes for reports assigned to this caseworker
+            return base_qs.filter(report__assignments__assignee=user)
+
+        return base_qs.none()
+
+    def perform_create(self, serializer):
+        """
+        Automatically set the author to the current user when creating a note.
+        Also validate that the user has access to the report.
+        """
+        user = self.request.user
+        report = serializer.validated_data.get("report")
+
+        # Verify the user has access to this report
+        if not user.is_superuser:
+            if user.is_caseworker:
+                if not ReportAssignment.objects.filter(report=report, assignee=user).exists():
+                    raise ValidationError({"report": "You do not have access to this report."})
+            else:
+                raise ValidationError({"report": "You do not have permission to add notes."})
+
+        serializer.save(author=user)

@@ -23,17 +23,22 @@ import {
 interface InvestigatorNote {
   id: string
   content: string
+  author_name: string
   created_at: string
-  is_visible_to_reporter: boolean
 }
 
 interface ReportStatus {
   access_key: string
+  status: string
   status_display: string
+  priority: string
   priority_display: string
   created_at: string
   last_access_by_reporter: string | null
-  investigator_notes?: InvestigatorNote[]
+  assigned_at: string | null
+  opened_at: string | null
+  closed_at: string | null
+  investigator_notes: InvestigatorNote[]
 }
 
 interface FollowUpPageProps {
@@ -123,6 +128,49 @@ const FollowUpPage: React.FC<FollowUpPageProps> = ({ accessKey, onClose }) => {
     })
   }
 
+  const getContextualMessage = (status: string, priority: string) => {
+    const statusLower = status.toLowerCase()
+    const priorityLower = priority.toLowerCase()
+
+    // When status is "new" (submitted/pending)
+    if (statusLower === 'new') {
+      return t("statusMessageNew")
+    }
+
+    // When status is "opened" (in progress) and priority is critical
+    if (statusLower === 'opened' && priorityLower === 'critical') {
+      return t("statusMessageCritical")
+    }
+
+    // When status is "opened" (in progress) and priority is high
+    if (statusLower === 'opened' && priorityLower === 'high') {
+      return t("statusMessageHighPriority")
+    }
+
+    // When status is "opened" (in progress) with medium priority
+    if (statusLower === 'opened' && priorityLower === 'medium') {
+      return t("statusMessageMediumPriority")
+    }
+
+    // When status is "opened" (in progress) with low priority
+    if (statusLower === 'opened' && priorityLower === 'low') {
+      return t("statusMessageLowPriority")
+    }
+
+    // When status is "opened" (in progress) - fallback for opened status
+    if (statusLower === 'opened') {
+      return t("statusMessageInProgress")
+    }
+
+    // When status is "closed" (resolved)
+    if (statusLower === 'closed') {
+      return t("statusMessageClosed")
+    }
+
+    // Fallback
+    return t("statusMessageDefault")
+  }
+
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center p-4 bg-black/50 backdrop-blur-sm overflow-y-auto" dir={isRTL ? 'rtl' : 'ltr'}>
       <div className="w-full max-w-4xl my-8">
@@ -171,6 +219,17 @@ const FollowUpPage: React.FC<FollowUpPageProps> = ({ accessKey, onClose }) => {
               </div>
             )}
 
+            {/* Emergency Disclaimer - Always visible */}
+            {!loading && (
+              <div className={`flex items-start gap-3 p-4 bg-red-500/10 border border-red-500/20 rounded-xl ${isRTL ? 'flex-row-reverse' : ''}`}>
+
+                <div className="text-center flex-1">
+                  <h3 className="font-semibold text-red-500">{t("emergencyDisclaimerTitle")}</h3>
+                  <p className="text-sm text-red-400 mt-1">{t("emergencyDisclaimerText")}</p>
+                </div>
+              </div>
+            )}
+
             {!loading && !error && reportStatus && (
               <>
                 {/* Access Key Display */}
@@ -179,30 +238,18 @@ const FollowUpPage: React.FC<FollowUpPageProps> = ({ accessKey, onClose }) => {
                   <p className="text-sm font-mono text-white break-all">{reportStatus.access_key}</p>
                 </div>
 
-                {/* Status and Priority Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* Status Card */}
-                  <Squircle cornerRadius={16} cornerSmoothing={1} className="bg-white/5 border border-white/10 p-5">
-                    <div className={`flex items-start justify-between mb-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
-                      <h3 className={`text-sm font-medium text-gray-400 ${isRTL ? 'text-right' : ''}`}>{t("statusCardTitle")}</h3>
-                      {getStatusIcon(reportStatus.status_display)}
+                {/* Status Message Card */}
+                <Squircle cornerRadius={16} cornerSmoothing={1} className="bg-blue-500/10 border border-blue-500/20 p-5">
+                  <div className={`flex items-start gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                    <Info className="h-6 w-6 text-blue-500 flex-shrink-0 mt-0.5" />
+                    <div className={isRTL ? 'text-right' : ''}>
+                      <h3 className="text-base font-semibold text-blue-400 mb-1">{t("reportStatusTitle")}</h3>
+                      <p className="text-sm text-blue-300 leading-relaxed">
+                        {getContextualMessage(reportStatus.status, reportStatus.priority)}
+                      </p>
                     </div>
-                    <div className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg border ${getStatusColor(reportStatus.status_display)} ${isRTL ? 'flex-row-reverse' : ''}`}>
-                      <span className="font-semibold">{reportStatus.status_display}</span>
-                    </div>
-                  </Squircle>
-
-                  {/* Priority Card */}
-                  <Squircle cornerRadius={16} cornerSmoothing={1} className="bg-white/5 border border-white/10 p-5">
-                    <div className={`flex items-start justify-between mb-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
-                      <h3 className={`text-sm font-medium text-gray-400 ${isRTL ? 'text-right' : ''}`}>{t("priorityCardTitle")}</h3>
-                      {getPriorityIcon(reportStatus.priority_display)}
-                    </div>
-                    <div className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg border ${getPriorityColor(reportStatus.priority_display)} ${isRTL ? 'flex-row-reverse' : ''}`}>
-                      <span className="font-semibold">{reportStatus.priority_display}</span>
-                    </div>
-                  </Squircle>
-                </div>
+                  </div>
+                </Squircle>
 
                 {/* Timeline Information */}
                 <Squircle cornerRadius={16} cornerSmoothing={1} className="bg-white/5 border border-white/10 p-5">
@@ -212,6 +259,24 @@ const FollowUpPage: React.FC<FollowUpPageProps> = ({ accessKey, onClose }) => {
                       <span className="text-sm text-gray-300">{t("timelineSubmitted")}</span>
                       <span className="text-sm text-white font-medium">{formatDate(reportStatus.created_at)}</span>
                     </div>
+                    {reportStatus.assigned_at && (
+                      <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
+                        <span className="text-sm text-gray-300">{t("timelineAssigned")}</span>
+                        <span className="text-sm text-white font-medium">{formatDate(reportStatus.assigned_at)}</span>
+                      </div>
+                    )}
+                    {reportStatus.opened_at && (
+                      <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
+                        <span className="text-sm text-gray-300">{t("timelineOpened")}</span>
+                        <span className="text-sm text-white font-medium">{formatDate(reportStatus.opened_at)}</span>
+                      </div>
+                    )}
+                    {reportStatus.closed_at && (
+                      <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
+                        <span className="text-sm text-gray-300">{t("timelineClosed")}</span>
+                        <span className="text-sm text-white font-medium">{formatDate(reportStatus.closed_at)}</span>
+                      </div>
+                    )}
                     {reportStatus.last_access_by_reporter && (
                       <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
                         <span className="text-sm text-gray-300">{t("timelineLastChecked")}</span>
@@ -230,21 +295,25 @@ const FollowUpPage: React.FC<FollowUpPageProps> = ({ accessKey, onClose }) => {
 
                   {reportStatus.investigator_notes && reportStatus.investigator_notes.length > 0 ? (
                     <div className="space-y-3">
-                      {reportStatus.investigator_notes
-                        .filter(note => note.is_visible_to_reporter)
-                        .map((note) => (
-                          <div
-                            key={note.id}
-                            className={`p-4 bg-white/5 border border-white/10 rounded-lg ${isRTL ? 'text-right' : ''}`}
-                          >
-                            <p className="text-sm text-gray-300 whitespace-pre-wrap leading-relaxed">
-                              {note.content}
-                            </p>
-                            <p className={`text-xs text-gray-500 mt-2 ${isRTL ? 'text-right' : ''}`}>
-                              {formatDate(note.created_at)}
-                            </p>
+                      {reportStatus.investigator_notes.map((note) => (
+                        <div
+                          key={note.id}
+                          className={`p-4 bg-green-500/10 border border-green-500/20 rounded-lg ${isRTL ? 'text-right' : ''}`}
+                        >
+                          <div className={`flex items-start gap-2 mb-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                            <Shield className="h-4 w-4 text-green-500 flex-shrink-0 mt-0.5" />
+                            <div className="flex-1">
+                              <p className="text-xs font-medium text-green-400">{t("updateFromInvestigator")}</p>
+                            </div>
                           </div>
-                        ))}
+                          <p className="text-sm text-gray-300 whitespace-pre-wrap leading-relaxed mb-2">
+                            {note.content}
+                          </p>
+                          <p className={`text-xs text-gray-500 ${isRTL ? 'text-right' : ''}`}>
+                            {formatDate(note.created_at)}
+                          </p>
+                        </div>
+                      ))}
                     </div>
                   ) : (
                     <div className="text-center py-8">
@@ -258,9 +327,9 @@ const FollowUpPage: React.FC<FollowUpPageProps> = ({ accessKey, onClose }) => {
                 </Squircle>
 
                 {/* Information Banner */}
-                <div className={`flex items-start gap-3 p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl ${isRTL ? 'flex-row-reverse' : ''}`}>
-                  <Info className="h-5 w-5 text-blue-500 mt-0.5 flex-shrink-0" />
-                  <div className={isRTL ? 'text-right' : ''}>
+                <div className="flex flex-col items-center gap-3 p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl text-center">
+                  <Info className="h-5 w-5 text-blue-500 flex-shrink-0" />
+                  <div>
                     <h3 className="font-semibold text-blue-500 text-sm">{t("infoBannerTitle")}</h3>
                     <p className="text-xs text-blue-400 mt-1">
                       {t("infoBannerDescription")}

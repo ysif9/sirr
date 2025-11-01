@@ -42,6 +42,18 @@ export interface ITimelineEvent {
   user?: string;
 }
 
+// Represents an investigator note from the backend
+export interface IInvestigatorNote {
+  id: string;
+  report: string;
+  author: string;
+  author_name: string;
+  content: string;
+  is_internal: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
 // The primary data structure for the case detail view in the UI
 export interface ICaseInfo {
   // Core fields
@@ -57,7 +69,7 @@ export interface ICaseInfo {
 
   // Dynamic/Complex fields
   timeline: ITimelineEvent[];
-  
+
   // AI Analysis Data
   analysis: IAIAnalysis | null;
 
