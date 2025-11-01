@@ -28,6 +28,7 @@ from .models import (
     ReportRedaction,
     ReportStatus,
     ReportTemplate,
+    ReporterNote,
 )
 from .serializers import (
     AIAnalysisSerializer,
@@ -42,6 +43,7 @@ from .serializers import (
     ReportRedactionSerializer,
     ReportSerializer,
     ReportTemplateSerializer, ReportStatusSerializer,
+    ReporterNoteSerializer,
 )
 
 
@@ -372,8 +374,11 @@ class FollowUpViewSet(mixins.RetrieveModelMixin, viewsets.GenericViewSet):
 
     It uses the ReportStatusSerializer to return only essential, anonymous status data.
     """
-    # Pre-fetch 'analysis' and 'investigator_notes' relationships for efficiency
-    queryset = Report.objects.select_related('analysis').prefetch_related('investigator_notes__author').all()
+    # Pre-fetch 'analysis', 'investigator_notes', and 'reporter_notes' relationships for efficiency
+    queryset = Report.objects.select_related('analysis').prefetch_related(
+        'investigator_notes__author',
+        'reporter_notes'
+    ).all()
     serializer_class = ReportStatusSerializer
     permission_classes = [AllowAny]  # Must be publicly accessible
     lookup_field = 'access_key'      # Instructs DRF to look for 'access_key' in the URL
@@ -451,3 +456,210 @@ class InvestigatorNoteViewSet(viewsets.ModelViewSet):
                 raise ValidationError({"report": "You do not have permission to add notes."})
 
         serializer.save(author=user)
+
+
+# -------------------
+# Reporter Note viewset
+# -------------------
+class ReporterNoteViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet for managing reporter notes on reports.
+    Allows anonymous reporters to add follow-up notes to their reports using the access_key.
+    Investigators can view these notes (read-only).
+    """
+    queryset = ReporterNote.objects.all()
+    serializer_class = ReporterNoteSerializer
+    permission_classes = [AllowAny]  # Allow anonymous access
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
+    filterset_fields = ["report"]
+    ordering_fields = ["created_at", "updated_at"]
+    ordering = ["-created_at"]
+
+    def get_queryset(self):
+        """
+        Filter notes based on user permissions:
+        - Anonymous users can only see notes for reports they have access to (via access_key)
+        - Authenticated caseworkers can see notes for reports assigned to them
+        - Admins can see all notes
+        """
+        user = self.request.user
+        base_qs = ReporterNote.objects.select_related("report")
+
+        # If user is authenticated
+        if user and user.is_authenticated:
+            if user.is_superuser:
+                return base_qs
+            if user.is_caseworker:
+                # Only show notes for reports assigned to this caseworker
+                return base_qs.filter(report__assignments__assignee=user)
+            return base_qs.none()
+
+        # For anonymous users, filter by access_key in query params
+        access_key = self.request.query_params.get('access_key')
+        if access_key:
+            return base_qs.filter(report__access_key=access_key)
+
+        return base_qs.none()
+
+    def create(self, request, *args, **kwargs):
+        """
+        Creates a new reporter note with optional encrypted attachments.
+        Follows the same pattern as report creation for encrypted attachments.
+        """
+        user = request.user
+
+        # If user is authenticated and is a caseworker/admin, deny creation
+        if user and user.is_authenticated:
+            raise ValidationError({"detail": "Only reporters can create reporter notes."})
+
+        # Parse the payload containing note metadata and attachment metadata
+        payload_str = request.data.get("payload")
+        if not payload_str:
+            raise ParseError("The 'payload' field containing note metadata is required.")
+
+        try:
+            payload_data = json.loads(payload_str)
+        except json.JSONDecodeError:
+            raise ParseError("Invalid JSON format for 'payload'.")
+
+        # Validate access_key
+        access_key = payload_data.get('access_key')
+        if not access_key:
+            raise ValidationError({"access_key": "Access key is required to add a note."})
+
+        # Get the report
+        report_id = payload_data.get('report')
+        if not report_id:
+            raise ValidationError({"report": "Report ID is required."})
+
+        try:
+            report = Report.objects.get(id=report_id)
+        except Report.DoesNotExist:
+            raise ValidationError({"report": "Report not found."})
+
+        if report.access_key != access_key:
+            raise ValidationError({"access_key": "Invalid access key for this report."})
+
+        # Extract attachments metadata
+        attachments_metadata = payload_data.pop("attachments", [])
+
+        # Remove access_key from payload before serialization
+        payload_data.pop('access_key', None)
+
+        serializer = self.get_serializer(data=payload_data)
+        serializer.is_valid(raise_exception=True)
+
+        with transaction.atomic():
+            reporter_note = serializer.save()
+
+            # Create encrypted attachments
+            for meta in attachments_metadata:
+                attachment_id = meta.pop("id")
+                uploaded_file = request.FILES.get(attachment_id)
+                if not uploaded_file:
+                    raise ParseError(f"Attachment with ID '{attachment_id}' not found in the uploaded files.")
+
+                # Decode the base64-encoded nonce to bytes
+                nonce_b64 = meta.pop("nonce")
+                try:
+                    nonce_bytes = base64.b64decode(nonce_b64)
+                except (BinasciiError, ValueError) as e:
+                    raise ParseError(f"Invalid base64 encoding for nonce: {e}")
+
+                Attachment.objects.create(
+                    reporter_note=reporter_note,
+                    file=uploaded_file,
+                    nonce=nonce_bytes,
+                    **meta,
+                )
+
+        return Response(
+            self.get_serializer(reporter_note).data,
+            status=status.HTTP_201_CREATED
+        )
+
+    @action(detail=True, methods=["post"], permission_classes=[AllowAny])
+    def decrypt_attachments(self, request, pk=None):
+        """
+        Decrypt reporter note attachment keys for viewing.
+        Requires either:
+        - access_key (for reporters viewing their own notes)
+        - authenticated investigator with access to the report
+        """
+        reporter_note = self.get_object()
+        report = reporter_note.report
+
+        # Check permissions
+        user = request.user
+        access_key = request.data.get("access_key")
+
+        # Verify access
+        if user and user.is_authenticated:
+            # Authenticated investigator
+            if not user.is_superuser:
+                if user.is_caseworker:
+                    if not ReportAssignment.objects.filter(report=report, assignee=user).exists():
+                        raise ValidationError({"detail": "You do not have access to this report."})
+                else:
+                    raise ValidationError({"detail": "You do not have permission to view these attachments."})
+        elif access_key:
+            # Anonymous reporter with access key
+            if report.access_key != access_key:
+                raise ValidationError({"access_key": "Invalid access key."})
+        else:
+            raise ValidationError({"detail": "Authentication or access_key required."})
+
+        # Get admin private key from environment
+        admin_private_key_b64 = settings.ADMIN_PRIVATE_KEY
+        if not admin_private_key_b64:
+            raise ValidationError({"detail": "Server configuration error: admin private key not found."})
+
+        try:
+            admin_private_key = PrivateKey(base64.b64decode(admin_private_key_b64))
+        except Exception as e:
+            raise ValidationError({"detail": f"Failed to load admin private key: {e}"})
+
+        # Decrypt attachment keys
+        attachment_keys = {}
+
+        with transaction.atomic():
+            for attachment in reporter_note.attachments.all():
+                if not attachment.key_envelope:
+                    continue
+
+                try:
+                    # Extract reporter's ephemeral public key from the attachment's key_envelope
+                    reporter_ephem_pk_b64 = attachment.key_envelope["reporter_ephemeral_public_key"]
+                    wrapped_attach_key_b64 = attachment.key_envelope["wrapped_key"]
+
+                    reporter_ephem_pk = PublicKey(base64.b64decode(reporter_ephem_pk_b64))
+                    reporter_to_admin_box = Box(admin_private_key, reporter_ephem_pk)
+
+                    # The wrapped_key contains: nonce (24 bytes) + encrypted_key
+                    # We need to split them
+                    wrapped_data = base64.b64decode(wrapped_attach_key_b64)
+
+                    # NaCl box nonce is 24 bytes
+                    nonce_length = 24
+                    if len(wrapped_data) < nonce_length:
+                        raise ValueError("Wrapped key data too short")
+
+                    nonce = wrapped_data[:nonce_length]
+                    ciphertext = wrapped_data[nonce_length:]
+
+                    # Decrypt the attachment key using the extracted nonce
+                    k_attach = reporter_to_admin_box.decrypt(ciphertext, nonce)
+                    attachment_keys[str(attachment.id)] = base64.b64encode(k_attach).decode("utf-8")
+
+                except KeyError as e:
+                    # Skip attachments with malformed key envelopes
+                    print(f"KeyError decrypting attachment {attachment.id}: {e}")
+                    continue
+                except (BinasciiError, CryptoError, ValueError) as e:
+                    # Skip attachments that fail to decrypt
+                    print(f"Error decrypting attachment {attachment.id}: {e}")
+                    continue
+
+        return Response({
+            "attachment_keys": attachment_keys
+        })

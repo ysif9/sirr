@@ -12,7 +12,7 @@ from nacl.exceptions import CryptoError
 from nacl.public import Box, PrivateKey, PublicKey
 from nacl.secret import SecretBox
 
-from apps.reports.models import AIAnalysis, InvestigatorNote, Report, ReportAssignment, ReportStatus
+from apps.reports.models import AIAnalysis, InvestigatorNote, Report, ReportAssignment, ReportStatus, ReporterNote
 from apps.reports.tasks import generate_analysis_task
 from apps.users.models import User  # Import the User model
 
@@ -367,3 +367,22 @@ class InvestigatorNoteAdmin(admin.ModelAdmin):
     readonly_fields = ('created_at', 'updated_at')
     autocomplete_fields = ['report', 'author']
     ordering = ('-created_at',)
+
+
+@admin.register(ReporterNote)
+class ReporterNoteAdmin(admin.ModelAdmin):
+    """
+    Admin interface for reporter notes.
+    """
+    list_display = ('id', 'report', 'created_at', 'has_attachment')
+    list_filter = ('created_at',)
+    search_fields = ('report__id__startswith', 'content')
+    readonly_fields = ('created_at', 'updated_at')
+    autocomplete_fields = ['report']
+    ordering = ('-created_at',)
+
+    def has_attachment(self, obj):
+        """Display whether the note has an attachment."""
+        return bool(obj.attachment)
+    has_attachment.boolean = True
+    has_attachment.short_description = 'Has Attachment'

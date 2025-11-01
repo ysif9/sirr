@@ -54,6 +54,30 @@ export interface IInvestigatorNote {
   updated_at: string;
 }
 
+// Represents an encrypted attachment
+export interface IAttachment {
+  id: string;
+  file: string;
+  key_envelope: {
+    wrapped_key: string;
+    reporter_ephemeral_public_key?: string;
+    scheme: string;
+  };
+  nonce: string;
+  description?: string;
+  checksum?: string;
+  mime_type?: string;
+  file_extension?: string;
+}
+
+// Represents a reporter note from the backend
+export interface IReporterNote {
+  id: string;
+  content: string;
+  attachments: IAttachment[];
+  created_at: string;
+}
+
 // The primary data structure for the case detail view in the UI
 export interface ICaseInfo {
   // Core fields

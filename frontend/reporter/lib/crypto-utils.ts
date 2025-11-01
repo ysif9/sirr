@@ -4,7 +4,7 @@ import { AdminPublicKey } from "./api"
 import { uuidv4 } from "./uuid"
 
 // Helper to convert a Base64 string to a Uint8Array
-const base64ToUint8Array = (base64: string): Uint8Array => {
+export const base64ToUint8Array = (base64: string): Uint8Array => {
   const binaryString = atob(base64)
   const len = binaryString.length
   const bytes = new Uint8Array(len)
@@ -15,7 +15,7 @@ const base64ToUint8Array = (base64: string): Uint8Array => {
 }
 
 // Helper to convert a Uint8Array to a Base64 string
-const uint8ArrayToBase64 = (array: Uint8Array): string => {
+export const uint8ArrayToBase64 = (array: Uint8Array): string => {
   return btoa(String.fromCharCode.apply(null, Array.from(array)))
 }
 
@@ -163,4 +163,42 @@ export async function encryptReportAndAttachments(
   }
 
   return { encryptedPayload, encryptedAttachments }
+}
+
+/**
+ * Decrypts an encrypted attachment file.
+ * @param encryptedFileUrl The URL to the encrypted file content.
+ * @param keyB64 The base64-encoded symmetric key for this attachment.
+ * @param nonceB64 The base64-encoded nonce for this attachment.
+ * @returns A Blob of the decrypted file, or null on failure.
+ */
+export const decryptAttachment = async (
+  encryptedFileUrl: string,
+  keyB64: string,
+  nonceB64: string
+): Promise<Blob | null> => {
+  try {
+    const key = base64ToUint8Array(keyB64)
+    const nonce = base64ToUint8Array(nonceB64)
+
+    const response = await fetch(encryptedFileUrl)
+    if (!response.ok) {
+      throw new Error(`Failed to fetch encrypted file: ${response.statusText}`)
+    }
+    const encryptedFileBytes = new Uint8Array(await response.arrayBuffer())
+
+    const decryptedBytes = nacl.secretbox.open(encryptedFileBytes, nonce, key)
+
+    if (!decryptedBytes) {
+      throw new Error(
+        "Attachment decryption failed. Check key, nonce, and ciphertext integrity."
+      )
+    }
+
+    const uint8 = new Uint8Array(decryptedBytes)
+    return new Blob([uint8])
+  } catch (error) {
+    console.error("Attachment decryption process error:", error)
+    return null
+  }
 }

@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Info, MapPin, ImageIcon, FileText, Loader2, ShieldCheck } from "lucide-react";
+import { Info, MapPin, ImageIcon, FileText, Loader2 } from "lucide-react";
 import type { Field } from "@/lib/crime-forms";
 import type { IApiAttachment } from "@/lib/mock-data";
 import { decryptAttachment } from "@/lib/crypto";
@@ -23,9 +23,31 @@ const FieldWrapper = ({ label, children }: { label: string; children: React.Reac
   </div>
 );
 
+// Helper function to get generic attachment name based on mime type
+const getGenericAttachmentName = (mimeType?: string): string => {
+  if (!mimeType) return 'File attachment';
+  if (mimeType.startsWith('image/')) return 'Image attachment';
+  if (mimeType.startsWith('video/')) return 'Video attachment';
+  if (mimeType.startsWith('audio/')) return 'Audio attachment';
+  if (mimeType.includes('pdf')) return 'PDF attachment';
+  if (mimeType.includes('document') || mimeType.includes('word')) return 'Document attachment';
+  if (mimeType.includes('spreadsheet') || mimeType.includes('excel')) return 'Spreadsheet attachment';
+  return 'File attachment';
+};
+
 const DecryptedAttachment = ({ attachment, decryptionKey }: { attachment: IApiAttachment; decryptionKey: string; }) => {
   const [objectUrl, setObjectUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const genericName = getGenericAttachmentName(attachment.mime_type);
+
+  // Cleanup object URL when component unmounts or URL changes
+  useEffect(() => {
+    return () => {
+      if (objectUrl) {
+        URL.revokeObjectURL(objectUrl);
+      }
+    };
+  }, [objectUrl]);
 
   const handleDecrypt = async () => {
     if (!decryptionKey || !attachment.nonce) return;
@@ -52,7 +74,7 @@ const DecryptedAttachment = ({ attachment, decryptionKey }: { attachment: IApiAt
       ) : (
         <>
           {attachment.mime_type.startsWith("image/") ? <ImageIcon className="h-6 w-6" /> : <FileText className="h-6 w-6" />}
-          <p className="text-xs mt-1 truncate">{attachment.file.split("/").pop()}</p>
+          <p className="text-xs mt-1 truncate">{genericName}</p>
           <Button variant="link" size="sm" className="text-xs">Decrypt to view</Button>
         </>
       )}

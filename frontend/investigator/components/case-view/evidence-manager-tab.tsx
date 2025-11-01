@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   FileText, ImageIcon, VideoIcon, FileAudio, Loader2, ShieldCheck, PackageX
 } from "lucide-react";
@@ -24,11 +24,33 @@ const getFileType = (mimeType: string) => {
   return "Document";
 }
 
+// Helper function to get generic attachment name based on mime type
+const getGenericAttachmentName = (mimeType?: string): string => {
+  if (!mimeType) return 'File attachment';
+  if (mimeType.startsWith('image/')) return 'Image attachment';
+  if (mimeType.startsWith('video/')) return 'Video attachment';
+  if (mimeType.startsWith('audio/')) return 'Audio attachment';
+  if (mimeType.includes('pdf')) return 'PDF attachment';
+  if (mimeType.includes('document') || mimeType.includes('word')) return 'Document attachment';
+  if (mimeType.includes('spreadsheet') || mimeType.includes('excel')) return 'Spreadsheet attachment';
+  return 'File attachment';
+}
+
 const EvidenceDetailView = ({ evidence, decryptionKey }: { evidence: IApiAttachment; decryptionKey: string }) => {
   const [decryptedUrl, setDecryptedUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const fileType = getFileType(evidence.mime_type);
+  const genericName = getGenericAttachmentName(evidence.mime_type);
+
+  // Cleanup object URL when component unmounts or URL changes
+  useEffect(() => {
+    return () => {
+      if (decryptedUrl) {
+        URL.revokeObjectURL(decryptedUrl);
+      }
+    };
+  }, [decryptedUrl]);
 
   const handleDecryptAndDisplay = async () => {
     if (!decryptionKey || !evidence.nonce) {
@@ -49,11 +71,11 @@ const EvidenceDetailView = ({ evidence, decryptionKey }: { evidence: IApiAttachm
       setError("Decryption failed. The file may be corrupt or the key is incorrect.");
     }
   };
-  
+
   return (
     <DialogContent className="max-w-4xl">
       <DialogHeader>
-        <DialogTitle>{evidence.file.split('/').pop()}</DialogTitle>
+        <DialogTitle>{genericName}</DialogTitle>
       </DialogHeader>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-4">
         <div className="md:col-span-2">
@@ -61,7 +83,7 @@ const EvidenceDetailView = ({ evidence, decryptionKey }: { evidence: IApiAttachm
             {decryptedUrl ? (
               fileType === 'Image' ? <img src={decryptedUrl} alt="Decrypted content" className="w-full h-full object-contain" /> :
               fileType === 'Video' ? <video src={decryptedUrl} controls className="w-full h-full" /> :
-              <a href={decryptedUrl} download={evidence.file.split('/').pop()}>Download decrypted file</a>
+              <a href={decryptedUrl} download={genericName}>Download decrypted file</a>
             ) : (
               <div className="text-center p-4">
                 {getFileIcon(evidence.mime_type)}
@@ -123,7 +145,7 @@ export default function EvidenceManagerTab({ caseData }: EvidenceManagerTabProps
                 {getFileIcon(att.mime_type)}
               </div>
               <div className="p-3">
-                <p className="text-sm font-medium truncate">{att.file.split('/').pop()}</p>
+                <p className="text-sm font-medium truncate">{getGenericAttachmentName(att.mime_type)}</p>
                 <p className="text-xs text-muted-foreground">ID: {att.id.slice(0, 8)}</p>
                 <p className="text-xs text-muted-foreground">{att.mime_type}</p>
               </div>

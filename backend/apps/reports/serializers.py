@@ -7,7 +7,7 @@ from rest_framework.exceptions import ValidationError
 
 from apps.users.models import User
 
-from .models import AIAnalysis, Attachment, InvestigatorNote, Report, ReportCategory, ReportRedaction, ReportTemplate, ReportPriority
+from .models import AIAnalysis, Attachment, InvestigatorNote, Report, ReportCategory, ReportRedaction, ReportTemplate, ReportPriority, ReporterNote
 
 
 # -------------------
@@ -61,12 +61,13 @@ class AttachmentSerializer(serializers.ModelSerializer):
     """
     Serializer for attachments. Includes a method to correctly
     Base64-encode the binary nonce for client-side decryption.
+    Supports attachments for both reports and reporter notes.
     """
     nonce = serializers.SerializerMethodField()
 
     class Meta:
         model = Attachment
-        fields = ["id", "report", "file", "key_envelope", "nonce", "description", "checksum", "mime_type",
+        fields = ["id", "report", "reporter_note", "file", "key_envelope", "nonce", "description", "checksum", "mime_type",
                   "file_extension"]
         read_only_fields = ["id", "mime_type", "file_extension"]
 
@@ -161,10 +162,11 @@ class CaseworkerReportSerializer(ReportSerializer):
     attachments = AttachmentSerializer(many=True, read_only=True)
     analysis = AIAnalysisSerializer(read_only=True, allow_null=True)
     investigator_notes = serializers.SerializerMethodField()
+    reporter_notes = serializers.SerializerMethodField()
 
     class Meta(ReportSerializer.Meta):
-        # Explicitly inherit fields and add 'attachments', 'analysis', and 'investigator_notes' for the detail view.
-        fields = ReportSerializer.Meta.fields + ["attachments", "analysis", "investigator_notes"]
+        # Explicitly inherit fields and add 'attachments', 'analysis', 'investigator_notes', and 'reporter_notes' for the detail view.
+        fields = ReportSerializer.Meta.fields + ["attachments", "analysis", "investigator_notes", "reporter_notes"]
         read_only_fields = ReportSerializer.Meta.read_only_fields
 
     def get_key_envelope(self, obj: Report) -> dict | None:
@@ -191,6 +193,17 @@ class CaseworkerReportSerializer(ReportSerializer):
         else:
             notes = obj.investigator_notes.select_related('author').all()
         return InvestigatorNoteSerializer(notes, many=True, context=self.context).data
+
+    def get_reporter_notes(self, obj: Report) -> list:
+        """
+        Returns all reporter notes for this report.
+        """
+        # Use prefetch_related if available, otherwise query
+        if hasattr(obj, '_prefetched_objects_cache') and 'reporter_notes' in obj._prefetched_objects_cache:
+            notes = obj.reporter_notes.all()
+        else:
+            notes = obj.reporter_notes.all()
+        return InvestigatorViewReporterNoteSerializer(notes, many=True, context=self.context).data
 
 
 class ReportListSerializer(serializers.ModelSerializer):
@@ -281,6 +294,43 @@ class InvestigatorNoteSerializer(serializers.ModelSerializer):
         return super().create(validated_data)
 
 
+# -------------------
+# Reporter Note serializers
+# -------------------
+class ReporterNoteSerializer(serializers.ModelSerializer):
+    """
+    Serializer for reporter notes on reports.
+    Allows reporters to add follow-up information to their reports.
+    Now supports encrypted attachments via the Attachment model.
+    """
+    attachments = AttachmentSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = ReporterNote
+        fields = [
+            "id", "report", "content", "attachments",
+            "created_at", "updated_at"
+        ]
+        read_only_fields = ["id", "created_at", "updated_at"]
+
+
+class InvestigatorViewReporterNoteSerializer(serializers.ModelSerializer):
+    """
+    Serializer for reporter notes visible to investigators.
+    Read-only view for investigators to see reporter's follow-up notes with encrypted attachments.
+    """
+    attachments = AttachmentSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = ReporterNote
+        fields = (
+            'id',
+            'content',
+            'attachments',
+            'created_at',
+        )
+        read_only_fields = fields
+
 
 # -------------------
 # Followup serializers
@@ -330,11 +380,29 @@ class ExternalInvestigatorNoteSerializer(serializers.ModelSerializer):
         return obj.author.email
 
 
+class ExternalReporterNoteSerializer(serializers.ModelSerializer):
+    """
+    Serializer for reporter notes visible to reporters on the follow-up page.
+    Includes encrypted attachments with decryption metadata.
+    """
+    attachments = AttachmentSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = ReporterNote
+        fields = (
+            'id',
+            'content',
+            'attachments',
+            'created_at',
+        )
+        read_only_fields = fields
+
+
 class ReportStatusSerializer(serializers.ModelSerializer):
     """
     Main serializer for the anonymous report follow-up page.
     Returns only essential status information concerning the reporter
-    (status, priority, timeline details, and external notes).
+    (status, priority, timeline details, external notes, and reporter notes).
     """
     # 1. Status: Translate internal status (e.g., 'new') to display value (e.g., 'New')
     status_display = serializers.CharField(source='get_status_display', read_only=True)
@@ -350,9 +418,13 @@ class ReportStatusSerializer(serializers.ModelSerializer):
     # 4. External investigator notes (only non-internal notes)
     investigator_notes = serializers.SerializerMethodField()
 
+    # 5. Reporter notes
+    reporter_notes = serializers.SerializerMethodField()
+
     class Meta:
         model = Report
         fields = (
+            'id',
             'access_key',
             'status',
             'status_display',
@@ -364,6 +436,7 @@ class ReportStatusSerializer(serializers.ModelSerializer):
             'opened_at',
             'closed_at',
             'investigator_notes',
+            'reporter_notes',
         )
         read_only_fields = fields
 
@@ -397,5 +470,13 @@ class ReportStatusSerializer(serializers.ModelSerializer):
         """
         external_notes = obj.investigator_notes.filter(is_internal=False).order_by('-created_at')
         return ExternalInvestigatorNoteSerializer(external_notes, many=True).data
+
+    def get_reporter_notes(self, obj: Report) -> list:
+        """
+        Returns all reporter notes for this report.
+        Notes are ordered by creation date (newest first).
+        """
+        reporter_notes = obj.reporter_notes.all().order_by('-created_at')
+        return ExternalReporterNoteSerializer(reporter_notes, many=True, context=self.context).data
 
 

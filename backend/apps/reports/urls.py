@@ -10,6 +10,7 @@ from .views import (
     ReportRedactionViewSet,
     ReportTemplateViewSet,
     ReportViewSet,
+    ReporterNoteViewSet,
 )
 
 router = DefaultRouter()
@@ -20,6 +21,7 @@ router.register(r"attachments", AttachmentViewSet)
 router.register(r"ai-analyses", AIAnalysisViewSet)
 router.register(r"redactions", ReportRedactionViewSet)
 router.register(r"investigator-notes", InvestigatorNoteViewSet)
+router.register(r"reporter-notes", ReporterNoteViewSet)
 
 router.register(r"follow-up", FollowUpViewSet, basename="report-followup-status")
 

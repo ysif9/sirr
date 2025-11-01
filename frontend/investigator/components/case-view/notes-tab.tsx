@@ -6,23 +6,186 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Plus, Lock, Unlock, AlertCircle } from "lucide-react";
+import { Loader2, Plus, Lock, Unlock, AlertCircle, FileText, Paperclip, ImageIcon, ShieldCheck, VideoIcon, FileAudio } from "lucide-react";
 import apiClient from "@/lib/api";
-import type { IInvestigatorNote } from "@/lib/mock-data";
+import type { IInvestigatorNote, IReporterNote, IAttachment } from "@/lib/mock-data";
+import { decryptAttachment } from "@/lib/crypto";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 interface NotesTabProps {
   reportId: string;
 }
 
+// Helper function to get file type icon
+const getFileIcon = (mimeType?: string) => {
+  if (!mimeType) return <FileText className="h-12 w-12 text-muted-foreground" />;
+  if (mimeType.startsWith("image/")) return <ImageIcon className="h-12 w-12 text-muted-foreground" />;
+  if (mimeType.startsWith("video/")) return <VideoIcon className="h-12 w-12 text-muted-foreground" />;
+  if (mimeType.startsWith("audio/")) return <FileAudio className="h-12 w-12 text-muted-foreground" />;
+  return <FileText className="h-12 w-12 text-muted-foreground" />;
+};
+
+const getFileType = (mimeType?: string) => {
+  if (!mimeType) return "Document";
+  if (mimeType.startsWith("image/")) return "Image";
+  if (mimeType.startsWith("video/")) return "Video";
+  if (mimeType.startsWith("audio/")) return "Audio";
+  return "Document";
+};
+
+// Helper function to get generic attachment name based on mime type
+const getGenericAttachmentName = (mimeType?: string): string => {
+  if (!mimeType) return 'File attachment';
+  if (mimeType.startsWith('image/')) return 'Image attachment';
+  if (mimeType.startsWith('video/')) return 'Video attachment';
+  if (mimeType.startsWith('audio/')) return 'Audio attachment';
+  if (mimeType.includes('pdf')) return 'PDF attachment';
+  if (mimeType.includes('document') || mimeType.includes('word')) return 'Document attachment';
+  if (mimeType.includes('spreadsheet') || mimeType.includes('excel')) return 'Spreadsheet attachment';
+  return 'File attachment';
+};
+
+// Dialog component for viewing a single reporter note attachment
+const ReporterNoteAttachmentDialog = ({
+  attachment,
+  reporterNoteId
+}: {
+  attachment: IAttachment
+  reporterNoteId: string
+}) => {
+  const [decryptedUrl, setDecryptedUrl] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const fileType = getFileType(attachment.mime_type);
+
+  // Cleanup object URL when component unmounts or URL changes
+  useEffect(() => {
+    return () => {
+      if (decryptedUrl) {
+        URL.revokeObjectURL(decryptedUrl);
+      }
+    };
+  }, [decryptedUrl]);
+
+  const handleDecryptAndDisplay = async () => {
+    if (!attachment.nonce) {
+      setError("Missing nonce for decryption.");
+      return;
+    }
+    setIsLoading(true);
+    setError(null);
+    setDecryptedUrl(null);
+
+    try {
+      // Get the decryption key from the backend (investigator is authenticated)
+      const response = await apiClient.post(`/reporter-notes/${reporterNoteId}/decrypt_attachments/`, {});
+
+      if (!response.data || !response.data.attachment_keys) {
+        throw new Error("Failed to decrypt attachment keys");
+      }
+
+      const attachmentKey = response.data.attachment_keys[attachment.id];
+
+      if (!attachmentKey) {
+        throw new Error("Missing decryption key");
+      }
+
+      // Decrypt the attachment
+      const blob = await decryptAttachment(
+        attachment.file,
+        attachmentKey,
+        attachment.nonce
+      );
+
+      if (blob) {
+        const url = URL.createObjectURL(blob);
+        setDecryptedUrl(url);
+      } else {
+        throw new Error("Decryption failed. The file may be corrupt or the key is incorrect.");
+      }
+    } catch (err) {
+      console.error("Decryption error:", err);
+      setError(err instanceof Error ? err.message : "Failed to decrypt attachment");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const genericName = getGenericAttachmentName(attachment.mime_type);
+
+  return (
+    <DialogContent className="max-w-4xl">
+      <DialogHeader>
+        <DialogTitle>{genericName}</DialogTitle>
+      </DialogHeader>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-4">
+        <div className="md:col-span-2">
+          <div className="aspect-video bg-muted rounded-lg flex items-center justify-center overflow-hidden">
+            {decryptedUrl ? (
+              fileType === 'Image' ? (
+                <img src={decryptedUrl} alt="Decrypted content" className="w-full h-full object-contain" />
+              ) : fileType === 'Video' ? (
+                <video src={decryptedUrl} controls className="w-full h-full" />
+              ) : (
+                <a href={decryptedUrl} download={genericName} className="text-primary hover:underline">
+                  Download decrypted file
+                </a>
+              )
+            ) : (
+              <div className="text-center p-4">
+                {getFileIcon(attachment.mime_type)}
+                <p className="text-muted-foreground mt-2 text-sm">Preview of encrypted file.</p>
+                <Button onClick={handleDecryptAndDisplay} disabled={isLoading} className="mt-4">
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Decrypting...
+                    </>
+                  ) : (
+                    <>
+                      <ShieldCheck className="mr-2 h-4 w-4" />
+                      Decrypt and View
+                    </>
+                  )}
+                </Button>
+                {error && <p className="text-destructive text-xs mt-2">{error}</p>}
+              </div>
+            )}
+          </div>
+        </div>
+        <div className="space-y-6">
+          <Alert>
+            <ShieldCheck className="h-4 w-4" />
+            <AlertTitle>End-to-End Encrypted</AlertTitle>
+            <AlertDescription>
+              This file is stored encrypted and is decrypted only on your device.
+            </AlertDescription>
+          </Alert>
+          <div>
+            <h3 className="font-semibold">Metadata</h3>
+            <ul className="text-sm text-muted-foreground mt-2 space-y-1">
+              <li><span className="font-medium text-foreground">Attachment ID:</span> {attachment.id.slice(0, 8)}</li>
+              {attachment.mime_type && (
+                <li><span className="font-medium text-foreground">File Type:</span> {attachment.mime_type}</li>
+              )}
+            </ul>
+          </div>
+        </div>
+      </div>
+    </DialogContent>
+  );
+};
+
 export default function NotesTab({ reportId }: NotesTabProps) {
   const [notes, setNotes] = useState<IInvestigatorNote[]>([]);
+  const [reporterNotes, setReporterNotes] = useState<IReporterNote[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showNewNoteForm, setShowNewNoteForm] = useState(false);
-  
+
   // New note form state
   const [newNoteContent, setNewNoteContent] = useState("");
   const [newNoteType, setNewNoteType] = useState<"internal" | "external">("internal");
@@ -31,6 +194,7 @@ export default function NotesTab({ reportId }: NotesTabProps) {
   // Fetch notes when component mounts
   useEffect(() => {
     fetchNotes();
+    fetchReporterNotes();
   }, [reportId]);
 
   const fetchNotes = async () => {
@@ -46,6 +210,18 @@ export default function NotesTab({ reportId }: NotesTabProps) {
       setError("Failed to load notes. Please try again later.");
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const fetchReporterNotes = async () => {
+    try {
+      const response = await apiClient.get("/reporter-notes/", {
+        params: { report: reportId },
+      });
+      setReporterNotes(response.data.results || response.data || []);
+    } catch (err: any) {
+      console.error("Failed to fetch reporter notes:", err);
+      // Don't set error state here - reporter notes are optional
     }
   };
 
@@ -69,7 +245,7 @@ export default function NotesTab({ reportId }: NotesTabProps) {
 
       // Add the new note to the list
       setNotes([response.data, ...notes]);
-      
+
       // Reset form
       setNewNoteContent("");
       setNewNoteType("internal");
@@ -77,7 +253,7 @@ export default function NotesTab({ reportId }: NotesTabProps) {
     } catch (err: any) {
       console.error("Failed to create note:", err);
       setFormError(
-        err.response?.data?.detail || 
+        err.response?.data?.detail ||
         err.response?.data?.content?.[0] ||
         "Failed to create note. Please try again."
       );
@@ -276,6 +452,70 @@ export default function NotesTab({ reportId }: NotesTabProps) {
           ))
         )}
       </div>
+
+      {/* Reporter Notes Section */}
+      {reporterNotes.length > 0 && (
+        <div className="space-y-4 mt-8">
+          <div className="flex items-center gap-2 mb-4">
+            <FileText className="h-5 w-5 text-purple-500" />
+            <h3 className="text-xl font-bold">Reporter's Notes</h3>
+            <Badge variant="outline" className="ml-2">
+              {reporterNotes.length}
+            </Badge>
+          </div>
+          <p className="text-sm text-muted-foreground mb-4">
+            Additional information provided by the reporter after initial submission
+          </p>
+
+          <div className="space-y-4">
+            {reporterNotes.map((note) => (
+              <Card key={note.id} className="border-l-4 border-l-purple-500">
+                <CardHeader>
+                  <div className="flex items-start justify-between">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <CardTitle className="text-base">Reporter</CardTitle>
+                        <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200">
+                          Reporter Note
+                        </Badge>
+                      </div>
+                      <CardDescription>
+                        {formatDate(note.created_at)}
+                      </CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <p className="whitespace-pre-wrap text-sm">{note.content}</p>
+                  {note.attachments && note.attachments.length > 0 && (
+                    <div className="space-y-2 pt-2 border-t">
+                      <p className="text-xs font-medium text-muted-foreground mb-2">Attachments:</p>
+                      <div className="flex flex-wrap gap-2">
+                        {note.attachments.map((attachment) => (
+                          <Dialog key={attachment.id}>
+                            <DialogTrigger asChild>
+                              <button className="flex items-center gap-2 px-3 py-2 text-sm bg-purple-50 hover:bg-purple-100 text-purple-700 rounded-md border border-purple-200 transition-colors">
+                                <Paperclip className="h-4 w-4" />
+                                <span className="truncate max-w-[200px]">
+                                  {getGenericAttachmentName(attachment.mime_type)}
+                                </span>
+                              </button>
+                            </DialogTrigger>
+                            <ReporterNoteAttachmentDialog
+                              attachment={attachment}
+                              reporterNoteId={note.id}
+                            />
+                          </Dialog>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

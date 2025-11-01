@@ -38,8 +38,21 @@ class ReportPriority(models.TextChoices):
 
 
 def attachment_upload_path(instance: "Attachment", filename: str) -> str:
-    """Generate upload path: attachments/reports/{report_id}/{filename}"""
-    return f"attachments/reports/{instance.report.id}/{filename}"
+    """
+    Generate upload path for attachments.
+    - For report attachments: attachments/reports/{report_id}/{filename}
+    - For reporter note attachments: attachments/reporter_notes/{reporter_note_id}/{filename}
+    """
+    if instance.report:
+        return f"attachments/reports/{instance.report.id}/{filename}"
+    elif instance.reporter_note:
+        return f"attachments/reporter_notes/{instance.reporter_note.id}/{filename}"
+    else:
+        # Fallback (should not happen due to model validation)
+        return f"attachments/orphaned/{filename}"
+
+
+
 
 
 class ReportCategory(BaseModel):
@@ -143,13 +156,32 @@ class Report(BaseModel):
 
 class Attachment(BaseModel):
     """
-    File attachments associated with reports.
+    File attachments associated with reports or reporter notes.
 
-    Manages uploaded files linked to reports with metadata tracking,
+    Manages uploaded files linked to reports or reporter notes with metadata tracking,
     file validation, and automatic cleanup. The file content is stored
     as end-to-end encrypted ciphertext.
+
+    An attachment can be associated with either:
+    - A report (for initial report submission attachments)
+    - A reporter note (for follow-up note attachments)
     """
-    report = models.ForeignKey(Report, on_delete=models.CASCADE, related_name="attachments")
+    report = models.ForeignKey(
+        Report,
+        on_delete=models.CASCADE,
+        related_name="attachments",
+        null=True,
+        blank=True,
+        help_text=_("The report this attachment belongs to (for report attachments).")
+    )
+    reporter_note = models.ForeignKey(
+        'ReporterNote',
+        on_delete=models.CASCADE,
+        related_name="attachments",
+        null=True,
+        blank=True,
+        help_text=_("The reporter note this attachment belongs to (for note attachments).")
+    )
     file = models.FileField(
         upload_to=attachment_upload_path,
         help_text=_("The encrypted file content (ciphertext)."),
@@ -201,7 +233,29 @@ class Attachment(BaseModel):
             return os.path.splitext(self.file.name)[1].lower()
         return ""
 
+    def clean(self):
+        """Validate that attachment belongs to either a report or a reporter note, but not both."""
+        from django.core.exceptions import ValidationError
+
+        if self.report and self.reporter_note:
+            raise ValidationError(
+                _("An attachment cannot belong to both a report and a reporter note.")
+            )
+        if not self.report and not self.reporter_note:
+            raise ValidationError(
+                _("An attachment must belong to either a report or a reporter note.")
+            )
+
+    def save(self, *args, **kwargs):
+        """Override save to call clean()."""
+        self.clean()
+        super().save(*args, **kwargs)
+
     def __str__(self) -> str:
+        if self.report:
+            return f"Attachment {self.id} for Report {self.report.id}"
+        elif self.reporter_note:
+            return f"Attachment {self.id} for Reporter Note {self.reporter_note.id}"
         return f"Attachment {self.id}"
 
     class Meta:
@@ -309,6 +363,32 @@ class InvestigatorNote(BaseModel):
     class Meta:
         verbose_name = _("Investigator Note")
         verbose_name_plural = _("Investigator Notes")
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["report", "-created_at"]),
+        ]
+
+
+class ReporterNote(BaseModel):
+    """
+    Notes and comments added by reporters to provide additional information.
+
+    Allows reporters to add follow-up information, clarifications, or updates
+    to their reports after initial submission. Each note is timestamped and
+    can optionally include encrypted file attachments via the Attachment model.
+
+    Attachments are linked via a reverse relationship (attachments) from the
+    Attachment model, using the same encryption pattern as report attachments.
+    """
+    report = models.ForeignKey(Report, on_delete=models.CASCADE, related_name="reporter_notes")
+    content = models.TextField(help_text=_("The content of the reporter's note."))
+
+    def __str__(self) -> str:
+        return f"Reporter Note on Report {self.report.id}"
+
+    class Meta:
+        verbose_name = _("Reporter Note")
+        verbose_name_plural = _("Reporter Notes")
         ordering = ["-created_at"]
         indexes = [
             models.Index(fields=["report", "-created_at"]),
