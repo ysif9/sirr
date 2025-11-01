@@ -120,58 +120,54 @@ const ReporterNoteAttachmentDialog = ({
       <DialogHeader>
         <DialogTitle>{genericName}</DialogTitle>
       </DialogHeader>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-4">
-        <div className="md:col-span-2">
-          <div className="aspect-video bg-muted rounded-lg flex items-center justify-center overflow-hidden">
-            {decryptedUrl ? (
-              fileType === 'Image' ? (
-                <img src={decryptedUrl} alt="Decrypted content" className="w-full h-full object-contain" />
-              ) : fileType === 'Video' ? (
-                <video src={decryptedUrl} controls className="w-full h-full" />
-              ) : (
-                <a href={decryptedUrl} download={genericName} className="text-primary hover:underline">
-                  Download decrypted file
-                </a>
-              )
+      <div className="space-y-6 mt-4">
+        <div className="aspect-video bg-muted rounded-lg flex items-center justify-center overflow-hidden">
+          {decryptedUrl ? (
+            fileType === 'Image' ? (
+              <img src={decryptedUrl} alt="Decrypted content" className="w-full h-full object-contain" />
+            ) : fileType === 'Video' ? (
+              <video src={decryptedUrl} controls className="w-full h-full" />
             ) : (
-              <div className="text-center p-4">
-                {getFileIcon(attachment.mime_type)}
-                <p className="text-muted-foreground mt-2 text-sm">Preview of encrypted file.</p>
-                <Button onClick={handleDecryptAndDisplay} disabled={isLoading} className="mt-4">
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Decrypting...
-                    </>
-                  ) : (
-                    <>
-                      <ShieldCheck className="mr-2 h-4 w-4" />
-                      Decrypt and View
-                    </>
-                  )}
-                </Button>
-                {error && <p className="text-destructive text-xs mt-2">{error}</p>}
-              </div>
-            )}
-          </div>
+              <a href={decryptedUrl} download={genericName} className="text-primary hover:underline">
+                Download decrypted file
+              </a>
+            )
+          ) : (
+            <div className="text-center p-4">
+              {getFileIcon(attachment.mime_type)}
+              <p className="text-muted-foreground mt-2 text-sm">Preview of encrypted file.</p>
+              <Button onClick={handleDecryptAndDisplay} disabled={isLoading} className="mt-4">
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Decrypting...
+                  </>
+                ) : (
+                  <>
+                    <ShieldCheck className="mr-2 h-4 w-4" />
+                    Decrypt and View
+                  </>
+                )}
+              </Button>
+              {error && <p className="text-destructive text-xs mt-2">{error}</p>}
+            </div>
+          )}
         </div>
-        <div className="space-y-6">
-          <Alert>
-            <ShieldCheck className="h-4 w-4" />
-            <AlertTitle>End-to-End Encrypted</AlertTitle>
-            <AlertDescription>
-              This file is stored encrypted and is decrypted only on your device.
-            </AlertDescription>
-          </Alert>
-          <div>
-            <h3 className="font-semibold">Metadata</h3>
-            <ul className="text-sm text-muted-foreground mt-2 space-y-1">
-              <li><span className="font-medium text-foreground">Attachment ID:</span> {attachment.id.slice(0, 8)}</li>
-              {attachment.mime_type && (
-                <li><span className="font-medium text-foreground">File Type:</span> {attachment.mime_type}</li>
-              )}
-            </ul>
-          </div>
+        <Alert>
+          <ShieldCheck className="h-4 w-4" />
+          <AlertTitle>End-to-End Encrypted</AlertTitle>
+          <AlertDescription>
+            This file is stored encrypted and is decrypted only on your device.
+          </AlertDescription>
+        </Alert>
+        <div>
+          <h3 className="font-semibold">Metadata</h3>
+          <ul className="text-sm text-muted-foreground mt-2 space-y-1">
+            <li><span className="font-medium text-foreground">Attachment ID:</span> {attachment.id.slice(0, 8)}</li>
+            {attachment.mime_type && (
+              <li><span className="font-medium text-foreground">File Type:</span> {attachment.mime_type}</li>
+            )}
+          </ul>
         </div>
       </div>
     </DialogContent>

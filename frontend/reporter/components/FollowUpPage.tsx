@@ -549,7 +549,7 @@ const FollowUpPage: React.FC<FollowUpPageProps> = ({ accessKey, onClose }) => {
                       onClick={() => setShowNoteModal(true)}
                       className="px-3 py-1.5 bg-purple-500/20 hover:bg-purple-500/30 text-purple-400 text-xs font-medium rounded-lg transition-colors border border-purple-500/30"
                     >
-                      + Add Note
+                      {isRTL ? '' : '+ '}{t("addNoteButton")}
                     </button>
                   </div>
 
@@ -580,11 +580,6 @@ const FollowUpPage: React.FC<FollowUpPageProps> = ({ accessKey, onClose }) => {
                                       <p className="text-xs font-medium text-green-400">
                                         {t("updateFromInvestigator") || "Update from Investigator"}
                                       </p>
-                                      {note.author_name && (
-                                        <p className="text-xs text-green-300/70 mt-0.5">
-                                          {note.author_name}
-                                        </p>
-                                      )}
                                     </div>
                                   </>
                                 ) : (
@@ -674,15 +669,15 @@ const FollowUpPage: React.FC<FollowUpPageProps> = ({ accessKey, onClose }) => {
 
       {/* Add Note Modal */}
       {showNoteModal && (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4" dir={isRTL ? 'rtl' : 'ltr'}>
           <Squircle
             cornerRadius={24}
             cornerSmoothing={1}
             className="bg-slate-900 border border-white/10 w-full max-w-lg max-h-[90vh] overflow-y-auto"
           >
             <div className="p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold text-white">Add a Note</h2>
+              <div className={`flex items-center justify-between mb-6 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                <h2 className="text-xl font-bold text-white">{t("addNoteModalTitle")}</h2>
                 <button
                   onClick={() => {
                     setShowNoteModal(false)
@@ -696,29 +691,39 @@ const FollowUpPage: React.FC<FollowUpPageProps> = ({ accessKey, onClose }) => {
                 </button>
               </div>
 
+              {/* Anonymity Disclaimer */}
+              <div className={`flex items-start gap-3 p-4 mb-4 bg-amber-500/10 border border-amber-500/30 rounded-xl ${isRTL ? 'flex-row-reverse' : ''}`}>
+                <Shield className="h-5 w-5 text-amber-500 flex-shrink-0 mt-0.5" />
+                <div className={isRTL ? 'text-right' : ''}>
+                  <h3 className="font-semibold text-amber-500 text-sm">{t("addNoteModalAnonymityDisclaimerTitle")}</h3>
+                  <p className="text-xs text-amber-400 mt-1">{t("addNoteModalAnonymityDisclaimerText")}</p>
+                </div>
+              </div>
+
               {noteError && (
                 <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
-                  <p className="text-sm text-red-400">{noteError}</p>
+                  <p className={`text-sm text-red-400 ${isRTL ? 'text-right' : ''}`}>{noteError}</p>
                 </div>
               )}
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Note Content
+                  <label className={`block text-sm font-medium text-gray-300 mb-2 ${isRTL ? 'text-right' : ''}`}>
+                    {t("addNoteModalNoteContentLabel")}
                   </label>
                   <textarea
                     value={noteContent}
                     onChange={(e) => setNoteContent(e.target.value)}
-                    placeholder="Enter additional information about your report..."
-                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500/50 min-h-[120px] resize-y"
+                    placeholder={t("addNoteModalNoteContentPlaceholder")}
+                    className={`w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500/50 min-h-[120px] resize-y ${isRTL ? 'text-right' : ''}`}
                     disabled={submittingNote}
+                    dir={isRTL ? 'rtl' : 'ltr'}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Attachment (Optional)
+                  <label className={`block text-sm font-medium text-gray-300 mb-2 ${isRTL ? 'text-right' : ''}`}>
+                    {t("addNoteModalAttachmentLabel")}
                   </label>
                   <input
                     type="file"
@@ -727,8 +732,8 @@ const FollowUpPage: React.FC<FollowUpPageProps> = ({ accessKey, onClose }) => {
                     className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-purple-500/20 file:text-purple-400 hover:file:bg-purple-500/30"
                     disabled={submittingNote}
                   />
-                  <p className="text-xs text-gray-500 mt-1">
-                    Supported formats: PDF, DOC, DOCX, TXT, JPG, PNG, GIF
+                  <p className={`text-xs text-gray-500 mt-1 ${isRTL ? 'text-right' : ''}`}>
+                    {t("addNoteModalAttachmentHelper")}
                   </p>
                 </div>
 
@@ -743,14 +748,14 @@ const FollowUpPage: React.FC<FollowUpPageProps> = ({ accessKey, onClose }) => {
                     className="flex-1 px-4 py-3 bg-white/5 hover:bg-white/10 text-white font-medium rounded-lg transition-colors border border-white/10"
                     disabled={submittingNote}
                   >
-                    Cancel
+                    {t("addNoteModalCancelButton")}
                   </button>
                   <button
                     onClick={submitReporterNote}
                     disabled={submittingNote || !noteContent.trim()}
                     className="flex-1 px-4 py-3 bg-purple-500 hover:bg-purple-600 text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {submittingNote ? "Submitting..." : "Submit Note"}
+                    {submittingNote ? t("addNoteModalSubmittingButton") : t("addNoteModalSubmitButton")}
                   </button>
                 </div>
               </div>

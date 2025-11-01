@@ -131,7 +131,18 @@
     "infoBannerDescription": "Save your access key securely. You'll need it to check the status of your report in the future.",
     "emergencyDisclaimerTitle": "Emergency Assistance",
     "emergencyDisclaimerText": "If anyone is at immediate risk, please call 122 for emergency services.",
-    "closeButton": "Close"
+    "closeButton": "Close",
+    "addNoteButton": "Add Note",
+    "addNoteModalTitle": "Add a Note",
+    "addNoteModalAnonymityDisclaimerTitle": "Privacy Reminder",
+    "addNoteModalAnonymityDisclaimerText": "Please try to remain as anonymous as possible. Do not share any personal details.",
+    "addNoteModalNoteContentLabel": "Note Content",
+    "addNoteModalNoteContentPlaceholder": "Enter additional information about your report...",
+    "addNoteModalAttachmentLabel": "Attachment (Optional)",
+    "addNoteModalAttachmentHelper": "Supported formats: PDF, DOC, DOCX, TXT, JPG, PNG, GIF",
+    "addNoteModalCancelButton": "Cancel",
+    "addNoteModalSubmitButton": "Submit Note",
+    "addNoteModalSubmittingButton": "Submitting..."
   },
 
   "FAQModal": {
