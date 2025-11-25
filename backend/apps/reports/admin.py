@@ -384,5 +384,5 @@ class ReporterNoteAdmin(admin.ModelAdmin):
     def has_attachment(self, obj):
         """Display whether the note has an attachment."""
         return bool(obj.attachment)
-    has_attachment.boolean = True
-    has_attachment.short_description = 'Has Attachment'
+    has_attachment.boolean = True  # type: ignore[attr-defined]
+    has_attachment.short_description = 'Has Attachment'  # type: ignore[attr-defined]

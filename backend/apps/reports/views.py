@@ -434,7 +434,7 @@ class InvestigatorNoteViewSet(viewsets.ModelViewSet):
         if user.is_superuser:
             return base_qs
 
-        if user.is_caseworker:
+        if hasattr(user, 'is_caseworker') and user.is_caseworker:  # type: ignore[attr-defined]
             # Only show notes for reports assigned to this caseworker
             return base_qs.filter(report__assignments__assignee=user)
 
@@ -450,7 +450,7 @@ class InvestigatorNoteViewSet(viewsets.ModelViewSet):
 
         # Verify the user has access to this report
         if not user.is_superuser:
-            if user.is_caseworker:
+            if hasattr(user, 'is_caseworker') and user.is_caseworker:  # type: ignore[attr-defined]
                 if not ReportAssignment.objects.filter(report=report, assignee=user).exists():
                     raise ValidationError({"report": "You do not have access to this report."})
             else:

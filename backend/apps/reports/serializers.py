@@ -201,7 +201,7 @@ class CaseworkerReportSerializer(ReportSerializer):
             notes = obj.investigator_notes.all()
         else:
             notes = obj.investigator_notes.select_related('author').all()
-        return InvestigatorNoteSerializer(notes, many=True, context=self.context).data
+        return list(InvestigatorNoteSerializer(notes, many=True, context=self.context).data)
 
     def get_reporter_notes(self, obj: Report) -> list:
         """
@@ -212,7 +212,7 @@ class CaseworkerReportSerializer(ReportSerializer):
             notes = obj.reporter_notes.all()
         else:
             notes = obj.reporter_notes.all()
-        return InvestigatorViewReporterNoteSerializer(notes, many=True, context=self.context).data
+        return list(InvestigatorViewReporterNoteSerializer(notes, many=True, context=self.context).data)
 
 
 class ReportListSerializer(serializers.ModelSerializer):
@@ -478,7 +478,7 @@ class ReportStatusSerializer(serializers.ModelSerializer):
         Notes are ordered by creation date (newest first).
         """
         external_notes = obj.investigator_notes.filter(is_internal=False).order_by('-created_at')
-        return ExternalInvestigatorNoteSerializer(external_notes, many=True).data
+        return list(ExternalInvestigatorNoteSerializer(external_notes, many=True).data)
 
     def get_reporter_notes(self, obj: Report) -> list:
         """
@@ -486,6 +486,6 @@ class ReportStatusSerializer(serializers.ModelSerializer):
         Notes are ordered by creation date (newest first).
         """
         reporter_notes = obj.reporter_notes.all().order_by('-created_at')
-        return ExternalReporterNoteSerializer(reporter_notes, many=True, context=self.context).data
+        return list(ExternalReporterNoteSerializer(reporter_notes, many=True, context=self.context).data)
 
 
