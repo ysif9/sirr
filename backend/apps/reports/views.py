@@ -3,7 +3,7 @@ import json
 import secrets
 from binascii import Error as BinasciiError
 from typing import Any
-from rest_framework.exceptions import NotFound
+
 from django.conf import settings
 from django.db import transaction
 from django.db.models import Count, Max, Prefetch
@@ -11,9 +11,9 @@ from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
 from nacl.exceptions import CryptoError
 from nacl.public import Box, PrivateKey, PublicKey
-from rest_framework import filters, status, viewsets, mixins
+from rest_framework import filters, mixins, status, viewsets
 from rest_framework.decorators import action
-from rest_framework.exceptions import ParseError, ValidationError
+from rest_framework.exceptions import NotFound, ParseError, ValidationError
 from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 
@@ -42,7 +42,8 @@ from .serializers import (
     ReportListSerializer,
     ReportRedactionSerializer,
     ReportSerializer,
-    ReportTemplateSerializer, ReportStatusSerializer,
+    ReportStatusSerializer,
+    ReportTemplateSerializer,
     ReporterNoteSerializer,
 )
 

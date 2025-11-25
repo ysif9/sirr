@@ -7,9 +7,19 @@ from rest_framework.exceptions import ValidationError
 
 from apps.users.models import User
 
-from .models import AIAnalysis, Attachment, InvestigatorNote, Report, ReportCategory, ReportRedaction, ReportTemplate, ReportPriority, ReporterNote
+from .models import (
+    AIAnalysis,
+    Attachment,
+    InvestigatorNote,
+    Report,
+    ReportCategory,
+    ReportRedaction,
+    ReportTemplate,
+    ReporterNote,
+)
 
-
+#Unused import ig
+#, ReportPriority
 # -------------------
 # Helper Functions
 # -------------------
