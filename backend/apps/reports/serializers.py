@@ -19,8 +19,6 @@ from .models import (
 )
 
 
-
-
 # -------------------
 # Helper Functions
 # -------------------
