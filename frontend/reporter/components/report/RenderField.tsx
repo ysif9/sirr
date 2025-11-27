@@ -19,6 +19,47 @@ interface RenderFieldProps {
   watch: UseFormWatch<any>
 }
 
+// Separate component for repeater fields to ensure hooks are called unconditionally
+interface RepeaterFieldProps {
+  control: Control<any>
+  field: Field
+  watch: UseFormWatch<any>
+}
+
+const RepeaterField: React.FC<RepeaterFieldProps> = ({ control, field, watch }) => {
+  const t = useTranslations("RenderField");
+  const { fields: repeaterFields, append, remove } = useFieldArray({
+    control,
+    name: field.id,
+  })
+
+  const addItemLabel = field.fields?.[0].label || t('defaultItem');
+
+  return (
+    <div className="space-y-4 p-4 border border-border rounded-lg">
+      <Label className="text-base font-semibold text-card-foreground">{field.label}</Label>
+      {repeaterFields.map((item, index) => (
+        <div key={item.id} className="space-y-2 p-3 border border-border rounded-md relative">
+          {field.fields?.map((subField: Field) => (
+            <RenderField
+              key={subField.id}
+              control={control}
+              field={{ ...subField, id: `${field.id}.${index}.${subField.id}` }}
+              watch={watch}
+            />
+          ))}
+          <Button variant="destructive" size="sm" type="button" onClick={() => remove(index)} className="absolute top-2 right-2">
+            {t('remove')}
+          </Button>
+        </div>
+      ))}
+      <Button type="button" variant="secondary" onClick={() => append({})}>
+        {t('addItem', { item: addItemLabel })}
+      </Button>
+    </div>
+  )
+}
+
 const RenderField: React.FC<RenderFieldProps> = ({ control, field, watch }) => {
   const t = useTranslations("RenderField");
 
@@ -27,6 +68,10 @@ const RenderField: React.FC<RenderFieldProps> = ({ control, field, watch }) => {
     if (watchedValue !== field.conditional.value) {
       return null
     }
+  }
+
+  if (field.type === "repeater") {
+    return <RepeaterField control={control} field={field} watch={watch} />
   }
 
   if (field.type === "file_upload") {
@@ -117,39 +162,6 @@ const RenderField: React.FC<RenderFieldProps> = ({ control, field, watch }) => {
       default:
         return <div className="text-red-500">Unsupported field type: {field.type}</div>
     }
-  }
-
-  if (field.type === "repeater") {
-    const { fields: repeaterFields, append, remove } = useFieldArray({
-      control,
-      name: field.id,
-    })
-
-    const addItemLabel = field.fields?.[0].label || t('defaultItem');
-
-    return (
-      <div className="space-y-4 p-4 border border-border rounded-lg">
-        <Label className="text-base font-semibold text-card-foreground">{field.label}</Label>
-        {repeaterFields.map((item, index) => (
-          <div key={item.id} className="space-y-2 p-3 border border-border rounded-md relative">
-            {field.fields?.map((subField: Field) => (
-              <RenderField
-                key={subField.id}
-                control={control}
-                field={{ ...subField, id: `${field.id}.${index}.${subField.id}` }}
-                watch={watch}
-              />
-            ))}
-            <Button variant="destructive" size="sm" type="button" onClick={() => remove(index)} className="absolute top-2 right-2">
-              {t('remove')}
-            </Button>
-          </div>
-        ))}
-        <Button type="button" variant="secondary" onClick={() => append({})}>
-          {t('addItem', { item: addItemLabel })}
-        </Button>
-      </div>
-    )
   }
 
   if (field.type === "static_text") {
