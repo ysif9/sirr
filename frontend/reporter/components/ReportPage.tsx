@@ -51,7 +51,7 @@ const ReportPage: React.FC = () => {
     if (view === "forms" && selectedReportType && selectedCategory) {
       const formKeys = getFormKeysForCategory(selectedReportType, selectedCategory);
       if (!formKeys.length) return <p>No forms found for this category.</p>;
-      
+
       return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {formKeys.map((key) => {
@@ -60,7 +60,7 @@ const ReportPage: React.FC = () => {
               <CategoryCard
                 key={key}
                 title={title}
-                subtitle={`Report an incident of ${title.toLowerCase()}.`}
+                subtitle={t("formCardSubtitle", { title })}
                 onClick={() => selectForm(key)}
                 size="small"
               />
@@ -91,10 +91,10 @@ const ReportPage: React.FC = () => {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
         {reportTypeKeys.map((key) => (
-          <CategoryCard 
-            key={key} 
-            title={tForms(`category_structures.${key}.title`)} 
-            subtitle={tForms(`category_structures.${key}.subtitle`)} 
+          <CategoryCard
+            key={key}
+            title={tForms(`category_structures.${key}.title`)}
+            subtitle={tForms(`category_structures.${key}.subtitle`)}
             onClick={() => selectReportType(key)} />
         ))}
       </div>
@@ -113,10 +113,10 @@ const ReportPage: React.FC = () => {
 
   const getPageSubtitle = () => {
     if (view === "forms") {
-      return "Please select the specific type of incident you wish to report.";
+      return t("formsSubtitle");
     }
     if (view === "categories") {
-      return "Choose the category that best describes your report.";
+      return t("categoriesSubtitle");
     }
     return t("subtitle");
   };

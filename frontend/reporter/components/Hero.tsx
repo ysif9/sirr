@@ -59,10 +59,10 @@ const Hero: React.FC = () => {
                 cornerSmoothing={1}
                 className="border border-sky-400/30 group-hover:bg-sky-400/10 group-hover:border-sky-400/40 text-sky-300 font-semibold py-4 px-10 text-lg group-hover:shadow-lg group-hover:shadow-sky-400/5 transition-all duration-300 ease-out"
               >
-                Legal Aid Chatbot
+                {t("legalAidChatbot")}
               </Squircle>
             </Link>
-            
+
           </div>
           <div className="mt-6 pt-8 max-w-2xl mx-auto text-xs text-gray-400">
             <p>

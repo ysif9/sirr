@@ -11,7 +11,7 @@ import { useTranslations, useMessages } from "next-intl"
 export default function ReportFormPage() {
   const router = useRouter()
   const t = useTranslations("ReportPage")
-  
+
   // Get the entire message object to handle arrays for options
   const allMessages = useMessages()
 
@@ -26,10 +26,10 @@ export default function ReportFormPage() {
     if (reportType && category && subcrime) {
       // Access the crimeForms namespace from the messages object
       const crimeFormMessages = allMessages.crimeForms as any;
-      
+
       // Pass the message object, not the 't' function, to the definition generator
       const definition = getLocalizedFormDefinition(crimeFormMessages, reportType, category, subcrime)
-      
+
       setFormDef(definition || null)
       setIsLoading(false)
     } else {
@@ -75,7 +75,7 @@ export default function ReportFormPage() {
           <div className="text-center mb-12">
             <h1 className="text-4xl md:text-5xl font-extrabold text-white tracking-tighter">{formDef.title}</h1>
             <p className="mt-4 text-lg md:text-xl text-gray-300 max-w-3xl mx-auto">
-              Please fill out the form below. All information is submitted anonymously.
+              {t("formSubtitle")}
             </p>
           </div>
           <CrimeReportForm formDefinition={formDef} formIdentifier={formIdentifier} />

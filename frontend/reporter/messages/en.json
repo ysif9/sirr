@@ -25,20 +25,31 @@
     "subtitle": "Safe & Secure"
   },
   "EmergencyBanner": {
-    "line1": "In case of emergency, call immediately:",
-    "line2": "Police: 122 | Fire: 998 | Ambulance: 997"
+    "notSubstitute": "This platform is not a substitute for emergency services.",
+    "dialEmergency": "If you are experiencing an emergency, please dial",
+    "immediately": "immediately."
+  },
+  "DNSBanner": {
+    "safetyFirst": "Your Safety First:",
+    "learnAnonymity": "Learn how to maximize your anonymity before submitting a report.",
+    "viewGuide": "View Anonymity Guide"
   },
   "Hero": {
     "title": "Report Crime Anonymously",
     "subtitle": "Your safety is our priority. Report crimes safely and anonymously to help make your community safer.",
     "startNewReport": "Start New Report",
     "followUpOnReport": "Follow Up on Report",
+    "legalAidChatbot": "Legal Aid Chatbot",
     "legalDisclaimer": "By using this service, you agree to our",
     "legalLink": "Terms & Privacy Policy"
   },
   "ReportPage": {
     "title": "Select Crime Category",
     "subtitle": "Choose the category that best describes the crime you want to report.",
+    "categoriesSubtitle": "Choose the category that best describes your report.",
+    "formsSubtitle": "Please select the specific type of incident you wish to report.",
+    "formSubtitle": "Please fill out the form below. All information is submitted anonymously.",
+    "formCardSubtitle": "Report an incident of {title}.",
     "searchPlaceholder": "Search categories...",
     "noCategoriesFound": "No categories found for",
     "backButton": "Back"
