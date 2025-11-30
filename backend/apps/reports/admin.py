@@ -6,12 +6,13 @@ from typing import Any
 
 from django.conf import settings
 from django.contrib import admin, messages
+from django.utils import timezone
 from django.utils.html import format_html
 from nacl.exceptions import CryptoError
 from nacl.public import Box, PrivateKey, PublicKey
 from nacl.secret import SecretBox
 
-from apps.reports.models import AIAnalysis, Report, ReportAssignment
+from apps.reports.models import AIAnalysis, InvestigatorNote, Report, ReportAssignment, ReportStatus, ReporterNote
 from apps.reports.tasks import generate_analysis_task
 from apps.users.models import User  # Import the User model
 
@@ -112,8 +113,11 @@ class ReportAdmin(admin.ModelAdmin):
         'status',
         'priority',
         'created_at',
+        'assigned_at',
+        'opened_at',
+        'closed_at',
     )
-    list_filter = ('status', 'priority', 'created_at')
+    list_filter = ('status', 'priority', 'created_at', 'assigned_at', 'opened_at', 'closed_at')
     search_fields = ('id__startswith',)
     ordering = ('-created_at',)
 
@@ -122,6 +126,10 @@ class ReportAdmin(admin.ModelAdmin):
     fieldsets = (
         ('Report Metadata', {
             'fields': ('id', 'status', 'priority', 'template', 'created_at', 'updated_at')
+        }),
+        ('Timeline Tracking', {
+            'fields': ('assigned_at', 'opened_at', 'closed_at'),
+            'description': 'Timestamps tracking the report lifecycle.'
         }),
         ('Decrypted Content', {
             'fields': ('display_decrypted_content',),
@@ -135,7 +143,8 @@ class ReportAdmin(admin.ModelAdmin):
 
     readonly_fields = (
         'id', 'template', 'created_at', 'updated_at', 'access_key',
-        'associated_data', 'key_envelope', 'display_decrypted_content'
+        'associated_data', 'key_envelope', 'display_decrypted_content',
+        'assigned_at', 'opened_at', 'closed_at'
     )
 
     actions = ['run_analysis']
@@ -191,18 +200,59 @@ class ReportAdmin(admin.ModelAdmin):
                 logger.info(f"Spawning analysis task for report {report.id}")
                 generate_analysis_task.delay(decrypted_data, str(report.id))
 
+    def save_model(self, request, obj, form, change):
+        """
+        Override save_model to automatically update timeline tracking fields
+        when status changes occur in the admin interface.
+        """
+        if change:  # Only check for changes on existing objects
+            # Get the original object from the database to compare status
+            try:
+                original = Report.objects.get(pk=obj.pk)
+                old_status = original.status
+                new_status = obj.status
+
+                # Update opened_at when status changes from NEW to OPENED
+                if old_status == ReportStatus.NEW and new_status == ReportStatus.OPENED:
+                    if obj.opened_at is None:
+                        obj.opened_at = timezone.now()
+                        logger.info(f"Report {obj.id}: Set opened_at timestamp via admin")
+
+                # Update closed_at when status changes to CLOSED
+                if old_status != ReportStatus.CLOSED and new_status == ReportStatus.CLOSED:
+                    if obj.closed_at is None:
+                        obj.closed_at = timezone.now()
+                        logger.info(f"Report {obj.id}: Set closed_at timestamp via admin")
+
+            except Report.DoesNotExist:
+                # This shouldn't happen, but handle it gracefully
+                pass
+
+        super().save_model(request, obj, form, change)
 
     def save_formset(self, request, form, formset, change):
         """
         This is the core of the admin-based assignment. It intercepts new assignments
         and performs the key re-encryption before they are saved.
+
+        This method handles three scenarios:
+        1. New assignments being added (with key re-encryption)
+        2. Existing assignments being modified (saved normally)
+        3. Other formsets or no assignment changes (saved normally)
         """
+        # Only process ReportAssignment formsets for key re-encryption
+        if formset.model != ReportAssignment:
+            super().save_formset(request, form, formset, change)
+            return
+
         report = formset.instance
         # Get instances that are being added via the inline form
         newly_added_assignments = [
-            f.instance for f in formset.forms if f.instance.pk is None and not f.cleaned_data.get('DELETE', False)
+            f.instance for f in formset.forms
+            if f.instance.pk is None and not f.cleaned_data.get('DELETE', False) and hasattr(f, 'cleaned_data') and f.cleaned_data
         ]
 
+        # If no new assignments, just save the formset normally (handles existing assignment edits)
         if not newly_added_assignments:
             super().save_formset(request, form, formset, change)
             return
@@ -284,6 +334,12 @@ class ReportAdmin(admin.ModelAdmin):
         # Finally, call the parent method to save the formset
         super().save_formset(request, form, formset, change)
 
+        # Update assigned_at timestamp on the report if this is the first assignment
+        if successful_assignments and report.assigned_at is None:
+            report.assigned_at = timezone.now()
+            report.save(update_fields=['assigned_at'])
+            logger.info(f"Report {report.id}: Set assigned_at timestamp via admin")
+
 
 @admin.register(ReportAssignment)
 class ReportAssignmentAdmin(admin.ModelAdmin):
@@ -298,3 +354,35 @@ class ReportAssignmentAdmin(admin.ModelAdmin):
 @admin.register(AIAnalysis)
 class AIAnalysisAdmin(admin.ModelAdmin):
     pass
+
+
+@admin.register(InvestigatorNote)
+class InvestigatorNoteAdmin(admin.ModelAdmin):
+    """
+    Admin interface for investigator notes.
+    """
+    list_display = ('id', 'report', 'author', 'is_internal', 'created_at')
+    list_filter = ('is_internal', 'created_at', 'author')
+    search_fields = ('report__id__startswith', 'author__email', 'content')
+    readonly_fields = ('created_at', 'updated_at')
+    autocomplete_fields = ['report', 'author']
+    ordering = ('-created_at',)
+
+
+@admin.register(ReporterNote)
+class ReporterNoteAdmin(admin.ModelAdmin):
+    """
+    Admin interface for reporter notes.
+    """
+    list_display = ('id', 'report', 'created_at', 'has_attachment')
+    list_filter = ('created_at',)
+    search_fields = ('report__id__startswith', 'content')
+    readonly_fields = ('created_at', 'updated_at')
+    autocomplete_fields = ['report']
+    ordering = ('-created_at',)
+
+    def has_attachment(self, obj):
+        """Display whether the note has an attachment."""
+        return bool(obj.attachment)
+    has_attachment.boolean = True  # type: ignore[attr-defined]
+    has_attachment.short_description = 'Has Attachment'  # type: ignore[attr-defined]

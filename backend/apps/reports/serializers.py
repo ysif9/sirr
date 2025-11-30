@@ -7,7 +7,16 @@ from rest_framework.exceptions import ValidationError
 
 from apps.users.models import User
 
-from .models import AIAnalysis, Attachment, Report, ReportCategory, ReportRedaction, ReportTemplate
+from .models import (
+    AIAnalysis,
+    Attachment,
+    InvestigatorNote,
+    Report,
+    ReportCategory,
+    ReportRedaction,
+    ReportTemplate,
+    ReporterNote,
+)
 
 
 # -------------------
@@ -61,12 +70,13 @@ class AttachmentSerializer(serializers.ModelSerializer):
     """
     Serializer for attachments. Includes a method to correctly
     Base64-encode the binary nonce for client-side decryption.
+    Supports attachments for both reports and reporter notes.
     """
     nonce = serializers.SerializerMethodField()
 
     class Meta:
         model = Attachment
-        fields = ["id", "report", "file", "key_envelope", "nonce", "description", "checksum", "mime_type",
+        fields = ["id", "report", "reporter_note", "file", "key_envelope", "nonce", "description", "checksum", "mime_type",
                   "file_extension"]
         read_only_fields = ["id", "mime_type", "file_extension"]
 
@@ -123,12 +133,15 @@ class ReportSerializer(serializers.ModelSerializer):
         fields = [
             "id", "template", "access_key", "encrypted_body", "key_envelope",
             "body_nonce", "associated_data", "status", "score", "priority",
-            "last_access_by_reporter", "expires_at", "created_at",
+            "last_access_by_reporter", "expires_at", "created_at", "updated_at",
             "important", "label",
+            # Timeline tracking fields
+            "assigned_at", "opened_at", "closed_at",
         ]
         read_only_fields = [
             "id", "access_key", "score", "last_access_by_reporter",
             "expires_at", "created_at", "updated_at",
+            "assigned_at", "opened_at", "closed_at",
         ]
 
 
@@ -157,10 +170,12 @@ class CaseworkerReportSerializer(ReportSerializer):
     key_envelope = serializers.SerializerMethodField()
     attachments = AttachmentSerializer(many=True, read_only=True)
     analysis = AIAnalysisSerializer(read_only=True, allow_null=True)
+    investigator_notes = serializers.SerializerMethodField()
+    reporter_notes = serializers.SerializerMethodField()
 
     class Meta(ReportSerializer.Meta):
-        # Explicitly inherit fields and add 'attachments' for the detail view.
-        fields = ReportSerializer.Meta.fields + ["attachments", "analysis"]
+        # Explicitly inherit fields and add 'attachments', 'analysis', 'investigator_notes', and 'reporter_notes' for the detail view.
+        fields = ReportSerializer.Meta.fields + ["attachments", "analysis", "investigator_notes", "reporter_notes"]
         read_only_fields = ReportSerializer.Meta.read_only_fields
 
     def get_key_envelope(self, obj: Report) -> dict | None:
@@ -176,6 +191,28 @@ class CaseworkerReportSerializer(ReportSerializer):
             if assignment.assignee_id == request.user.id:
                 return assignment.key_envelope
         return None
+
+    def get_investigator_notes(self, obj: Report) -> list:
+        """
+        Returns all investigator notes for this report.
+        """
+        # Use prefetch_related if available, otherwise query
+        if hasattr(obj, '_prefetched_objects_cache') and 'investigator_notes' in obj._prefetched_objects_cache:
+            notes = obj.investigator_notes.all()
+        else:
+            notes = obj.investigator_notes.select_related('author').all()
+        return list(InvestigatorNoteSerializer(notes, many=True, context=self.context).data)
+
+    def get_reporter_notes(self, obj: Report) -> list:
+        """
+        Returns all reporter notes for this report.
+        """
+        # Use prefetch_related if available, otherwise query
+        if hasattr(obj, '_prefetched_objects_cache') and 'reporter_notes' in obj._prefetched_objects_cache:
+            notes = obj.reporter_notes.all()
+        else:
+            notes = obj.reporter_notes.all()
+        return list(InvestigatorViewReporterNoteSerializer(notes, many=True, context=self.context).data)
 
 
 class ReportListSerializer(serializers.ModelSerializer):
@@ -197,6 +234,10 @@ class ReportListSerializer(serializers.ModelSerializer):
             "created_at",  # Submission Date
             "last_access_date",
             "attachment_count",
+            # Timeline tracking fields
+            "assigned_at",
+            "opened_at",
+            "closed_at",
         ]
 
 
@@ -234,3 +275,217 @@ class ReportRedactionSerializer(serializers.ModelSerializer):
         model = ReportRedaction
         fields = ["report", "redactor_user", "reference_id", "redaction_reason"]
         read_only_fields = ["reference_id", "created_at", "updated_at", "redactor_user"]
+
+
+# -------------------
+# Investigator Note serializers
+# -------------------
+class InvestigatorNoteSerializer(serializers.ModelSerializer):
+    """
+    Serializer for investigator notes on reports.
+    Includes author information and timestamps for audit trail.
+    """
+    author_name = serializers.CharField(source="author.email", read_only=True)
+
+    class Meta:
+        model = InvestigatorNote
+        fields = [
+            "id", "report", "author", "author_name", "content", "is_internal",
+            "created_at", "updated_at"
+        ]
+        read_only_fields = ["id", "author", "author_name", "created_at", "updated_at"]
+
+    def create(self, validated_data):
+        """Automatically set the author to the current user."""
+        request = self.context.get("request")
+        if request and hasattr(request, "user"):
+            validated_data["author"] = request.user
+        return super().create(validated_data)
+
+
+# -------------------
+# Reporter Note serializers
+# -------------------
+class ReporterNoteSerializer(serializers.ModelSerializer):
+    """
+    Serializer for reporter notes on reports.
+    Allows reporters to add follow-up information to their reports.
+    Now supports encrypted attachments via the Attachment model.
+    """
+    attachments = AttachmentSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = ReporterNote
+        fields = [
+            "id", "report", "content", "attachments",
+            "created_at", "updated_at"
+        ]
+        read_only_fields = ["id", "created_at", "updated_at"]
+
+
+class InvestigatorViewReporterNoteSerializer(serializers.ModelSerializer):
+    """
+    Serializer for reporter notes visible to investigators.
+    Read-only view for investigators to see reporter's follow-up notes with encrypted attachments.
+    """
+    attachments = AttachmentSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = ReporterNote
+        fields = (
+            'id',
+            'content',
+            'attachments',
+            'created_at',
+        )
+        read_only_fields = fields
+
+
+# -------------------
+# Followup serializers
+# -------------------
+
+class AIAnalysisStatusSerializer(serializers.ModelSerializer):
+    """
+    Serializer for exposing key AI analysis findings for the reporter dashboard.
+    (Used internally by ReportStatusSerializer's priority logic, though
+    nested fields are excluded from the final output for anonymity.)
+    """
+    # Translate internal urgency choice to a readable string
+    urgency_display = serializers.CharField(source='get_urgency_display', read_only=True)
+
+    class Meta:
+        model = AIAnalysis
+        fields = (
+            'urgency',
+            'urgency_display',
+            'confidence',
+            'analyzed_at'
+        )
+        read_only_fields = fields
+
+
+class ExternalInvestigatorNoteSerializer(serializers.ModelSerializer):
+    """
+    Serializer for investigator notes visible to reporters.
+    Only includes external notes (is_internal=False).
+    """
+    author_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = InvestigatorNote
+        fields = (
+            'id',
+            'content',
+            'author_name',
+            'created_at',
+        )
+        read_only_fields = fields
+
+    def get_author_name(self, obj: InvestigatorNote) -> str:
+        """Return the author's full name or email."""
+        if obj.author.first_name and obj.author.last_name:
+            return f"{obj.author.first_name} {obj.author.last_name}"
+        return obj.author.email
+
+
+class ExternalReporterNoteSerializer(serializers.ModelSerializer):
+    """
+    Serializer for reporter notes visible to reporters on the follow-up page.
+    Includes encrypted attachments with decryption metadata.
+    """
+    attachments = AttachmentSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = ReporterNote
+        fields = (
+            'id',
+            'content',
+            'attachments',
+            'created_at',
+        )
+        read_only_fields = fields
+
+
+class ReportStatusSerializer(serializers.ModelSerializer):
+    """
+    Main serializer for the anonymous report follow-up page.
+    Returns only essential status information concerning the reporter
+    (status, priority, timeline details, external notes, and reporter notes).
+    """
+    # 1. Status: Translate internal status (e.g., 'new') to display value (e.g., 'New')
+    status_display = serializers.CharField(source='get_status_display', read_only=True)
+
+    # 2. Priority: Use a method field to determine the displayed priority,
+    # overriding the manual priority with the AI urgency for a clearer message.
+    priority_display = serializers.SerializerMethodField()
+
+    # 3. Include raw status and priority for frontend logic
+    status = serializers.CharField(read_only=True)
+    priority = serializers.CharField(read_only=True)
+
+    # 4. External investigator notes (only non-internal notes)
+    investigator_notes = serializers.SerializerMethodField()
+
+    # 5. Reporter notes
+    reporter_notes = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Report
+        fields = (
+            'id',
+            'access_key',
+            'status',
+            'status_display',
+            'priority',
+            'priority_display',
+            'created_at',
+            'last_access_by_reporter',
+            'assigned_at',
+            'opened_at',
+            'closed_at',
+            'investigator_notes',
+            'reporter_notes',
+        )
+        read_only_fields = fields
+
+    def get_priority_display(self, obj: Report) -> str:
+        """
+        Determines the priority string shown to the reporter.
+        Prioritizes the AI urgency if available, otherwise uses the manual priority.
+        """
+        try:
+            # Check if AI analysis exists and if it flagged the report as high urgency
+            # Assumes ReportPriority is available (HIGH, CRITICAL)
+            # You must ensure the Report instance is fetched with its related analysis
+            if obj.analysis.urgency in ['high', 'critical']:
+                # Provide a clear, actionable message for the reporter
+                return "High Urgency Tip - Active Follow-up Recommended"
+
+            # Otherwise, use the manually set priority's display value
+            return obj.get_priority_display()
+
+        except AttributeError:
+            # Handle cases where the 'analysis' relation is missing (e.g., no AI run yet)
+            return obj.get_priority_display()
+        except Exception:
+            # Fallback for any other error
+            return obj.get_priority_display()
+
+    def get_investigator_notes(self, obj: Report) -> list:
+        """
+        Returns only external investigator notes (is_internal=False).
+        Notes are ordered by creation date (newest first).
+        """
+        external_notes = obj.investigator_notes.filter(is_internal=False).order_by('-created_at')
+        return list(ExternalInvestigatorNoteSerializer(external_notes, many=True).data)
+
+    def get_reporter_notes(self, obj: Report) -> list:
+        """
+        Returns all reporter notes for this report.
+        Notes are ordered by creation date (newest first).
+        """
+        reporter_notes = obj.reporter_notes.all().order_by('-created_at')
+        return list(ExternalReporterNoteSerializer(reporter_notes, many=True, context=self.context).data)
+
+
