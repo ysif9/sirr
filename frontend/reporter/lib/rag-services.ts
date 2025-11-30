@@ -347,7 +347,7 @@ export class RAGWorkflowService {
       console.log('Relevant documents:', relevantDocs.length);
 
       // Step 4: Web search if needed
-      if (needWebSearch && relevantDocs.length < 2) {
+      if (needWebSearch && relevantDocs.length <= 2) {
         try {
           console.log('Performing web search');
           const transformedQuery = await this.llmService.transformQuery(question);

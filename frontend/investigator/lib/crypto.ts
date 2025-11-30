@@ -100,7 +100,11 @@ export const decryptAttachment = async (
     const key = decodeBase64(keyB64);
     const nonce = decodeBase64(nonceB64);
 
-    const response = await fetch(encryptedFileUrl);
+    // Include credentials to ensure authentication cookies are sent with the request
+    const response = await fetch(encryptedFileUrl, {
+      credentials: 'include',
+      cache: 'no-cache' // Prevent caching issues that might cause 403 errors on subsequent requests
+    });
     if (!response.ok) {
       throw new Error(`Failed to fetch encrypted file: ${response.statusText}`);
     }
