@@ -12,6 +12,12 @@
 
 </div>
 
+> **🏆 [Digitopia Competition](https://www.digitopia.gov.eg/)**
+> 
+> **🔒 Cybersecurity Track**
+> 
+> **🏅5th Place out of 6500+ Teams**
+
 ## 📋 Table of Contents
 
 - [Overview](#-overview)
