@@ -18,6 +18,8 @@
 > 
 > **🏅5th Place out of 6500+ Teams**
 
+![Sirr team at the Digitopia finals](docs/assets/digitopia-top-5.jpg)
+
 ## 📋 Table of Contents
 
 - [Overview](#-overview)
